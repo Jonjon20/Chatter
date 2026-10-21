@@ -66,6 +66,21 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 #wiz .otp{text-align:center;font-size:28px;letter-spacing:8px}
 #wmsg{color:#f02849;font-size:13px;min-height:16px}#wback{align-self:flex-start;font-size:22px;padding:0 6px}
 #wiz .small{font-size:13px;color:var(--mut)}
+.cb{margin-left:auto;display:flex;gap:6px;flex:none}.cb button{padding:6px 11px;font-size:16px;line-height:1}
+#call{position:fixed;inset:0;z-index:50;background:#101114;color:#fff;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+#call .ch{padding:14px 16px 4px;text-align:center}#call .ct{font-weight:700;font-size:17px}#call .cs{font-size:13px;opacity:.7}
+#grid{flex:1;min-height:0;overflow:auto;display:grid;gap:8px;padding:8px;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));grid-auto-rows:minmax(160px,1fr)}
+.tile{position:relative;background:#1d1f24;border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:0}
+.tile video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+.tile.nocam video{opacity:0}.tile .av{display:none;width:84px;height:84px;font-size:34px}.tile.nocam .av{display:flex}
+.tile .nm2{position:absolute;left:10px;bottom:8px;font-size:13px;background:#0008;padding:2px 8px;border-radius:10px}
+#self{position:absolute;right:14px;bottom:calc(110px + env(safe-area-inset-bottom,0px));width:110px;height:150px;border-radius:12px;overflow:hidden;background:#000;box-shadow:0 2px 10px #0008}
+#self video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.cc{display:flex;justify-content:center;gap:16px;padding:12px 12px calc(18px + env(safe-area-inset-bottom,0px))}
+.cc button{width:56px;height:56px;border-radius:50%;padding:0;font-size:22px;background:#2f3136;color:#fff}.cc button.off{background:#fff;color:#000}.cc button.end{background:#f02849}
+#ring{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:min(92vw,340px);z-index:60;background:var(--bg);color:var(--tx);border:1px solid var(--line);border-radius:16px;padding:16px;text-align:center;box-shadow:0 6px 24px #0005}
+#ring .rt{font-weight:700}#ring .rs{color:var(--mut);font-size:13px;margin:2px 0 12px}#ring .rb{display:flex;gap:10px;justify-content:center}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#000c;color:#fff;padding:8px 14px;border-radius:16px;z-index:70;font-size:13px}
 @media(max-width:700px){.app{grid-template-columns:1fr}.main{display:none}.app.open .side{display:none}.app.open .main{display:flex}.back{display:block}}
 </style></head>
 <body>
@@ -106,7 +121,7 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
   </nav>
  </aside>
  <section class="main">
-  <div class="head"><button class="ghost back" id="back">‹</button><div class="hd"><div id="title">Select a chat</div><div class="sub" id="sub"></div></div></div>
+  <div class="head"><button class="ghost back" id="back">‹</button><div class="hd"><div id="title">Select a chat</div><div class="sub" id="sub"></div></div><div class="cb hide" id="cb"><button type="button" class="gray" id="vc" title="Voice call">📞</button><button type="button" class="gray" id="vd" title="Video call">🎥</button></div></div>
   <div id="msgs"><div class="empty">Select a chat to get started.</div></div>
   <div class="typing" id="typing"></div>
   <div class="bar hide" id="eb"><span>✎ Editing message</span><button type="button" class="gray sm" id="ec">✕</button></div>
@@ -114,6 +129,14 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
   <form class="compose" id="f"><button type="button" class="gray att" id="att">📎</button><input type="file" id="file" accept="image/*" class="hide"><input id="in" placeholder="Type a message…" autocomplete="off" maxlength="1000"><button id="send">Send</button></form>
  </section>
 </div>
+
+<div id="call" class="hide">
+ <div class="ch"><div class="ct" id="ctitle"></div><div class="cs" id="cstat"></div></div>
+ <div id="grid"></div>
+ <div id="self" class="hide"><video id="selfv" autoplay playsinline muted></video></div>
+ <div class="cc"><button type="button" id="cmute" title="Mute">🎤</button><button type="button" id="ccam" title="Camera">🎥</button><button type="button" id="cend" class="end" title="End call">📵</button></div>
+</div>
+<div id="ring" class="hide"><div class="rt" id="rtxt"></div><div class="rs" id="rsub"></div><div class="rb"><button type="button" class="gray" id="rno">Decline</button><button type="button" id="ryes">Accept</button></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
@@ -283,7 +306,7 @@ $("#wnext").onclick = async () => {
 };
 sb.auth.onAuthStateChange((ev, session) => {
   if (session && !me && !W.reset) start(session.user);
-  if (!session) { me = null; sb.removeAllChannels(); cur = null; results = null; showAuth(); }
+  if (!session) { if (call) endCall(); dismissRing(); me = null; sb.removeAllChannels(); cur = null; results = null; showAuth(); }
 });
 
 // ---------- DATA ----------
@@ -329,6 +352,7 @@ async function start(user) {
   sb.channel("rooms").on("postgres_changes", {event: "INSERT", schema: "public", table: "rooms"}, loadChats).subscribe();
   sb.channel("mem").on("postgres_changes", {event: "INSERT", schema: "public", table: "room_members", filter: "user_id=eq." + me.id}, loadChats).subscribe();
   sb.channel("friends").on("postgres_changes", {event: "*", schema: "public", table: "friendships"}, loadFriends).subscribe();
+  listenInbox();
   setTab("chats");
   const g = rooms.find(r => !r.is_dm);
   if (g && innerWidth > 700) openRoom(g.id);
@@ -608,8 +632,182 @@ function joinPresence() {
 }
 function updateHead() {
   const r = rooms.find(x => x.id === cur), s = $("#sub"), on = !!(r && r.is_dm && online.has(other(r)));
-  s.textContent = on ? "● Online" : (r && r.is_group ? (members[r.id] || []).length + " members" : ""); s.className = "sub" + (on ? " on" : "");
+  s.textContent = on ? "● Online" : (r && r.is_group ? (members[r.id] || []).length + " members" : ""); s.className = "sub" + (on ? " on" : ""); $("#cb").classList.toggle("hide", !(r && (r.is_dm || r.is_group)));
 }
+
+// ---------- CALLS: voice & video (DMs + groups only; WebRTC, signaling over Supabase Realtime) ----------
+const ICE = {iceServers: [{urls: "stun:stun.l.google.com:19302"}, {urls: "stun:stun1.l.google.com:19302"}]};
+let call = null, ringIn = null, ringTone = null;
+const toast = t => { const d = el("div", "toast", t); document.body.append(d); setTimeout(() => d.remove(), 3500); };
+const fmtDur = ms => { const s = Math.floor(ms / 1000), m = Math.floor(s / 60); return m + ":" + String(s % 60).padStart(2, "0"); };
+const callable = r => !!r && (r.is_dm || r.is_group);
+
+// one-off message to another user's personal "inbox" channel (ring / cancel / decline)
+function sendInbox(uid, event, payload) {
+  const ch = sb.channel("inbox:" + uid);
+  ch.subscribe(s => { if (s === "SUBSCRIBED") { ch.send({type: "broadcast", event, payload}); setTimeout(() => sb.removeChannel(ch), 1500); } });
+}
+function listenInbox() {
+  sb.channel("inbox:" + me.id)
+    .on("broadcast", {event: "ring"}, ({payload}) => onRing(payload))
+    .on("broadcast", {event: "cancel"}, ({payload}) => { if (ringIn && payload && ringIn.room === payload.room && ringIn.from === payload.from) dismissRing(); })
+    .on("broadcast", {event: "decline"}, ({payload}) => {
+      if (call && payload && call.room === payload.room && call.caller && call.dm && !call.everConnected) endCall(payload.busy ? "User is busy" : "Call declined");
+    }).subscribe();
+}
+
+// ringtone for incoming calls
+function ringStart() {
+  try {
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    const beep = () => { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = 440; g.gain.value = .08; o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + .4); };
+    beep(); ringTone = {ac, t: setInterval(beep, 1500)};
+  } catch (e) {}
+}
+function ringStop() { if (ringTone) { clearInterval(ringTone.t); try { ringTone.ac.close(); } catch (e) {} ringTone = null; } }
+function dismissRing() { if (ringIn) clearTimeout(ringIn.timer); ringIn = null; ringStop(); $("#ring").classList.add("hide"); }
+
+async function onRing(p) {
+  if (!p || p.from === me.id) return;
+  const r = rooms.find(x => x.id === p.room), mm = members[p.room] || [];
+  if (!callable(r) || !mm.includes(p.from) || !mm.includes(me.id)) return;
+  if (call && call.room === p.room) return;
+  if (call || ringIn) return sendInbox(p.from, "decline", {room: p.room, from: me.id, busy: true});
+  await ensureNames([p.from]);
+  const who = names[p.from] || "Someone", kind = p.video ? "video" : "voice";
+  ringIn = {room: p.room, from: p.from, video: !!p.video};
+  $("#rtxt").textContent = r.is_dm ? who + " is calling you" : who + " started a group " + kind + " call";
+  $("#rsub").textContent = (r.is_dm ? "" : title(r) + " · ") + (p.video ? "Video call" : "Voice call");
+  $("#ring").classList.remove("hide"); ringStart();
+  ringIn.timer = setTimeout(dismissRing, 45000);
+}
+$("#ryes").onclick = () => { const p = ringIn; if (!p) return; dismissRing(); joinCall(p.room, p.video); };
+$("#rno").onclick = () => { const p = ringIn; if (!p) return; dismissRing(); sendInbox(p.from, "decline", {room: p.room, from: me.id}); };
+
+// start / join
+async function startCall(video) {
+  const r = rooms.find(x => x.id === cur);
+  if (!callable(r) || call) return;
+  beginCall(r, video, true);
+}
+async function joinCall(roomId, video) {
+  const r = rooms.find(x => x.id === roomId);
+  if (!callable(r) || call) return;
+  beginCall(r, video, false);
+}
+async function beginCall(r, video, caller) {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return alert("Calls need a secure (https) connection and a supported browser.");
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({audio: true, video: video ? {facingMode: "user", width: {ideal: r.is_dm ? 1280 : 640}, height: {ideal: r.is_dm ? 720 : 480}} : false});
+  } catch (e) { return alert("Couldn't access your " + (video ? "camera and microphone" : "microphone") + ". Check your browser permissions."); }
+  if (call) { stream.getTracks().forEach(t => t.stop()); return; }
+  call = {room: r.id, video, caller, dm: !!r.is_dm, stream, peers: {}, mic: true, cam: video, everConnected: false, start: 0, timer: null, ch: null, wait: null};
+  $("#ctitle").textContent = title(r);
+  $("#ccam").classList.toggle("hide", !video); $("#ccam").textContent = "🎥"; $("#ccam").classList.remove("off");
+  $("#cmute").textContent = "🎤"; $("#cmute").classList.remove("off");
+  $("#selfv").srcObject = stream; $("#self").classList.toggle("hide", !video);
+  $("#grid").replaceChildren(); $("#call").classList.remove("hide"); updateStatus();
+  call.wait = setTimeout(() => { if (call && !call.everConnected) endCall(call.caller ? "No answer" : "Couldn't connect"); }, caller ? 45000 : 30000);
+  const ch = sb.channel("call:" + r.id); call.ch = ch;
+  ch.on("broadcast", {event: "sig"}, ({payload}) => onSig(payload));
+  ch.subscribe(s => {
+    if (s !== "SUBSCRIBED" || !call || call.ch !== ch) return;
+    sig({t: "join", cam: call.cam});
+    if (caller) (members[r.id] || []).filter(u => u !== me.id).forEach(u => sendInbox(u, "ring", {room: r.id, video, from: me.id}));
+  });
+}
+
+const sig = (p, to) => { if (call && call.ch) call.ch.send({type: "broadcast", event: "sig", payload: {...p, from: me.id, to}}); };
+
+async function onSig(p) {
+  if (!call || !p || p.from === me.id || (p.to && p.to !== me.id)) return;
+  const id = p.from; if (!(members[call.room] || []).includes(id)) return;
+  try {
+    if (p.t === "join") { dropPeer(id, true); sig({t: "hello", cam: call.cam}, id); meet(id, p.cam); }
+    else if (p.t === "hello") meet(id, p.cam);
+    else if (p.t === "offer") {
+      const P = call.peers[id] || meet(id);
+      await P.pc.setRemoteDescription(p.sdp); await flushIce(P);
+      const a = await P.pc.createAnswer(); await P.pc.setLocalDescription(a);
+      sig({t: "answer", sdp: P.pc.localDescription}, id);
+    } else if (p.t === "answer") {
+      const P = call.peers[id];
+      if (P && P.pc.signalingState === "have-local-offer") { await P.pc.setRemoteDescription(p.sdp); await flushIce(P); }
+    } else if (p.t === "ice") {
+      const P = call.peers[id]; if (!P) return;
+      if (P.pc.remoteDescription) await P.pc.addIceCandidate(p.c); else P.q.push(p.c);
+    } else if (p.t === "state") { const P = call.peers[id]; if (P) setCam(P, p.cam); }
+    else if (p.t === "leave") dropPeer(id);
+  } catch (e) { console.warn("call signal error", e); }
+}
+async function flushIce(P) { while (P.q.length) { try { await P.pc.addIceCandidate(P.q.shift()); } catch (e) {} } }
+function setCam(P, on) { P.cam = !!on; P.tile.classList.toggle("nocam", !P.cam); }
+
+function meet(id, cam) {
+  const old = call.peers[id]; if (old) { if (cam != null) setCam(old, cam); return old; }
+  const pc = new RTCPeerConnection(ICE), P = {pc, q: [], cam: cam != null ? !!cam : call.video, tile: null, vid: null, ms: null};
+  call.peers[id] = P;
+  call.stream.getTracks().forEach(t => pc.addTrack(t, call.stream));
+  pc.onicecandidate = e => { if (e.candidate) sig({t: "ice", c: e.candidate.toJSON()}, id); };
+  pc.ontrack = e => { if (!P.ms) { P.ms = new MediaStream(); P.vid.srcObject = P.ms; } P.ms.addTrack(e.track); };
+  pc.onconnectionstatechange = () => {
+    if (!call || call.peers[id] !== P) return;
+    if (pc.connectionState === "connected") connected(); else if (pc.connectionState === "failed") dropPeer(id);
+  };
+  const nm = names[id] || "Someone", t = el("div", "tile" + (P.cam ? "" : " nocam")), v = document.createElement("video");
+  v.autoplay = true; v.setAttribute("playsinline", ""); P.vid = v; P.tile = t;
+  t.append(v, avatar(id, nm[0].toUpperCase()), el("div", "nm2", nm)); $("#grid").append(t);
+  if (me.id < id) makeOffer(id, P);   // lower id offers, so two sides never offer at once
+  updateStatus();
+  return P;
+}
+async function makeOffer(id, P) {
+  try { const o = await P.pc.createOffer(); await P.pc.setLocalDescription(o); sig({t: "offer", sdp: P.pc.localDescription}, id); } catch (e) {}
+}
+function dropPeer(id, quiet) {
+  const P = call && call.peers[id]; if (!P) return;
+  delete call.peers[id];
+  try { P.pc.close(); } catch (e) {}
+  P.tile.remove(); updateStatus();
+  if (!quiet && call.everConnected && !Object.keys(call.peers).length) endCall("Call ended");
+}
+function connected() {
+  if (!call) return;
+  if (!call.everConnected) { call.everConnected = true; call.start = Date.now(); clearTimeout(call.wait); call.timer = setInterval(updateStatus, 1000); }
+  updateStatus();
+}
+function updateStatus() {
+  if (!call) return;
+  const n = Object.keys(call.peers).length;
+  $("#cstat").textContent = call.everConnected ? fmtDur(Date.now() - call.start) + (n > 1 ? " · " + (n + 1) + " people" : "") : (call.caller ? "Calling…" : "Connecting…");
+}
+function endCall(why) {
+  const c = call; if (!c) return; call = null;
+  clearInterval(c.timer); clearTimeout(c.wait);
+  try { c.ch.send({type: "broadcast", event: "sig", payload: {t: "leave", from: me.id}}); } catch (e) {}
+  if (c.caller && !c.everConnected) (members[c.room] || []).filter(u => u !== me.id).forEach(u => sendInbox(u, "cancel", {room: c.room, from: me.id}));
+  Object.values(c.peers).forEach(P => { try { P.pc.close(); } catch (e) {} });
+  c.stream.getTracks().forEach(t => t.stop());
+  setTimeout(() => sb.removeChannel(c.ch), 500);
+  $("#grid").replaceChildren(); $("#selfv").srcObject = null; $("#call").classList.add("hide");
+  if (why) toast(why);
+}
+$("#cmute").onclick = () => {
+  if (!call) return; call.mic = !call.mic;
+  call.stream.getAudioTracks().forEach(t => t.enabled = call.mic);
+  $("#cmute").textContent = call.mic ? "🎤" : "🔇"; $("#cmute").classList.toggle("off", !call.mic);
+};
+$("#ccam").onclick = () => {
+  if (!call || !call.video) return; call.cam = !call.cam;
+  call.stream.getVideoTracks().forEach(t => t.enabled = call.cam);
+  $("#ccam").textContent = call.cam ? "🎥" : "🚫"; $("#ccam").classList.toggle("off", !call.cam);
+  $("#self").classList.toggle("hide", !call.cam); sig({t: "state", cam: call.cam});
+};
+$("#cend").onclick = () => endCall();
+$("#vc").onclick = () => startCall(false);
+$("#vd").onclick = () => startCall(true);
+addEventListener("pagehide", () => { if (call) endCall(); });
 
 const gdraft = {name: "", sel: new Set()};
 async function createGroup() {
