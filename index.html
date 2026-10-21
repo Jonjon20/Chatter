@@ -36,6 +36,7 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .tab span{display:block;font-size:22px;line-height:1.1}.tab.on{color:var(--me)}
 .bd{position:absolute;top:2px;left:55%;background:#f02849;color:#fff;border-radius:10px;font-size:11px;padding:0 5px;min-width:16px}
 .menu{padding:12px 16px;display:flex;flex-direction:column;gap:12px}
+.danger{background:#f02849;color:#fff}
 .menu .row2{display:flex;gap:8px}.menu .row2 input{flex:1}
 .main{display:flex;flex-direction:column;min-height:0}
 .head{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);font-weight:700}
@@ -456,9 +457,67 @@ function render() {
     fs.forEach(u => { const lb = el("label", "pk"), cb = el("input"); cb.type = "checkbox"; cb.checked = gdraft.sel.has(u); cb.onchange = () => cb.checked ? gdraft.sel.add(u) : gdraft.sel.delete(u); lb.append(cb, avatar(u, (names[u] || "?")[0].toUpperCase(), "sm"), el("span", null, names[u] || "Someone")); fl.append(lb); });
     const nb = el("button", "sm", "Create group"); nb.onclick = createGroup;
     const out = el("button", "gray", "Logout"); out.onclick = () => sb.auth.signOut();
-    m.append(card, el("div", "sec", "Create a group (only the friends you pick can see it)"), gi, fl, nb, out);
+    const del = el("button", "danger", "Delete account"); del.onclick = deleteAccount;
+    m.append(card, el("div", "sec", "Create a group (only the friends you pick can see it)"), gi, fl, nb, out, del);
     box.append(m);
   }
+}
+
+
+// ---------- DELETE ACCOUNT ----------
+let deleting = false;
+// asks for the password in a masked modal; resolves true only if the password is correct
+function askPassword() {
+  return new Promise(res => {
+    const ov = el("div"), bx = el("div"), inp = el("input"), msg = el("div", "t2"), row = el("div", "row2");
+    ov.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px";
+    bx.style.cssText = "background:var(--bg);color:var(--tx);border-radius:14px;padding:18px;max-width:340px;width:100%;display:flex;flex-direction:column;gap:10px";
+    const t = el("div", "t1", "Delete account?"); t.style.whiteSpace = "normal";
+    const d = el("div", "t2", "This permanently deletes your account, all your messages and your DM conversations. This cannot be undone. Enter your password to confirm."); d.style.whiteSpace = "normal";
+    inp.type = "password"; inp.placeholder = "Password"; inp.autocomplete = "current-password";
+    msg.style.color = "#f02849"; msg.style.whiteSpace = "normal";
+    const no = el("button", "gray", "Cancel"), yes = el("button", "danger", "Delete");
+    row.style.cssText = "display:flex;gap:8px"; no.style.flex = yes.style.flex = "1";
+    const done = v => { ov.remove(); res(v); };
+    no.onclick = () => done(false);
+    const go = async () => {
+      if (!inp.value) return msg.textContent = "Enter your password.";
+      yes.disabled = no.disabled = true; msg.textContent = "Checking…";
+      const {error} = await sb.auth.signInWithPassword({email: me.email, password: inp.value});
+      if (error) { yes.disabled = no.disabled = false; msg.textContent = "Wrong password."; inp.value = ""; inp.focus(); return; }
+      done(true);
+    };
+    yes.onclick = go; inp.onkeydown = e => { if (e.key === "Enter") go(); };
+    row.append(no, yes); bx.append(t, d, inp, msg, row); ov.append(bx); document.body.append(ov); inp.focus();
+  });
+}
+async function deleteAccount() {
+  if (deleting || !me) return;
+  if (!me.email) return alert("This account has no email, so the password can't be verified.");
+  if (!(await askPassword())) return;
+  deleting = true;
+  try {
+    // 1) remove stored images (files in Storage are NOT removed by SQL deletes)
+    const paths = new Set();
+    const {data: mine} = await sb.storage.from("chat-images").list(me.id, {limit: 1000});
+    (mine || []).forEach(f => f.name && paths.add(me.id + "/" + f.name));
+    const dmIds = rooms.filter(r => r.is_dm).map(r => r.id);
+    if (dmIds.length) {
+      const {data: im} = await sb.from("messages").select("image_path").in("room_id", dmIds).not("image_path", "is", null);
+      (im || []).forEach(x => x.image_path && paths.add(x.image_path));
+    }
+    const list = [...paths];
+    for (let i = 0; i < list.length; i += 100) await sb.storage.from("chat-images").remove(list.slice(i, i + 100));
+    // 2) delete rows + auth user (server-side function, see delete_account.sql)
+    const {error} = await sb.rpc("delete_my_account");
+    if (error) throw error;
+    try { localStorage.clear(); } catch (e) {}
+    await sb.auth.signOut().catch(() => {});
+    alert("Your account has been deleted.");
+  } catch (err) {
+    alert("Couldn't delete account: " + (err.message || err));
+  }
+  deleting = false;
 }
 
 // ---------- CHAT ----------
