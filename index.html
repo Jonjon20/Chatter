@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fil"><head><meta charset="utf-8">
+<html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Chatter</title>
 <style>
@@ -49,19 +49,44 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .tm{font-size:11px;color:var(--mut);margin:1px 8px 4px}
 .empty{margin:auto;color:var(--mut);text-align:center}
 .compose{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}.compose input{flex:1}
+.av{position:relative}.odot{position:absolute;right:0;bottom:0;width:14px;height:14px;border-radius:50%;background:#31a24c;border:2px solid var(--bg)}
+.hd{min-width:0}.sub{font-size:12px;font-weight:400;color:var(--mut)}.sub.on{color:#31a24c}.sub:empty{display:none}
+.more{background:none;color:var(--mut);padding:2px 8px;font-size:18px;line-height:1;align-self:center}
+.acts{display:none;gap:6px;margin:2px 0 4px}.row.sel .acts{display:flex}
+.pic img{display:block;width:auto;height:auto;max-width:min(100%,360px);max-height:320px;border-radius:16px;cursor:pointer;background:var(--bg2)}.pic img.ld{min-width:180px;min-height:140px}.pic{margin-bottom:2px}
+.row .bub.gone,.row.me .bub.gone{background:none;border:1px dashed var(--line);color:var(--mut);font-style:italic}
+.typing{height:18px;padding:0 18px;font-size:12px;color:var(--mut);font-style:italic}
+.bar{display:flex;align-items:center;gap:10px;padding:6px 14px;border-top:1px solid var(--line);font-size:13px;color:var(--mut)}.bar span{flex:1}.bar img{height:48px;border-radius:8px}
+.att{padding:8px 12px;font-size:18px}
+.pick{max-height:220px;overflow-y:auto}.pk{display:flex;align-items:center;gap:10px;padding:4px 0}.pk input{padding:0;width:18px;height:18px;accent-color:var(--me)}
+#wiz{width:100%;max-width:340px;display:flex;flex-direction:column;gap:10px}
+#wiz h2{margin:6px 0 0;font-size:22px}#wiz p{margin:0;color:var(--mut);font-size:14px}
+#wiz label.opt{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer}
+#wiz label.opt input{width:20px;height:20px;padding:0;accent-color:var(--me)}
+#wiz .otp{text-align:center;font-size:28px;letter-spacing:8px}
+#wmsg{color:#f02849;font-size:13px;min-height:16px}#wback{align-self:flex-start;font-size:22px;padding:0 6px}
+#wiz .small{font-size:13px;color:var(--mut)}
 @media(max-width:700px){.app{grid-template-columns:1fr}.main{display:none}.app.open .side{display:none}.app.open .main{display:flex}.back{display:block}}
 </style></head>
 <body>
 <div id="auth" class="hide">
  <form id="af">
   <h1>💬 Chatter</h1>
-  <input id="un" class="hide" placeholder="Username" maxlength="30">
-  <input id="em" type="email" placeholder="Email" required autocomplete="email">
-  <input id="pw" type="password" placeholder="Password (min. 6)" required minlength="6" autocomplete="current-password">
-  <button id="ab">Mag-login</button>
+  <input id="em" type="text" placeholder="Email or mobile number" required autocomplete="username">
+  <input id="pw" type="password" placeholder="Password" required minlength="6" autocomplete="current-password">
+  <button id="ab">Log in</button>
   <div id="amsg"></div>
-  <button type="button" class="ghost" id="sw">Wala pang account? Mag-sign up</button>
+  <button type="button" class="ghost" id="sw">Create new account</button>
  </form>
+ <div id="wiz" class="hide">
+  <button type="button" class="ghost" id="wback">←</button>
+  <h2 id="wt"></h2><p id="wp"></p>
+  <div id="wbody" style="display:flex;flex-direction:column;gap:10px"></div>
+  <div id="wmsg"></div>
+  <button type="button" id="wnext">Next</button>
+  <button type="button" class="ghost hide" id="walt"></button>
+  <button type="button" class="ghost hide" id="wres"></button>
+ </div>
 </div>
 
 <div class="app hide" id="app">
@@ -69,7 +94,7 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
   <h1 id="ptitle">Chatter</h1>
   <div class="sw" id="sqw"><input id="sq" style="width:100%" maxlength="30"></div>
   <div class="chips" id="chips">
-   <button class="chip on" data-f="all">All</button><button class="chip" data-f="unread">Unread</button><button class="chip" data-f="groups">Global</button>
+   <button class="chip on" data-f="all">All</button><button class="chip" data-f="unread">Unread</button><button class="chip" data-f="global">Global</button><button class="chip" data-f="groups">Groups</button>
   </div>
   <div id="list"></div>
   <nav class="tabs" id="tabs">
@@ -80,15 +105,18 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
   </nav>
  </aside>
  <section class="main">
-  <div class="head"><button class="ghost back" id="back">‹</button><span id="title">Pumili ng chat</span></div>
-  <div id="msgs"><div class="empty">Pumili ng chat para magsimula.</div></div>
-  <form class="compose" id="f"><input id="in" placeholder="Mag-type ng mensahe…" autocomplete="off" maxlength="1000"><button>Send</button></form>
+  <div class="head"><button class="ghost back" id="back">‹</button><div class="hd"><div id="title">Select a chat</div><div class="sub" id="sub"></div></div></div>
+  <div id="msgs"><div class="empty">Select a chat to get started.</div></div>
+  <div class="typing" id="typing"></div>
+  <div class="bar hide" id="eb"><span>✎ Editing message</span><button type="button" class="gray sm" id="ec">✕</button></div>
+  <div class="bar hide" id="pv"></div>
+  <form class="compose" id="f"><button type="button" class="gray att" id="att">📎</button><input type="file" id="file" accept="image/*" class="hide"><input id="in" placeholder="Type a message…" autocomplete="off" maxlength="1000"><button id="send">Send</button></form>
  </section>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
-// ====== ILAGAY DITO ANG SUPABASE KEYS MO (Project Settings > API Keys) ======
+// ====== PUT YOUR SUPABASE KEYS HERE (Project Settings > API Keys) ======
 const SUPABASE_URL = "https://ykyphsopgnhfdnvytswp.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_lzh6KRFUa8tG2ObZcaDK4w_LJ_QUqUO";
 // ==========================================================================
@@ -97,34 +125,133 @@ const $ = s => document.querySelector(s);
 const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
 const fmt = t => { const d = new Date(t), n = new Date(); return d.toDateString() === n.toDateString() ? d.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"}) : d.toLocaleDateString([], {month: "short", day: "numeric"}); };
 const colorFor = id => { let h = 0; for (const c of id || "") h = (h * 31 + c.charCodeAt(0)) % 360; return "hsl(" + h + " 55% 45%)"; };
-const avatar = (id, label, cls) => { const a = el("div", "av " + (cls || ""), label); a.style.background = colorFor(id); return a; };
+const avatar = (id, label, cls, pres) => { const a = el("div", "av " + (cls || ""), label); a.style.background = colorFor(id); if (pres && online.has(pres)) a.append(el("span", "odot")); return a; };
+const pvText = l => l.deleted_at ? "Message unsent" : l.image_path ? "📷 " + (l.body || "Photo") : l.body;
 let rd = {}; try { rd = JSON.parse(localStorage.getItem("rd") || "{}"); } catch (e) {}
 const markRead = (rid, ts) => { rd[rid] = ts; try { localStorage.setItem("rd", JSON.stringify(rd)); } catch (e) {} };
 
-let me, names = {}, rooms = [], members = {}, latest = {}, fr = [];
+let me, names = {}, rooms = [], members = {}, latest = {}, fr = [], online = new Set();
 let tab = "chats", filter = "all", query = "", results = null, cur = null, seen = new Set(), lastUid = null, signup = false;
 
 // ---------- AUTH ----------
-function showAuth() { $("#app").classList.add("hide"); $("#auth").classList.remove("hide"); }
-$("#sw").onclick = () => {
-  signup = !signup;
-  $("#un").classList.toggle("hide", !signup); $("#un").required = signup;
-  $("#ab").textContent = signup ? "Mag-sign up" : "Mag-login";
-  $("#sw").textContent = signup ? "May account na? Mag-login" : "Wala pang account? Mag-sign up";
-  $("#amsg").textContent = "";
-};
+function showAuth() {
+  $("#app").classList.add("hide"); $("#auth").classList.remove("hide");
+  $("#af").classList.remove("hide"); $("#wiz").classList.add("hide");
+}
 $("#af").onsubmit = async e => {
   e.preventDefault();
-  const email = $("#em").value.trim(), password = $("#pw").value, msg = $("#amsg");
-  msg.textContent = "Sandali…";
-  if (signup) {
-    const {data, error} = await sb.auth.signUp({email, password, options: {data: {username: $("#un").value.trim()}, emailRedirectTo: location.protocol.startsWith("http") ? location.origin + location.pathname : undefined}});
-    if (error) return msg.textContent = error.message;
-    if (!data.session) return msg.textContent = "Tingnan ang email mo para i-confirm ang account, tapos mag-login.";
+  const msg = $("#amsg"); msg.textContent = "One moment…";
+  const id = $("#em").value.trim(), ph = id.includes("@") ? null : normPhone(id);
+  if (!id.includes("@") && !ph) return msg.textContent = "Enter your email or a valid mobile number.";
+  const {error} = await sb.auth.signInWithPassword({...(ph ? {phone: ph} : {email: id}), password: $("#pw").value});
+  msg.textContent = error ? error.message : "";
+};
+
+function normPhone(x) {
+  const raw = (x || "").trim(), d = raw.replace(/\D/g, "");
+  if (raw.startsWith("+")) return d.length >= 8 && d.length <= 15 ? "+" + d : null;
+  if (d.length === 11 && d.startsWith("09")) return "+63" + d.slice(1);
+  if (d.length === 10 && d.startsWith("9")) return "+63" + d;
+  if (d.length === 12 && d.startsWith("63")) return "+" + d;
+  return null;
+}
+// ---------- SIGN UP WIZARD (name > birthday > gender > email > password > 6-digit code) ----------
+const STEPS = ["name", "bday", "gender", "contact", "pw", "otp"];
+const W = {step: 0, d: {first: "", last: "", bday: "", gender: "", email: "", phone: "", pw: ""}, mode: "phone", timer: null};
+const target = () => W.mode === "phone" ? W.d.phone : W.d.email;
+const cred = () => W.mode === "phone" ? {phone: W.d.phone} : {email: W.d.email};
+const wfield = (id, ph, type, val, x) => { const i = el("input"); i.id = id; i.placeholder = ph; i.type = type || "text"; i.value = val || ""; return Object.assign(i, x || {}); };
+const wmsg = t => { $("#wmsg").textContent = t || ""; };
+const wval = id => ($("#" + id) || {}).value || "";
+
+function wShow(n) {
+  W.step = n; const s = STEPS[n], b = $("#wbody"); b.replaceChildren(); wmsg(); clearInterval(W.timer);
+  $("#wres").classList.add("hide"); $("#walt").classList.add("hide"); $("#wnext").textContent = "Next"; $("#wnext").disabled = false;
+  const head = (t, p) => { $("#wt").textContent = t; $("#wp").textContent = p; };
+  if (s === "name") {
+    head("What's your name?", "Enter the name you use in real life.");
+    b.append(wfield("w1", "First name", "text", W.d.first, {maxLength: 30, autocomplete: "given-name"}), wfield("w2", "Last name", "text", W.d.last, {maxLength: 30, autocomplete: "family-name"}));
+  } else if (s === "bday") {
+    head("What's your birthday?", "Choose your date of birth.");
+    b.append(wfield("w1", "Birthday", "date", W.d.bday, {max: new Date().toISOString().slice(0, 10)}));
+  } else if (s === "gender") {
+    head("What's your gender?", "You can change who sees this later.");
+    [["Female", "female"], ["Male", "male"], ["More options", "other"]].forEach(([t, v]) => {
+      const l = el("label", "opt", t), r = el("input"); r.type = "radio"; r.name = "g"; r.value = v; r.checked = W.d.gender === v; l.append(r); b.append(l);
+    });
+  } else if (s === "contact") {
+    const ph = W.mode === "phone";
+    head(ph ? "What's your mobile number?" : "What's your email?", ph ? "Enter the mobile number where you can be contacted. We'll text a confirmation code. Example: 09171234567." : "Enter the email where you can be contacted. We'll send a confirmation code here.");
+    b.append(ph ? wfield("w1", "Mobile number", "tel", W.d.phone, {autocomplete: "tel", inputMode: "tel"}) : wfield("w1", "Email", "email", W.d.email, {autocomplete: "email"}));
+    const alt = $("#walt"); alt.classList.remove("hide"); alt.textContent = ph ? "Sign up with email" : "Sign up with mobile number";
+    alt.onclick = () => { W.mode = ph ? "email" : "phone"; wShow(3); };
+  } else if (s === "pw") {
+    head("Create a password", "Use at least 6 characters.");
+    const p = wfield("w1", "Password", "password", W.d.pw, {autocomplete: "new-password"});
+    const l = el("label", "small", " Show password"), c = el("input"); c.type = "checkbox"; c.style.cssText = "width:auto;padding:0"; c.onchange = () => { p.type = c.checked ? "text" : "password"; };
+    l.prepend(c); b.append(p, l); $("#wnext").textContent = "Sign up";
   } else {
-    const {error} = await sb.auth.signInWithPassword({email, password});
-    if (error) return msg.textContent = error.message;
+    head("Enter the confirmation code", "We sent a 6-digit code to " + target() + ". It may take a minute." + (W.mode === "email" ? " Check spam too." : ""));
+    const o = wfield("w1", "000000", "text", "", {maxLength: 8, inputMode: "numeric", autocomplete: "one-time-code"}); o.className = "otp";
+    o.oninput = () => { o.value = o.value.replace(/\D/g, ""); };
+    b.append(o); $("#wnext").textContent = "Confirm"; wCooldown(30);
   }
+  const f = $("#w1"); if (f && s !== "gender") f.focus();
+}
+function wCooldown(sec) {
+  const r = $("#wres"); r.classList.remove("hide"); r.disabled = true;
+  const tick = () => { r.textContent = sec > 0 ? "Resend code in " + sec + "s" : "Resend code"; r.disabled = sec > 0; if (sec-- <= 0) clearInterval(W.timer); };
+  tick(); W.timer = setInterval(tick, 1000);
+}
+$("#wres").onclick = async () => {
+  wmsg(); $("#wres").disabled = true;
+  const {error} = await sb.auth.resend({type: W.mode === "phone" ? "sms" : "signup", ...cred()});
+  if (error) { wmsg(error.message); $("#wres").disabled = false; return; }
+  wmsg("A new code was sent."); wCooldown(60);
+};
+$("#sw").onclick = () => { $("#af").classList.add("hide"); $("#wiz").classList.remove("hide"); wShow(0); };
+$("#wback").onclick = () => { if (W.step === 0) { clearInterval(W.timer); showAuth(); } else wShow(W.step - 1); };
+$("#wiz").onkeydown = e => { if (e.key === "Enter" && e.target.tagName === "INPUT" && e.target.type !== "checkbox") { e.preventDefault(); $("#wnext").click(); } };
+
+$("#wnext").onclick = async () => {
+  const s = STEPS[W.step]; wmsg();
+  if (s === "name") {
+    const f = wval("w1").trim(), l = wval("w2").trim();
+    if (!f || !l) return wmsg("Enter your first and last name.");
+    W.d.first = f; W.d.last = l; return wShow(1);
+  }
+  if (s === "bday") {
+    const b = wval("w1"); if (!b) return wmsg("Choose your date of birth.");
+    const d = new Date(b), n = new Date(); let age = n.getFullYear() - d.getFullYear();
+    if (n < new Date(n.getFullYear(), d.getMonth(), d.getDate())) age--;
+    if (age < 13) return wmsg("You must be at least 13 years old to sign up.");
+    W.d.bday = b; return wShow(2);
+  }
+  if (s === "gender") {
+    const g = document.querySelector("input[name=g]:checked"); if (!g) return wmsg("Select an option.");
+    W.d.gender = g.value; return wShow(3);
+  }
+  if (s === "contact") {
+    const v = wval("w1").trim();
+    if (W.mode === "phone") { const n = normPhone(v); if (!n) return wmsg("Enter a valid mobile number, e.g. 09171234567."); W.d.phone = n; }
+    else { const m = v.toLowerCase(); if (!/^\S+@\S+\.\S+$/.test(m)) return wmsg("Enter a valid email address."); W.d.email = m; }
+    return wShow(4);
+  }
+  const btn = $("#wnext"); btn.disabled = true;
+  if (s === "pw") {
+    const p = wval("w1"); if (p.length < 6) { btn.disabled = false; return wmsg("Password must be at least 6 characters."); }
+    W.d.pw = p;
+    const {data, error} = await sb.auth.signUp({...cred(), password: p, options: {data: {
+      username: W.d.first + " " + W.d.last, first_name: W.d.first, last_name: W.d.last, birthday: W.d.bday, gender: W.d.gender}}});
+    if (error) { btn.disabled = false; return wmsg(/sms|provider|phone/i.test(error.message) ? error.message + " (SMS may not be set up yet. Try signing up with email instead.)" : error.message); }
+    if (W.mode === "email" && data.user && data.user.identities && !data.user.identities.length) { btn.disabled = false; return wmsg("This email already has an account. Go back and log in."); }
+    if (data.session) return;   // email confirmation is off: logged in right away
+    return wShow(5);
+  }
+  const code = wval("w1").replace(/\D/g, "");
+  if (code.length < 6) { btn.disabled = false; return wmsg("Enter the 6-digit code."); }
+  const {error} = await sb.auth.verifyOtp({...cred(), token: code, type: W.mode === "phone" ? "sms" : "signup"});
+  if (error) { btn.disabled = false; return wmsg(error.message.includes("expired") || error.message.includes("invalid") ? "That code is wrong or has expired. Try again or resend." : error.message); }
 };
 sb.auth.onAuthStateChange((ev, session) => {
   if (session && !me) start(session.user);
@@ -145,6 +272,7 @@ const rel = uid => {
 const other = r => (members[r.id] || []).find(u => u !== me.id);
 const title = r => r.is_dm ? (names[other(r)] || "Chat") : r.name;
 const hasUnread = r => { const l = latest[r.id]; return !!l && l.user_id !== me.id && (!rd[r.id] || l.created_at > rd[r.id]); };
+const pin = r => (!r.is_dm && !r.is_group && r.name === "General") ? 1 : 0;
 const stamp = r => Date.parse(latest[r.id] ? latest[r.id].created_at : r.created_at) || 0;
 
 async function loadChats() {
@@ -168,7 +296,8 @@ async function start(user) {
   $("#auth").classList.add("hide"); $("#app").classList.remove("hide");
   await ensureNames([me.id]);
   await Promise.all([loadChats(), loadFriends()]);
-  sb.channel("msgs").on("postgres_changes", {event: "INSERT", schema: "public", table: "messages"}, onMsg).subscribe();
+  sb.channel("msgs").on("postgres_changes", {event: "INSERT", schema: "public", table: "messages"}, onMsg).on("postgres_changes", {event: "UPDATE", schema: "public", table: "messages"}, onMsgUpd).subscribe();
+  joinPresence();
   sb.channel("rooms").on("postgres_changes", {event: "INSERT", schema: "public", table: "rooms"}, loadChats).subscribe();
   sb.channel("mem").on("postgres_changes", {event: "INSERT", schema: "public", table: "room_members", filter: "user_id=eq." + me.id}, loadChats).subscribe();
   sb.channel("friends").on("postgres_changes", {event: "*", schema: "public", table: "friendships"}, loadFriends).subscribe();
@@ -192,7 +321,7 @@ function setTab(t) {
   $("#ptitle").textContent = {chats: "Chatter", people: "People", notifs: "Notifications", menu: "Menu"}[t];
   $("#sqw").classList.toggle("hide", t === "notifs" || t === "menu");
   $("#chips").classList.toggle("hide", t !== "chats");
-  $("#sq").placeholder = t === "people" ? "Hanapin ang account (username)…" : "Search";
+  $("#sq").placeholder = t === "people" ? "Find an account (username)…" : "Search";
   render();
 }
 document.querySelectorAll(".tab").forEach(b => b.onclick = () => setTab(b.dataset.t));
@@ -221,7 +350,7 @@ function userRow(box, uid) {
     btns.push(btn("✕", "gray", async () => { await sb.from("friendships").delete().eq("id", r.id); loadFriends(); }));
   } else btns.push(btn("Message", "gray", () => openDM(uid)));
   const d = el("div", "item"), mid = el("div", "mid"); mid.append(el("div", "t1", name));
-  d.append(avatar(uid, name[0].toUpperCase()), mid, ...btns);
+  d.append(avatar(uid, name[0].toUpperCase(), "", r && r.status === "accepted" ? uid : null), mid, ...btns);
   d.onclick = () => { if (r && r.status === "accepted") openDM(uid); };
   box.append(d);
 }
@@ -233,44 +362,46 @@ function render() {
   [["chats", nUn], ["notifs", nReq]].forEach(([k, n]) => { const b = $("#b-" + k); b.textContent = n; b.classList.toggle("hide", !n); });
 
   if (tab === "chats") {
-    const rs = rooms.filter(r => (filter !== "groups" || !r.is_dm) && (filter !== "unread" || hasUnread(r)) && title(r).toLowerCase().includes(query))
-      .sort((a, b) => stamp(b) - stamp(a));
-    if (!rs.length) box.append(el("div", "hint", filter === "unread" ? "Walang unread." : "Wala pang message. Pumunta sa People para magdagdag ng kaibigan."));
+    const rs = rooms.filter(r => (filter !== "global" || (!r.is_dm && !r.is_group)) && (filter !== "groups" || r.is_group) && (filter !== "unread" || hasUnread(r)) && title(r).toLowerCase().includes(query))
+      .sort((a, b) => pin(b) - pin(a) || stamp(b) - stamp(a));
+    if (!rs.length) box.append(el("div", "hint", filter === "unread" ? "No unread chats." : "No chats yet. Go to People to add a friend."));
     rs.forEach(r => {
       const l = latest[r.id], un = hasUnread(r), t = title(r);
       const d = el("div", "item" + (un ? " unread" : "") + (cur === r.id ? " on" : "")), mid = el("div", "mid");
-      let pv = "Magsimula ng usapan";
-      if (l) pv = (l.user_id === me.id ? "You: " : (r.is_dm ? "" : (names[l.user_id] || "") + ": ")) + l.body;
+      let pv = "Start a conversation";
+      if (l) pv = (l.user_id === me.id ? "You: " : (r.is_dm ? "" : (names[l.user_id] || "") + ": ")) + pvText(l);
       mid.append(el("div", "t1", t), el("div", "t2", pv + (l ? " · " + fmt(l.created_at) : "")));
-      d.append(avatar(r.id, r.is_dm ? t[0].toUpperCase() : (r.name === "General" ? "🌐" : "👥")), mid);
+      d.append(avatar(r.id, r.is_dm ? t[0].toUpperCase() : (r.is_group ? "👥" : "🌐"), "", r.is_dm ? other(r) : null), mid);
       if (un) d.append(el("div", "dot"));
       d.onclick = () => openRoom(r.id); box.append(d);
     });
   } else if (tab === "people") {
     if (results) {
-      box.append(el("div", "sec", "Mga resulta"));
-      if (!results.length) box.append(el("div", "hint", "Walang nakitang account."));
+      box.append(el("div", "sec", "Results"));
+      if (!results.length) box.append(el("div", "hint", "No accounts found."));
       results.forEach(p => userRow(box, p.id));
     } else {
       const fs = fr.filter(f => f.status === "accepted").map(f => f.requester === me.id ? f.addressee : f.requester);
-      box.append(el("div", "sec", "Mga kaibigan (" + fs.length + ")"));
-      if (!fs.length) box.append(el("div", "hint", "Wala pang kaibigan. I-search ang username sa taas para mag-add."));
+      box.append(el("div", "sec", "Friends (" + fs.length + ")"));
+      if (!fs.length) box.append(el("div", "hint", "No friends yet. Search a username above to add one."));
       fs.forEach(uid => userRow(box, uid));
     }
   } else if (tab === "notifs") {
     const inc = fr.filter(f => f.status === "pending" && f.addressee === me.id);
     box.append(el("div", "sec", "Friend requests"));
-    if (!inc.length) box.append(el("div", "hint", "Walang bagong notification."));
+    if (!inc.length) box.append(el("div", "hint", "No new notifications."));
     inc.forEach(f => userRow(box, f.requester));
   } else {
     const m = el("div", "menu"), card = el("div", "item"), mid = el("div", "mid");
-    card.style.padding = "0"; mid.append(el("div", "t1", names[me.id]), el("div", "t2", me.email));
+    card.style.padding = "0"; mid.append(el("div", "t1", names[me.id]), el("div", "t2", (me.email || me.phone || "")));
     card.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase()), mid);
-    const row = el("div", "row2"), ni = el("input"); ni.placeholder = "Bagong global chat…"; ni.maxLength = 40;
-    const nb = el("button", "sm", "Gawa"); nb.onclick = () => createRoom(ni.value);
-    row.append(ni, nb);
+    const gi = el("input"); gi.placeholder = "Group name…"; gi.maxLength = 40; gi.value = gdraft.name; gi.oninput = () => gdraft.name = gi.value;
+    const fl = el("div", "pick"), fs = fr.filter(f => f.status === "accepted").map(f => f.requester === me.id ? f.addressee : f.requester);
+    if (!fs.length) fl.append(el("div", "hint", "Add friends first to start a group."));
+    fs.forEach(u => { const lb = el("label", "pk"), cb = el("input"); cb.type = "checkbox"; cb.checked = gdraft.sel.has(u); cb.onchange = () => cb.checked ? gdraft.sel.add(u) : gdraft.sel.delete(u); lb.append(cb, avatar(u, (names[u] || "?")[0].toUpperCase(), "sm"), el("span", null, names[u] || "Someone")); fl.append(lb); });
+    const nb = el("button", "sm", "Create group"); nb.onclick = createGroup;
     const out = el("button", "gray", "Logout"); out.onclick = () => sb.auth.signOut();
-    m.append(card, el("div", "sec", "Gumawa ng global chat (makikita ng lahat)"), row, out);
+    m.append(card, el("div", "sec", "Create a group (only the friends you pick can see it)"), gi, fl, nb, out);
     box.append(m);
   }
 }
@@ -286,16 +417,25 @@ async function openRoom(id) {
   cur = id; seen = new Set(); lastUid = null;
   const r = rooms.find(x => x.id === id); if (!r) return;
   $("#title").textContent = title(r); $("#app").classList.add("open");
+  rows = {}; stopEdit(); setPend(null); joinTyping(id); updateHead();
   if (latest[id]) markRead(id, latest[id].created_at);
   render();
   const box = $("#msgs"); box.replaceChildren();
   const {data, error} = await sb.from("messages").select("*").eq("room_id", id).order("created_at", {ascending: false}).limit(200);
   if (cur !== id) return;
   if (error) { box.textContent = error.message; return; }
-  if (!data.length) box.append(el("div", "empty", "Wala pang mensahe. Magsimula ng usapan!"));
+  if (!data.length) box.append(el("div", "empty", "No messages yet. Start the conversation!"));
   await ensureNames(data.map(m => m.user_id));
   data.reverse().forEach(m => addMsg(m, id));
   box.scrollTop = box.scrollHeight;
+}
+let rows = {}, editing = null, pend = null, busy = false, tch = null, typers = {}, tT = null, lastTyp = 0;
+const urls = {}, uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2));
+async function imgUrl(path) {
+  const c = urls[path]; if (c && c.exp > Date.now()) return c.url;
+  const {data, error} = await sb.storage.from("chat-images").createSignedUrl(path, 3600);
+  if (error || !data) return null;
+  urls[path] = {url: data.signedUrl, exp: Date.now() + 3000000}; return data.signedUrl;
 }
 function addMsg(m, forRoom) {
   if (seen.has(m.id) || cur !== forRoom) return; seen.add(m.id);
@@ -303,28 +443,157 @@ function addMsg(m, forRoom) {
   const near = box.scrollHeight - box.scrollTop - box.clientHeight < 120, mine = m.user_id === me.id;
   const row = el("div", "row" + (mine ? " me" : ""));
   if (!mine) row.append(avatar(m.user_id, nm[0].toUpperCase(), "sm"));
-  const col = el("div", "col");
-  const r = rooms.find(x => x.id === cur);
+  const col = el("div", "col"), r = rooms.find(x => x.id === cur);
   if (!mine && !(r && r.is_dm) && lastUid !== m.user_id) col.append(el("div", "nm", nm));
-  col.append(el("div", "bub", m.body), el("div", "tm", fmt(m.created_at)));
-  row.append(col); box.append(row); lastUid = m.user_id;
+  const pic = el("div", "pic hide"), bub = el("div", "bub"), tm = el("div", "tm"), acts = el("div", "acts");
+  if (mine) {
+    const ed = el("button", "sm gray", "✎ Edit"), de = el("button", "sm gray", "🗑 Unsend"), more = el("button", "more", "⋯");
+    ed.onclick = () => startEdit(rows[m.id].m); de.onclick = () => unsend(rows[m.id].m);
+    more.onclick = () => row.classList.toggle("sel");
+    acts.append(ed, de); row.append(more);
+  }
+  col.append(pic, bub, tm, acts); row.append(col); box.append(row);
+  rows[m.id] = {m, row, pic, bub, tm, acts, near: near || mine};
+  fill(m); lastUid = m.user_id;
+  if (!mine) { delete typers[m.user_id]; showTyping(); }
   if (near || mine) box.scrollTop = box.scrollHeight;
+}
+function fill(m) {
+  const o = rows[m.id]; if (!o) return; o.m = m;
+  const gone = !!m.deleted_at, box = $("#msgs");
+  o.pic.replaceChildren(); o.pic.classList.add("hide");
+  if (gone) { o.bub.textContent = "Message unsent"; o.bub.classList.add("gone"); o.bub.classList.remove("hide"); }
+  else {
+    o.bub.classList.remove("gone"); o.bub.textContent = m.body || ""; o.bub.classList.toggle("hide", !m.body);
+    if (m.image_path) {
+      o.pic.classList.remove("hide");
+      const im = el("img", "ld"); im.alt = "Photo";
+      im.onload = () => { im.classList.remove("ld"); if (o.near) box.scrollTop = box.scrollHeight; };
+      im.onerror = () => im.classList.remove("ld");
+      im.onclick = () => { if (im.src) window.open(im.src, "_blank", "noopener"); };
+      o.pic.append(im);
+      imgUrl(m.image_path).then(u => { if (u) im.src = u; else o.pic.textContent = "Couldn't open image"; });
+    }
+  }
+  o.tm.textContent = fmt(m.created_at) + (m.edited_at && !gone ? " · edited" : "");
+  const mb = o.row.querySelector(".more");
+  if (mb) { mb.classList.toggle("hide", gone); if (gone) o.row.classList.remove("sel"); }
+}
+function afterChange(m) { if (latest[m.room_id] && latest[m.room_id].id === m.id) latest[m.room_id] = m; fill(m); render(); }
+function onMsgUpd(p) { if (p.new.room_id === cur || latest[p.new.room_id]) afterChange(p.new); }
+
+// ---- edit / unsend ----
+function startEdit(m) {
+  editing = {m}; setPend(null);
+  $("#eb").classList.remove("hide"); $("#att").classList.add("hide");
+  if (rows[m.id]) rows[m.id].row.classList.remove("sel");
+  const i = $("#in"); i.value = m.body || ""; i.focus();
+}
+function stopEdit() { if (!editing) return; editing = null; $("#in").value = ""; $("#eb").classList.add("hide"); $("#att").classList.remove("hide"); }
+$("#ec").onclick = stopEdit;
+async function saveEdit(body) {
+  const m = editing.m;
+  if (!body && !m.image_path) return alert("Message is empty. Use Unsend to delete it.");
+  if (body === (m.body || "")) return stopEdit();
+  const {data, error} = await sb.from("messages").update({body, edited_at: new Date().toISOString()}).eq("id", m.id).select().single();
+  if (error) return alert("Couldn't edit: " + error.message);
+  afterChange(data); stopEdit();
+}
+async function unsend(m) {
+  if (!confirm("Unsend this message? It will disappear for everyone.")) return;
+  const {data, error} = await sb.from("messages").update({deleted_at: new Date().toISOString(), body: "", image_path: null}).eq("id", m.id).select().single();
+  if (error) return alert("Couldn't unsend: " + error.message);
+  if (m.image_path) sb.storage.from("chat-images").remove([m.image_path]);
+  if (editing && editing.m.id === m.id) stopEdit();
+  afterChange(data);
+}
+
+// ---- images ----
+$("#att").onclick = () => $("#file").click();
+$("#file").onchange = e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  if (!f.type.startsWith("image/")) return alert("Images only.");
+  if (f.size > 15 * 1024 * 1024) return alert("File too large (max 15 MB).");
+  setPend(f);
+};
+function setPend(f) {
+  if (pend) URL.revokeObjectURL(pend.url);
+  pend = f ? {file: f, url: URL.createObjectURL(f)} : null;
+  const b = $("#pv"); b.replaceChildren(); b.classList.toggle("hide", !pend);
+  if (pend) { const im = el("img"), x = el("button", "gray sm", "✕"); im.src = pend.url; x.type = "button"; x.onclick = () => setPend(null); b.append(im, el("span", null, "Ready to send"), x); }
+}
+async function shrink(file) {
+  const bmp = await createImageBitmap(file), sc = Math.min(1, 1280 / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas"); c.width = Math.round(bmp.width * sc); c.height = Math.round(bmp.height * sc);
+  const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(bmp, 0, 0, c.width, c.height);
+  return new Promise((ok, no) => c.toBlob(b => b ? ok(b) : no(new Error("Couldn't process the image")), "image/jpeg", 0.82));
 }
 $("#f").onsubmit = async e => {
   e.preventDefault();
-  const i = $("#in"), body = i.value.trim();
-  if (!body || !cur) return;
-  i.value = "";
-  const {error} = await sb.from("messages").insert({room_id: cur, body});
-  if (error) { i.value = body; alert("Hindi na-send: " + error.message); }
+  const i = $("#in"), body = i.value.trim(), rid = cur;
+  if (editing) return saveEdit(body);
+  if ((!body && !pend) || !rid || busy) return;
+  if (!pend) {
+    i.value = "";
+    const {error} = await sb.from("messages").insert({room_id: rid, body});
+    if (error) { i.value = body; alert("Couldn't send: " + error.message); }
+    return;
+  }
+  busy = true; $("#send").disabled = true;
+  try {
+    const blob = await shrink(pend.file), path = me.id + "/" + uid() + ".jpg";
+    const up = await sb.storage.from("chat-images").upload(path, blob, {contentType: "image/jpeg"});
+    if (up.error) throw up.error;
+    const {error} = await sb.from("messages").insert({room_id: rid, body, image_path: path});
+    if (error) { sb.storage.from("chat-images").remove([path]); throw error; }
+    i.value = ""; setPend(null);
+  } catch (err) { alert("Couldn't send: " + (err.message || err)); }
+  busy = false; $("#send").disabled = false;
 };
-async function createRoom(name) {
-  name = name.trim(); if (!name) return;
-  const {data, error} = await sb.from("rooms").insert({name}).select().single();
-  if (error) return alert(error.message);
-  await loadChats(); setTab("chats"); openRoom(data.id);
+
+// ---- typing + online ----
+function joinTyping(id) {
+  leaveTyping();
+  tch = sb.channel("typing:" + id);
+  tch.on("broadcast", {event: "typing"}, ({payload}) => {
+    if (!payload || payload.uid === me.id) return;
+    typers[payload.uid] = {name: payload.name || "Someone", until: Date.now() + 3500}; showTyping();
+  }).subscribe();
 }
-$("#back").onclick = () => { $("#app").classList.remove("open"); cur = null; render(); };
+function leaveTyping() { if (tch) { sb.removeChannel(tch); tch = null; } typers = {}; showTyping(); }
+function showTyping() {
+  clearTimeout(tT);
+  const now = Date.now(), ns = [];
+  for (const k in typers) { if (typers[k].until > now) ns.push(typers[k].name); else delete typers[k]; }
+  $("#typing").textContent = !ns.length ? "" : ns.length === 1 ? ns[0] + " is typing…" : ns.join(", ") + " are typing…";
+  if (ns.length) tT = setTimeout(showTyping, 1000);
+}
+$("#in").addEventListener("input", () => {
+  const n = Date.now();
+  if (editing || !tch || !$("#in").value || n - lastTyp < 2500) return;
+  lastTyp = n; tch.send({type: "broadcast", event: "typing", payload: {uid: me.id, name: names[me.id]}});
+});
+function joinPresence() {
+  const ch = sb.channel("online", {config: {presence: {key: me.id}}});
+  ch.on("presence", {event: "sync"}, () => { online = new Set(Object.keys(ch.presenceState())); render(); updateHead(); })
+    .subscribe(async s => { if (s === "SUBSCRIBED") await ch.track({at: new Date().toISOString()}); });
+}
+function updateHead() {
+  const r = rooms.find(x => x.id === cur), s = $("#sub"), on = !!(r && r.is_dm && online.has(other(r)));
+  s.textContent = on ? "● Online" : (r && r.is_group ? (members[r.id] || []).length + " members" : ""); s.className = "sub" + (on ? " on" : "");
+}
+
+const gdraft = {name: "", sel: new Set()};
+async function createGroup() {
+  const name = gdraft.name.trim();
+  if (!name) return alert("Enter a group name.");
+  if (!gdraft.sel.size) return alert("Pick at least one friend.");
+  const {data, error} = await sb.rpc("create_group", {group_name: name, member_ids: [...gdraft.sel]});
+  if (error) return alert(error.message);
+  gdraft.name = ""; gdraft.sel = new Set();
+  await loadChats(); setTab("chats"); openRoom(data);
+}
+$("#back").onclick = () => { $("#app").classList.remove("open"); cur = null; leaveTyping(); stopEdit(); updateHead(); render(); };
 sb.auth.getSession().then(({data}) => { if (!data.session) showAuth(); });
 </script>
 </body></html>
