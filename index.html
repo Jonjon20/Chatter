@@ -127,12 +127,71 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .clog .clt{display:flex;align-items:center;gap:12px}.clog .cli{width:44px;height:44px;border-radius:50%;background:var(--mut);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
 .clog .t1{font-weight:700}.clog button{width:100%;border-radius:14px}
 @media(max-width:700px){.app{grid-template-columns:1fr}.main{display:none}.app.open .side{display:none}.app.open .main{display:flex}.back{display:block}}
-.fm{display:flex;justify-content:center;gap:28px;padding:6px 0;position:sticky;top:0;background:var(--bg);z-index:3}.fm button{background:none;color:var(--mut);font-size:19px;padding:4px 6px;border-radius:0}.fm button.on{color:var(--tx);border-bottom:3px solid var(--me)}
-.cmp{display:flex;align-items:center;gap:10px;padding:8px 14px}.cmp .ph{flex:1;border:1px solid var(--line);border-radius:22px;padding:10px 14px;color:var(--mut);cursor:pointer}
-.pc{border-top:8px solid var(--bg2);padding:10px 0}.pc .ph1{display:flex;gap:10px;align-items:center;padding:0 14px}.pc .pb{padding:8px 14px;white-space:pre-wrap;overflow-wrap:anywhere}
-.pc img,.pc video{width:100%;max-height:70vh;object-fit:contain;background:#000;display:block}.pc .cn{padding:6px 14px;color:var(--mut);font-size:13px}.pc .ac{display:flex;border-top:1px solid var(--line);margin:0 14px}.pc .ac button{flex:1;background:none;color:var(--mut);border-radius:0}.pc .ac button.on{color:var(--me)}
-.cm{padding:4px 14px}.cm div{margin:4px 0;font-size:14px}.cm input{width:100%;margin-top:6px}.pc textarea{width:calc(100% - 28px);margin:6px 14px;background:var(--bg2);color:var(--tx);border:0;border-radius:12px;padding:10px;font:inherit}
-.rl{position:relative;height:calc(100% - 44px);scroll-snap-align:start;background:#000;color:#fff}.rl video{width:100%;height:100%;object-fit:contain}.rl .ov{position:absolute;left:12px;right:70px;bottom:16px;text-shadow:0 1px 3px #000}.rl .sd{position:absolute;right:10px;bottom:30px;display:flex;flex-direction:column;gap:14px}.rl .sd button{background:#0008;color:#fff;border-radius:50%;width:48px;height:48px;padding:0;font-size:12px}
+:root{--fsep:#f0f2f5;--bl:#2d88ff}
+@media(prefers-color-scheme:dark){:root{--fsep:#18191a}}
+.fm{display:flex;align-items:center;justify-content:space-between;height:56px;padding:0 14px;position:sticky;top:0;background:var(--bg);z-index:3}
+.fm .hb{background:none;color:var(--bl);padding:4px;line-height:0}.fm .sp{width:46px}
+.fm .tt{display:flex;gap:34px;flex:1;justify-content:center}
+.fm .tt button{background:none;color:var(--mut);font-size:24px;font-weight:400;padding:4px 2px;border-radius:0}.fm .tt button.on{color:var(--tx)}
+.av.fa{width:42px;height:42px;font-size:17px;flex:none}
+.cmp{display:flex;align-items:center;gap:12px;padding:6px 14px 14px}
+.cmp .cph{flex:1;min-width:0;border:1px solid var(--mut);border-radius:22px;padding:8px 18px;font-size:17px;cursor:pointer;min-height:38px;display:flex;align-items:center}
+.cmp .pi2{background:none;color:var(--mut);padding:2px;line-height:0}
+.drf{margin:0 14px 14px;display:flex;flex-direction:column;gap:8px}.drf textarea{background:var(--bg2);color:var(--tx);border:0;border-radius:12px;padding:10px;font:inherit;resize:none}
+.drf .r{display:flex;gap:8px;align-items:center}.drf .r span{flex:1;min-width:0;color:var(--mut);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.str{display:flex;gap:8px;overflow-x:auto;padding:0 12px 14px;scrollbar-width:none}.str::-webkit-scrollbar{display:none}
+.sc{position:relative;flex:none;width:120px;height:224px;border-radius:14px;overflow:hidden;background:#2a2b2c;border:1px solid var(--line);cursor:pointer;color:#fff}
+.sc>img,.sc>video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.sc .sg2{position:absolute;left:0;right:0;bottom:0;height:90px;background:linear-gradient(transparent,#000a)}
+.sc .sr{position:absolute;top:10px;left:10px;width:38px;height:38px;border-radius:50%;border:3px solid var(--bl);padding:2px;background:#000}
+.sc .sr .av{width:100%;height:100%;font-size:13px}
+.sc .sn{position:absolute;left:10px;right:8px;bottom:9px;font-weight:600;font-size:14px;line-height:1.15;text-shadow:0 1px 3px #000;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.sc.mk{background:var(--bg);color:var(--tx)}.sc.mk .top{position:absolute;left:0;right:0;top:0;height:76%;background:#3a3b3c}
+.sc.mk .top .av{width:100%;height:100%;border-radius:0;font-size:52px}
+.sc.mk .plus{position:absolute;left:50%;top:76%;transform:translate(-50%,-50%);width:42px;height:42px;border-radius:50%;background:var(--bl);display:flex;align-items:center;justify-content:center;border:3px solid var(--bg)}
+.sc.mk .sn{left:0;right:0;text-align:center;bottom:10px;text-shadow:none;-webkit-line-clamp:1}
+.sv{position:fixed;inset:0;z-index:90;background:#000;color:#fff;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.sb{display:flex;gap:4px;padding:10px 10px 6px}.sg{flex:1;height:3px;border-radius:2px;background:#fff4;overflow:hidden}.sg i{display:block;height:100%;width:0;background:#fff}.sg.d i{width:100%}.sg.a.im i{animation:sgr 5s linear forwards}@keyframes sgr{to{width:100%}}
+.st{display:flex;align-items:center;gap:10px;padding:4px 12px;z-index:2}.st .t1{color:#fff}.st .t2{color:#fffa}.st button{background:none;color:#fff;font-size:22px;padding:2px 8px}
+.smd{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center}.smd img,.smd video{max-width:100%;max-height:100%;object-fit:contain}
+.sz{position:absolute;top:0;bottom:0}.sz.l{left:0;width:30%}.sz.r{right:0;width:70%}
+.pc{border-top:6px solid var(--fsep);padding-top:12px}
+.pc .ph1{display:flex;gap:10px;align-items:center;padding:0 8px 8px 14px}
+.pc .pn{flex:1;min-width:0}.pc .l1{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pc .l1 b{font-weight:600}
+.pc .l1 .dot{color:var(--mut);margin:0 5px}.pc .l1 .fl{color:var(--bl);font-weight:600;cursor:pointer}.pc .l1 .fl.mut{color:var(--mut);cursor:default}
+.pc .l2{color:var(--mut);font-size:14px;display:flex;align-items:center;gap:4px}.pc .l2 span{display:inline-flex;align-items:center}
+.pc .hx{background:none;color:var(--tx);padding:6px;line-height:0}
+.pc .pb{padding:4px 14px 12px;font-size:17px;white-space:pre-wrap;overflow-wrap:anywhere}
+.pc>img,.pc>video{width:100%;max-height:78vh;object-fit:contain;background:#000;display:block}
+.pc .cn{display:flex;justify-content:space-between;padding:8px 14px 2px;color:var(--mut);font-size:14px}
+.pc .ac{display:flex;border-top:1px solid var(--line);margin:6px 14px 0}.pc .ac button{flex:1;background:none;color:var(--mut);border-radius:0;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;padding:10px}.pc .ac button.on{color:#f3425f}
+.cm{padding:8px 14px 10px;display:flex;flex-direction:column;gap:8px}.cm .fci{display:flex;gap:8px;align-items:flex-start}
+.cm .fcb{background:var(--bg2);border-radius:18px;padding:7px 12px;font-size:15px;overflow-wrap:anywhere}.cm .fcb b{display:block;font-size:13px}.cm input{width:100%}
+.rl{position:relative;height:calc(100% - 56px);scroll-snap-align:start;background:#000;color:#fff}.rl video{width:100%;height:100%;object-fit:contain}.rl .ov{position:absolute;left:12px;right:70px;bottom:16px;text-shadow:0 1px 3px #000}.rl .sd{position:absolute;right:10px;bottom:30px;display:flex;flex-direction:column;gap:14px}.rl .sd button{background:#0008;color:#fff;border-radius:50%;width:48px;height:48px;padding:0;font-size:12px}
+#pfv,#mnu{position:fixed;inset:0;z-index:65;overflow-y:auto;padding-top:env(safe-area-inset-top,0px)}
+#pfv{background:var(--bg2)}#mnu{background:var(--bg2);z-index:62}
+.pfw{max-width:640px;margin:0 auto;background:var(--bg);min-height:100%}
+.pfb{position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:6px;height:52px;padding:0 8px;background:var(--bg);border-bottom:1px solid var(--line)}
+.pfb button{background:none;color:var(--tx);font-size:24px;padding:4px 10px}.pfb .pt{font-weight:700;font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcv{height:200px;background:linear-gradient(135deg,#1b74e4,#7b3fe4) center/cover;position:relative}
+.pav{position:relative;margin:-62px 0 0 14px;width:124px}.pav .av{width:124px;height:124px;font-size:48px;border:4px solid var(--bg)}.pav .camb{right:0;bottom:8px;background:var(--bg2);color:var(--tx)}
+.pname{font-size:26px;font-weight:700;padding:8px 14px 0;overflow-wrap:anywhere}.psub{color:var(--mut);padding:2px 14px 0}
+.pact{display:flex;gap:8px;padding:12px 14px}.pact button{flex:1;padding:10px 8px;border-radius:10px;font-weight:600}.pact button.sq{flex:none;width:48px}
+.ptabs{display:flex;border-bottom:1px solid var(--line)}.ptabs button{flex:1;background:none;color:var(--mut);border-radius:0;padding:12px 0;font-weight:700;border-bottom:3px solid transparent}.ptabs button.on{color:var(--bl);border-bottom-color:var(--bl)}
+.cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding-top:2px}.cgrid .ct{position:relative;aspect-ratio:9/16;background:#111;cursor:pointer;overflow:hidden}.cgrid .ct video{width:100%;height:100%;object-fit:cover;pointer-events:none}.cgrid .cl{position:absolute;left:6px;bottom:5px;color:#fff;font-size:12px;text-shadow:0 1px 3px #000}
+.cbar{padding:10px 14px calc(14px + env(safe-area-inset-bottom,0px))}.cbar .cap{margin-bottom:8px;white-space:pre-wrap;overflow-wrap:anywhere}.cbar .cr{display:flex;gap:8px;align-items:center}.cbar button{background:#fff2;color:#fff;padding:8px 16px}.cbar button:disabled{opacity:.35}.cbar .cr button:first-child{margin-right:auto}
+.rl .ovh{display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:4px}
+.mw{max-width:640px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;padding:8px 14px calc(18px + env(safe-area-inset-bottom,0px))}
+.mtop{display:flex;align-items:center;gap:8px;padding:2px 0 10px}.mtop button{background:none;color:var(--tx);font-size:24px;padding:4px 8px}.mtop b{font-size:22px}
+.mcard{background:var(--oth);border-radius:20px;padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer}
+.mcard .av{width:56px;height:56px;font-size:22px;flex:none}.mcard .nmv{flex:1;min-width:0;font-size:20px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mcard .chv{width:44px;height:44px;border-radius:50%;background:var(--line);display:flex;align-items:center;justify-content:center;flex:none}
+.mrow{display:flex;align-items:center;gap:16px;padding:18px 4px;border-top:1px solid var(--line);margin-top:16px;cursor:pointer;font-size:20px;font-weight:500}
+.mrow svg{flex:none}.mrow .mt{flex:1}.mrow>span:last-child svg{opacity:.85}
+.msub .mrow{margin-top:0;font-size:18px;padding:15px 4px;border-top:0}.mrow.red{color:#f02849}
+.msub .irow{padding:12px 4px}
+.msp{flex:1;min-height:36px}
+.mlog{background:var(--oth);color:var(--tx);border-radius:16px;padding:16px;text-align:center;font-size:19px;font-weight:500;width:100%}
 </style></head>
 <body>
 <div id="auth" class="hide">
@@ -159,17 +218,17 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 <div class="app hide" id="app">
  <div id="ng" class="hide"></div>
  <aside class="side">
-  <div class="ph"><button type="button" class="ic" id="ham" title="Profile"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><h1 id="ptitle">Chatter</h1><button type="button" class="ic" id="newg" title="New group"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button></div>
+  <div class="ph"><button type="button" class="ic" id="ham" title="Menu"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><h1 id="ptitle">Chatter</h1><button type="button" class="ic" id="newg" title="New group"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button></div>
   <div class="sw" id="sqw"><input id="sq" style="width:100%" maxlength="30"></div>
   <div class="chips" id="chips">
    <button class="chip on" data-f="all">All</button><button class="chip" data-f="unread">Unread</button><button class="chip" data-f="global">Global</button><button class="chip" data-f="groups">Groups</button>
   </div>
   <div id="list"></div>
   <nav class="tabs" id="tabs">
-   <button class="tab on" data-t="chats"><span>💬</span>Messages<i class="bd hide" id="b-chats"></i></button>
-   <button class="tab" data-t="people"><span>👥</span>People</button>
-   <button class="tab" data-t="feed"><span>📰</span>Newsfeed</button>
-   <button class="tab" data-t="notifs"><span>🔔</span>Notifications<i class="bd hide" id="b-notifs"></i></button>
+   <button class="tab on" data-t="chats"><span><svg viewBox="0 0 24 24" width="28" height="28"><path fill="#2d88ff" d="M12 2C6.5 2 2 6 2 11.2c0 2.9 1.4 5.4 3.6 7.1V22l3.3-1.8c1 .3 2 .4 3.1.4 5.5 0 10-4 10-9.2S17.5 2 12 2z"/><circle cx="8" cy="11.2" r="1.3" fill="#fff"/><circle cx="12" cy="11.2" r="1.3" fill="#fff"/><circle cx="16" cy="11.2" r="1.3" fill="#fff"/></svg></span>Messages<i class="bd hide" id="b-chats"></i></button>
+   <button class="tab" data-t="people"><span><svg viewBox="0 0 24 24" width="30" height="30" fill="#2d88ff"><circle cx="9" cy="8" r="3.6"/><path d="M2 20c0-3.6 3.1-6 7-6s7 2.4 7 6z"/><circle cx="17" cy="9" r="3" opacity=".85"/><path d="M17.5 14c3 .2 5.5 2 5.5 5.2V20h-5c0-2.3-.8-4.3-2.2-5.8.5-.1 1-.2 1.7-.2z" opacity=".85"/></svg></span>People</button>
+   <button class="tab" data-t="feed"><span><svg viewBox="0 0 24 24" width="30" height="30"><rect x="2" y="3" width="20" height="18" rx="4" fill="#2d88ff"/><rect x="5" y="6" width="14" height="6" rx="1.5" fill="#fff"/><rect x="5" y="14" width="14" height="1.8" rx=".9" fill="#fff"/><rect x="5" y="17.3" width="9" height="1.8" rx=".9" fill="#fff"/></svg></span>Newsfeed</button>
+   <button class="tab" data-t="notifs"><span><svg viewBox="0 0 24 24" width="28" height="28" fill="#f7b928"><path d="M12 2.5a1.6 1.6 0 0 1 1.6 1.6v.5c2.6.7 4.4 3 4.4 5.9v3.6l1.8 2.9c.4.7 0 1.5-.8 1.5H5c-.8 0-1.2-.8-.8-1.5L6 14.1V10.5c0-2.9 1.8-5.2 4.4-5.9v-.5A1.6 1.6 0 0 1 12 2.5z"/><path d="M9.5 19.5h5a2.5 2.5 0 0 1-5 0z"/></svg></span>Notifications<i class="bd hide" id="b-notifs"></i></button>
    <button class="tab" data-t="menu"><span>👤</span>Profile</button>
   </nav>
  </aside>
@@ -184,6 +243,9 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
   <div id="info" class="hide"></div>
  </section>
 </div>
+
+<div id="pfv" class="hide"></div>
+<div id="mnu" class="hide"></div>
 
 <div id="call" class="hide">
  <div class="ch"><div class="ct" id="ctitle"></div><div class="cs" id="cstat"></div></div>
@@ -362,7 +424,7 @@ $("#wnext").onclick = async () => {
 };
 sb.auth.onAuthStateChange((ev, session) => {
   if (session && !me && !W.reset) start(session.user);
-  if (!session) { if (call) endCall(); dismissRing(); me = null; sb.removeAllChannels(); cur = null; results = null; showAuth(); }
+  if (!session) { if (call) endCall(); dismissRing(); closeMenu(); closeProfile(); me = null; sb.removeAllChannels(); cur = null; results = null; showAuth(); }
 });
 
 // ---------- DATA ----------
@@ -433,8 +495,10 @@ function setTab(t) {
   document.querySelectorAll(".tab").forEach(b => b.classList.toggle("on", b.dataset.t === t));
   $("#ptitle").textContent = {chats: "Chatter", people: "People", notifs: "Notifications", menu: "Profile", feed: "Newsfeed"}[t];
   $("#newg").classList.toggle("hide", t === "notifs" || t === "menu" || t === "feed");
+  document.querySelector(".side .ph").classList.toggle("hide", t === "feed");
   $("#sqw").classList.toggle("hide", t === "notifs" || t === "menu" || t === "feed");
   if (t === "feed") { feedDirty = true; loadFeed(); }
+  if (t === "menu") pf = blankPf();
   $("#chips").classList.toggle("hide", t !== "chats");
   $("#sq").placeholder = t === "people" ? "Find an account (username)…" : "Search";
   render();
@@ -473,7 +537,7 @@ function userRow(box, uid) {
 function render() {
   if (!me) return;
   if (tab === "feed") return feedRender();
-  const box = $("#list"); box.replaceChildren(); box.dataset.t = tab; box.style.scrollSnapType = ""; if (reelObs) { reelObs.disconnect(); reelObs = null; }
+  const box = $("#list"), y0 = box.dataset.t === tab ? box.scrollTop : 0; box.replaceChildren(); box.dataset.t = tab; box.style.scrollSnapType = ""; if (reelObs) { reelObs.disconnect(); reelObs = null; }
   const nUn = rooms.filter(hasUnread).length, nReq = fr.filter(f => f.status === "pending" && f.addressee === me.id).length;
   const pt = document.querySelector('.tab[data-t="menu"] span');
   if (pt && pt.dataset.me !== me.id) { pt.replaceChildren(avatar(me.id, (names[me.id] || "?")[0].toUpperCase(), "sm")); pt.dataset.me = me.id; }
@@ -526,33 +590,38 @@ function render() {
       d.onclick = () => { if (!inc) openDM(u); }; box.append(d);
     });
   } else {
-    const m = el("div", "menu"), card = el("div", "itop pf"), nF = fr.filter(f => f.status === "accepted").length, cv = el("div", "cover"), pa = el("div", "pfav");
-    if (coverUrl[me.id]) cv.style.backgroundImage = 'url("' + coverUrl[me.id] + '")';
-    const c1 = el("button", "camb", "📷"), c2 = el("button", "camb", "📷"); c1.onclick = () => pickPhoto("cover"); c2.onclick = () => pickPhoto("avatar");
-    cv.append(c1); pa.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase(), "xxl"), c2);
-    card.append(pa, el("div", "iname", names[me.id]), el("div", "t2", nF + (nF === 1 ? " friend" : " friends")), el("div", "t2", me.email || me.phone || ""));
-    const gi = el("input"); gi.placeholder = "Group name…"; gi.maxLength = 40; gi.value = gdraft.name; gi.oninput = () => gdraft.name = gi.value;
-    const fl = el("div", "pick"), fs = fr.filter(f => f.status === "accepted").map(f => f.requester === me.id ? f.addressee : f.requester);
-    if (!fs.length) fl.append(el("div", "hint", "Add friends first to start a group."));
-    fs.forEach(u => { const lb = el("label", "pk"), cb = el("input"); cb.type = "checkbox"; cb.checked = gdraft.sel.has(u); cb.onchange = () => cb.checked ? gdraft.sel.add(u) : gdraft.sel.delete(u); lb.append(cb, avatar(u, (names[u] || "?")[0].toUpperCase(), "sm"), el("span", null, names[u] || "Someone")); fl.append(lb); });
-    const nb = el("button", "sm", "Create group"); nb.onclick = createGroup;
-    const out = el("button", "gray", "Logout"); out.onclick = () => sb.auth.signOut();
-    const del = el("button", "danger", "Delete account"); del.onclick = deleteAccount;
-    const bl = [];
-    if (blocked.size) {
-      bl.push(el("div", "sec", "Blocked accounts (" + blocked.size + ")"));
-      [...blocked].forEach(u => { const d = el("div", "item"), mid = el("div", "mid"), b = el("button", "sm gray", "Unblock"); b.type = "button"; b.onclick = () => doUnblock(u); mid.append(el("div", "t1", names[u] || "Someone")); d.append(avatar(u, (names[u] || "?")[0].toUpperCase(), ""), mid, b); bl.push(d); });
-    }
-    m.append(cv, card, ...bl, out, del);
-    box.append(m);
+    pfStart(box, me.id, false); box.scrollTop = y0;
   }
 }
 
 
 
-// ---------- NEWSFEED + CLIPS ----------
-let fmode = "post", feedDirty = false, fposts = [], flikes = {}, fcm = {}, fopen = new Set(), fdraft = {txt: "", file: null}, fbusy = false;
+// ---------- NEWSFEED + CLIPS + STORIES ----------
+let fmode = "post", feedDirty = false, fposts = [], flikes = {}, fcm = {}, fopen = new Set(), fdraft = {txt: "", file: null}, fbusy = false, fstories = [], fhide = new Set();
+try { fhide = new Set(JSON.parse(localStorage.getItem("fhide") || "[]")); } catch (e) {}
+const agoS = t => { const s = Math.max(0, (Date.now() - Date.parse(t)) / 1000); if (s < 60) return "now"; if (s < 3600) return Math.floor(s / 60) + "m"; if (s < 86400) return Math.floor(s / 3600) + "h"; if (s < 604800) return Math.floor(s / 86400) + "d"; return Math.floor(s / 604800) + "w"; };
+const FI = {
+  ham: '<svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M3 5.5h18M3 12h18M3 18.5h18"/></svg>',
+  photo: '<svg width="34" height="34" viewBox="0 0 24 24"><rect x="2.5" y="3.5" width="19" height="17" rx="3.5" fill="currentColor"/><circle cx="9" cy="9.5" r="1.9" style="fill:var(--bg)"/><path d="M2.5 17.5l6.5-6.5 4 4 3-3 5.5 5.5v3H2.5z" style="fill:var(--bg)"/></svg>',
+  plus: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg>',
+  dots: '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
+  x: '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>',
+  globe: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c3 3 3 16.5 0 19M12 2.5c-3 3-3 16.5 0 19"/></svg>',
+  heart: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20.5S3 15 3 8.8A4.8 4.8 0 0 1 12 6.6 4.8 4.8 0 0 1 21 8.8C21 15 12 20.5 12 20.5z"/></svg>',
+  heartOn: '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20.5S3 15 3 8.8A4.8 4.8 0 0 1 12 6.6 4.8 4.8 0 0 1 21 8.8C21 15 12 20.5 12 20.5z"/></svg>',
+  cmt: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>'
+};
+async function loadStories() {
+  const {data, error} = await sb.from("posts").select("*").eq("kind", "story").gte("created_at", new Date(Date.now() - 864e5).toISOString()).order("created_at", {ascending: false}).limit(80);
+  if (error) { fstories = []; return; }
+  fstories = data || [];
+  await ensureNames(fstories.map(s => s.user_id));
+  const seenU = new Set();
+  await Promise.all(fstories.filter(s => !seenU.has(s.user_id) && seenU.add(s.user_id)).map(async s => { if (s.media_path) s.url = await imgUrl(s.media_path); }));
+  feedDirty = true; if (tab === "feed" && fmode === "post") render();
+}
 async function loadFeed() {
+  if (fmode === "post") loadStories();
   const {data, error} = await sb.from("posts").select("*").eq("kind", fmode).order("created_at", {ascending: false}).limit(40);
   if (error) { fposts = []; $("#list").textContent = "Newsfeed isn't set up yet (" + error.message + "). Run upgrade6.sql in Supabase."; return; }
   fposts = data || []; const ids = fposts.map(p => p.id); flikes = {}; fcm = {};
@@ -565,61 +634,153 @@ async function loadFeed() {
   await Promise.all(fposts.map(async p => { if (p.media_path) p.url = await imgUrl(p.media_path); }));
   feedDirty = true; if (tab === "feed") render();
 }
-const fkeep = fn => { const b = $("#list"), y = b.scrollTop; fn(); feedDirty = true; render(); b.scrollTop = y; };
+const fkeep = fn => { const b = $("#list"), y = b.scrollTop; fn(); feedDirty = true; render(); b.scrollTop = y; pfPaint(); };
 function feedRender() {
   const box = $("#list"); if (!feedDirty) return; feedDirty = false; box.replaceChildren(); box.dataset.t = "feed";
-  const fm = el("div", "fm");
-  [["post", "Newsfeed"], ["clip", "Clips"]].forEach(([k, t]) => { const b = el("button", fmode === k ? "on" : "", t); b.onclick = () => { fmode = k; fposts = []; feedDirty = true; render(); loadFeed(); }; fm.append(b); });
-  box.append(fm);
-  const cmp = el("div", "cmp"), ph = el("div", "ph", fmode === "clip" ? "＋ Add a clip (video)" : "What's on your mind?");
-  ph.onclick = () => pickMedia(); cmp.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase(), "sm"), ph);
-  if (fdraft.file || fdraft.txt) { /* composer open */ }
-  box.append(cmp);
+  // top bar: hamburger + Newsfeed / Clips
+  const fm = el("div", "fm"), hb = el("button", "hb"), tt = el("div", "tt");
+  hb.type = "button"; hb.innerHTML = FI.ham; hb.onclick = openMenu;
+  [["post", "Newsfeed"], ["clip", "Clips"]].forEach(([k, t]) => { const b = el("button", fmode === k ? "on" : "", t); b.type = "button"; b.onclick = () => { fmode = k; fposts = []; feedDirty = true; render(); loadFeed(); }; tt.append(b); });
+  fm.append(hb, tt, el("div", "sp")); box.append(fm);
+  // "What's on your mind?"
+  const cmp = el("div", "cmp"), ph = el("div", "cph", fmode === "clip" ? "Add a clip (video)" : "What's on your mind?"), gi = el("button", "pi2");
+  ph.onclick = () => pickMedia(); gi.type = "button"; gi.innerHTML = FI.photo; gi.onclick = () => pickMedia();
+  cmp.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase(), "fa"), ph, gi); box.append(cmp);
   if (fdraft.file) {
-    const t = el("textarea"); t.placeholder = "Say something…"; t.rows = 2; t.value = fdraft.txt; t.oninput = () => fdraft.txt = t.value;
-    const go = el("button", "sm", fbusy ? "Posting…" : "Post"); go.disabled = fbusy; go.style.margin = "0 14px"; go.onclick = doPost;
-    const no = el("button", "sm gray", "Cancel"); no.style.margin = "0 6px"; no.onclick = () => { fdraft = {txt: "", file: null}; feedDirty = true; render(); };
-    box.append(el("div", "cn", "Selected: " + fdraft.file.name), t, go, no);
+    const d = el("div", "drf"), t = el("textarea"), r = el("div", "r"), nm = el("span", null, fdraft.file.name), go = el("button", "sm", fbusy ? "Posting…" : "Post"), no = el("button", "sm gray", "Cancel");
+    t.placeholder = "Say something…"; t.rows = 2; t.value = fdraft.txt; t.oninput = () => fdraft.txt = t.value;
+    go.disabled = fbusy; go.onclick = doPost; no.onclick = () => { fdraft = {txt: "", file: null}; feedDirty = true; render(); };
+    r.append(nm, no, go); d.append(t, r); box.append(d);
   }
-  if (!fposts.length) box.append(el("div", "hint", fmode === "clip" ? "No clips yet. Add the first one!" : "No posts yet. Add friends or post something."));
-  if (fmode === "clip") { fposts.forEach(reel); watchReels(); return; }
-  fposts.forEach(p => box.append(postCard(p)));
+  if (fmode === "post") box.append(storiesRow());
+  const vis = fposts.filter(p => !fhide.has(p.id));
+  if (!vis.length) box.append(el("div", "hint", fmode === "clip" ? "No clips yet. Add the first one!" : "No posts yet. Add friends or post something."));
+  if (fmode === "clip") { vis.forEach(reel); watchReels(); return; }
+  vis.forEach(p => box.append(postCard(p)));
 }
 function pickMedia() {
   const i = document.createElement("input"); i.type = "file"; i.accept = fmode === "clip" ? "video/*" : "image/*,video/*";
   i.onchange = () => { const f = i.files[0]; if (!f) return; if (f.size > 45 * 1048576) return alert("File is too big (max 45 MB)."); fdraft.file = f; feedDirty = true; render(); }; i.click();
 }
-async function doPost() {
-  if (fbusy || !fdraft.file) return; fbusy = true; feedDirty = true; render();
+async function postMedia(f, body, kind) {
   try {
-    const f = fdraft.file, vid = f.type.startsWith("video"), path = me.id + "/" + uid() + (vid ? ".mp4" : ".jpg");
+    const vid = f.type.startsWith("video"), path = me.id + "/" + uid() + (vid ? ".mp4" : ".jpg");
     const blob = vid ? f : await shrink(f);
     const up = await sb.storage.from("chat-images").upload(path, blob, {contentType: vid ? (f.type || "video/mp4") : "image/jpeg"}); if (up.error) throw up.error;
-    const {error} = await sb.from("posts").insert({body: fdraft.txt.trim(), media_path: path, media_type: vid ? "video" : "image", kind: fmode});
+    const {error} = await sb.from("posts").insert({body, media_path: path, media_type: vid ? "video" : "image", kind});
     if (error) { sb.storage.from("chat-images").remove([path]); throw error; }
-    fdraft = {txt: "", file: null};
-  } catch (e) { alert("Couldn't post: " + (e.message || e)); }
+    return true;
+  } catch (e) {
+    const m = e.message || String(e);
+    alert("Couldn't post: " + m + (kind === "story" && /check|kind/i.test(m) ? "\n\nRun upgrade7.sql in the Supabase SQL Editor, then try again." : ""));
+    return false;
+  }
+}
+async function doPost() {
+  if (fbusy || !fdraft.file) return; fbusy = true; feedDirty = true; render();
+  if (await postMedia(fdraft.file, fdraft.txt.trim(), fmode)) fdraft = {txt: "", file: null};
   fbusy = false; await loadFeed();
 }
-const likeBtn = (p, cls) => {
-  const L = flikes[p.id] || [], on = L.includes(me.id), b = el("button", on ? "on" : "", (on ? "❤️ " : "🤍 ") + L.length);
-  b.onclick = async () => {
-    if (on) { await sb.from("post_likes").delete().eq("post_id", p.id).eq("user_id", me.id); flikes[p.id] = L.filter(x => x !== me.id); }
-    else { await sb.from("post_likes").insert({post_id: p.id}); flikes[p.id] = [...L, me.id]; }
-    fkeep(() => {});
-  }; return b;
-};
-function postCard(p) {
-  const c = el("div", "pc"), h = el("div", "ph1"), n = el("div"), cm = fcm[p.id] || [];
-  n.append(el("div", "t1", names[p.user_id] || "Someone"), el("div", "t2", fmt(p.created_at)));
-  h.append(avatar(p.user_id, (names[p.user_id] || "?")[0].toUpperCase(), "sm"), n);
-  if (p.user_id === me.id) { const d = el("button", "sm gray", "🗑"); d.style.marginLeft = "auto"; d.onclick = async () => { if (!confirm("Delete this post?")) return; if (p.media_path) sb.storage.from("chat-images").remove([p.media_path]); await sb.from("posts").delete().eq("id", p.id); loadFeed(); }; h.append(d); }
-  c.append(h); if (p.body) c.append(el("div", "pb", p.body));
+// ----- stories (kind = "story", visible for 24 hours) -----
+function pickStory() {
+  const i = document.createElement("input"); i.type = "file"; i.accept = "image/*,video/*";
+  i.onchange = async () => {
+    const f = i.files[0]; if (!f) return; if (f.size > 45 * 1048576) return alert("File is too big (max 45 MB).");
+    toast("Posting story…"); if (await postMedia(f, "", "story")) { toast("Story posted"); await loadStories(); }
+  }; i.click();
+}
+function storiesRow() {
+  const row = el("div", "str"), mk = el("div", "sc mk"), top = el("div", "top"), plus = el("div", "plus");
+  top.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase())); plus.innerHTML = FI.plus;
+  mk.append(top, plus, el("div", "sn", "Create story")); mk.onclick = pickStory; row.append(mk);
+  const seenU = new Set(), latestOf = fstories.filter(s => !seenU.has(s.user_id) && seenU.add(s.user_id));
+  latestOf.sort((a, b) => (b.user_id === me.id) - (a.user_id === me.id)).forEach(s => row.append(storyCard(s)));
+  return row;
+}
+function storyCard(s) {
+  const u = s.user_id, nm = names[u] || "Someone", c = el("div", "sc"), r = el("div", "sr");
+  if (s.url) {
+    const vid = s.media_type === "video", m = el(vid ? "video" : "img");
+    if (vid) { m.muted = true; m.playsInline = true; m.preload = "metadata"; m.src = s.url + "#t=0.1"; } else m.src = s.url;
+    c.append(m);
+  }
+  r.append(avatar(u, nm[0].toUpperCase()));
+  c.append(el("div", "sg2"), r, el("div", "sn", u === me.id ? "Your story" : nm));
+  c.onclick = () => openStory(u); return c;
+}
+async function openStory(u) {
+  const L = fstories.filter(s => s.user_id === u).reverse();   // oldest first
+  if (!L.length) return;
+  await Promise.all(L.map(async s => { if (!s.url) s.url = await imgUrl(s.media_path); }));
+  let i = 0, t = null;
+  const ov = el("div", "sv"), bars = el("div", "sb"), hd = el("div", "st"), box = el("div", "smd"), nm = el("div", "t1", u === me.id ? "Your story" : (names[u] || "Someone")), tm = el("div", "t2"), mid = el("div", "mid");
+  const close = () => { clearTimeout(t); ov.remove(); };
+  const go = d => { i += d; if (i < 0) i = 0; if (i >= L.length) return close(); show(); };
+  mid.append(nm, tm); mid.style.cursor = "pointer"; mid.onclick = () => { close(); openProfile(u); }; hd.append(avatar(u, (names[u] || "?")[0].toUpperCase(), "sm"), mid);
+  if (u === me.id) { const d = el("button", "", "🗑"); d.onclick = async () => { const s = L[i]; if (!confirm("Delete this story?")) return; clearTimeout(t); sb.storage.from("chat-images").remove([s.media_path]); await sb.from("posts").delete().eq("id", s.id); close(); loadStories(); }; hd.append(d); }
+  const x = el("button", "", "✕"); x.onclick = close; hd.append(x);
+  function show() {
+    clearTimeout(t); const s = L[i], vid = s.media_type === "video";
+    bars.replaceChildren(...L.map((_, k) => { const g = el("div", "sg" + (k < i ? " d" : k === i ? (vid ? " a" : " a im") : "")); g.append(el("i")); return g; }));
+    const fill = bars.children[i].firstChild; tm.textContent = agoS(s.created_at);
+    const zl = el("div", "sz l"), zr = el("div", "sz r"); zl.onclick = () => go(-1); zr.onclick = () => go(1);
+    box.replaceChildren(); let m;
+    if (vid) {
+      m = el("video"); m.src = s.url; m.playsInline = true; m.autoplay = true; m.onended = () => go(1);
+      m.ontimeupdate = () => { if (m.duration) fill.style.width = (m.currentTime / m.duration * 100) + "%"; };
+      m.play().catch(() => { m.muted = true; m.play().catch(() => {}); });
+    } else { m = el("img"); m.src = s.url; t = setTimeout(() => go(1), 5000); }
+    box.append(m, zl, zr);
+  }
+  ov.append(bars, hd, box); document.body.append(ov); show();
+}
+// ----- posts -----
+async function toggleLike(p) {
+  const L = flikes[p.id] || [], on = L.includes(me.id);
+  if (on) { await sb.from("post_likes").delete().eq("post_id", p.id).eq("user_id", me.id); flikes[p.id] = L.filter(x => x !== me.id); }
+  else { await sb.from("post_likes").insert({post_id: p.id}); flikes[p.id] = [...L, me.id]; }
+  fkeep(() => {});
+}
+const likeBtn = p => { const L = flikes[p.id] || [], on = L.includes(me.id), b = el("button", on ? "on" : "", (on ? "❤️ " : "🤍 ") + L.length); b.onclick = () => toggleLike(p); return b; };
+function popMenu(anchor, items) {
+  closePop(); const pop = el("div", "pop"); pop.id = "pop";
+  items.forEach(([t, fn, cls]) => { const d = el("div", "pi" + (cls ? " " + cls : ""), t); d.onclick = e => { e.stopPropagation(); closePop(); fn(); }; pop.append(d); });
+  document.body.append(pop);
+  const a = anchor.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+  const x = Math.min(Math.max(8, a.right - w), innerWidth - w - 8); let y = a.bottom + 6; if (y + h > innerHeight - 8) y = Math.max(8, a.top - h - 6);
+  pop.style.left = x + "px"; pop.style.top = y + "px";
+}
+function hidePost(p) { fhide.add(p.id); try { localStorage.setItem("fhide", JSON.stringify([...fhide].slice(-300))); } catch (e) {} fkeep(() => {}); }
+function postCard(p, inProfile) {
+  const u = p.user_id, nm = names[u] || "Someone", c = el("div", "pc"), h = el("div", "ph1"), n = el("div", "pn"), cm = fcm[p.id] || [], L = flikes[p.id] || [], on = L.includes(me.id);
+  const av = avatar(u, nm[0].toUpperCase(), "fa"); av.style.cursor = "pointer"; av.onclick = e => { e.stopPropagation(); openProfile(u); };
+  const l1 = el("div", "l1"), r = u === me.id ? null : rel(u);
+  const nb = el("b", null, nm); nb.style.cursor = "pointer"; nb.onclick = () => openProfile(u); l1.append(nb);
+  if (u !== me.id && !r) {
+    const fl = el("span", "fl", "Add friend"); fl.onclick = async () => { const {error} = await sb.from("friendships").insert({addressee: u}); if (error) return alert(error.message); await loadFriends(); fkeep(() => {}); };
+    l1.append(el("span", "dot", "·"), fl);
+  } else if (r && r.status === "pending") l1.append(el("span", "dot", "·"), el("span", "fl mut", "Pending"));
+  const l2 = el("div", "l2"), gl = el("span"); gl.innerHTML = FI.globe; l2.append(el("span", null, agoS(p.created_at) + " ·"), gl);
+  n.append(l1, l2);
+  const mb = el("button", "hx"), xb = el("button", "hx"); mb.type = xb.type = "button"; mb.innerHTML = FI.dots; xb.innerHTML = FI.x;
+  mb.onclick = e => { e.stopPropagation(); popMenu(mb, u === me.id
+    ? [["Delete post", async () => { if (!confirm("Delete this post?")) return; if (p.media_path) sb.storage.from("chat-images").remove([p.media_path]); await sb.from("posts").delete().eq("id", p.id); afterDelete(); }, "red"]]
+    : [["Message " + nm, () => { closeProfile(); openDM(u); }], ...(inProfile ? [] : [["Hide post", () => hidePost(p)]])]); };
+  xb.onclick = () => hidePost(p);
+  h.append(av, n, mb); if (!inProfile) h.append(xb); c.append(h);
+  if (p.body) c.append(el("div", "pb", p.body));
   if (p.url) { const m = el(p.media_type === "video" ? "video" : "img"); m.src = p.url; if (m.tagName === "VIDEO") { m.controls = true; m.playsInline = true; m.preload = "metadata"; } c.append(m); }
-  const ac = el("div", "ac"), cb = el("button", "", "💬 " + cm.length); cb.onclick = () => fkeep(() => fopen.has(p.id) ? fopen.delete(p.id) : fopen.add(p.id));
-  ac.append(likeBtn(p), cb); c.append(ac);
+  const toggleCm = () => fkeep(() => fopen.has(p.id) ? fopen.delete(p.id) : fopen.add(p.id));
+  if (L.length || cm.length) {
+    const cn = el("div", "cn"), a = el("span", null, L.length ? "❤️ " + L.length : ""), b = el("span", null, cm.length ? cm.length + (cm.length === 1 ? " comment" : " comments") : "");
+    b.style.cursor = "pointer"; b.onclick = toggleCm; cn.append(a, b); c.append(cn);
+  }
+  const ac = el("div", "ac"), lb = el("button", on ? "on" : ""), cb = el("button", "");
+  lb.type = cb.type = "button"; lb.innerHTML = (on ? FI.heartOn : FI.heart) + "<span>Like</span>"; cb.innerHTML = FI.cmt + "<span>Comment</span>";
+  lb.onclick = () => toggleLike(p); cb.onclick = toggleCm; ac.append(lb, cb); c.append(ac);
   if (fopen.has(p.id)) {
-    const w = el("div", "cm"); cm.forEach(x => w.append(el("div", "", (names[x.user_id] || "Someone") + ": " + x.body)));
+    const w = el("div", "cm");
+    cm.forEach(x => { const row = el("div", "fci"), bub = el("div", "fcb"), cn2 = names[x.user_id] || "Someone"; bub.append(el("b", null, cn2), document.createTextNode(x.body)); row.append(avatar(x.user_id, cn2[0].toUpperCase(), "sm"), bub); w.append(row); });
     const i = el("input"); i.placeholder = "Write a comment…"; i.maxLength = 500;
     i.onkeydown = async e => { if (e.key !== "Enter" || !i.value.trim()) return; const body = i.value.trim(); i.value = ""; const {data} = await sb.from("post_comments").insert({post_id: p.id, body}).select().single(); if (data) fkeep(() => (fcm[p.id] = fcm[p.id] || []).push(data)); };
     w.append(i); c.append(w);
@@ -629,7 +790,8 @@ function postCard(p) {
 function reel(p) {
   const r = el("div", "rl"), v = el("video"), ov = el("div", "ov"), sd = el("div", "sd");
   v.src = p.url || ""; v.loop = true; v.muted = true; v.playsInline = true; v.preload = "metadata"; v.onclick = () => { v.muted = !v.muted; };
-  ov.append(el("div", "t1", names[p.user_id] || "Someone"), el("div", "", p.body || ""));
+  const who = el("div", "ovh"); who.append(avatar(p.user_id, (names[p.user_id] || "?")[0].toUpperCase(), "sm"), el("div", "t1", names[p.user_id] || "Someone")); who.onclick = e => { e.stopPropagation(); openProfile(p.user_id); };
+  ov.append(who, el("div", "", p.body || ""));
   sd.append(likeBtn(p));
   if (p.user_id === me.id) { const d = el("button", "", "🗑"); d.onclick = async () => { if (!confirm("Delete this clip?")) return; sb.storage.from("chat-images").remove([p.media_path]); await sb.from("posts").delete().eq("id", p.id); loadFeed(); }; sd.append(d); }
   r.append(v, ov, sd); $("#list").append(r);
@@ -639,6 +801,174 @@ function watchReels() {
   const box = $("#list"); box.style.scrollSnapType = "y mandatory"; if (reelObs) reelObs.disconnect();
   reelObs = new IntersectionObserver(es => es.forEach(e => { const v = e.target.querySelector("video"); if (!v) return; if (e.isIntersecting) v.play().catch(() => {}); else v.pause(); }), {root: box, threshold: 0.7});
   box.querySelectorAll(".rl").forEach(r => reelObs.observe(r));
+}
+
+// ---------- PROFILE PAGE (Facebook style): cover, avatar, Posts + Clips ----------
+const blankPf = () => ({uid: null, tab: "posts", posts: [], clips: [], loaded: false, box: null, ov: false});
+let pf = blankPf();
+async function pfLoad(uid) {
+  const {data} = await sb.from("posts").select("*").eq("user_id", uid).in("kind", ["post", "clip"]).order("created_at", {ascending: false}).limit(80);
+  if (pf.uid !== uid) return;
+  const L = data || [], ids = L.map(p => p.id);
+  if (ids.length) {
+    const [l, c] = await Promise.all([sb.from("post_likes").select("*").in("post_id", ids), sb.from("post_comments").select("*").in("post_id", ids).order("created_at").limit(500)]);
+    ids.forEach(i => { flikes[i] = []; fcm[i] = []; });
+    (l.data || []).forEach(x => flikes[x.post_id].push(x.user_id));
+    (c.data || []).forEach(x => fcm[x.post_id].push(x));
+    await ensureNames((c.data || []).map(x => x.user_id));
+  }
+  await Promise.all(L.map(async p => { if (p.media_path) p.url = await imgUrl(p.media_path); }));
+  if (pf.uid !== uid) return;
+  pf.posts = L.filter(p => p.kind === "post"); pf.clips = L.filter(p => p.kind === "clip"); pf.loaded = true;
+  pfPaint();
+}
+function pfStart(box, uid, ov) {
+  if (pf.uid !== uid || pf.ov !== ov) { pf = {uid, tab: "posts", posts: [], clips: [], loaded: false, box, ov}; pfLoad(uid); }
+  pf.box = box; pf.ov = ov; drawProfile();
+}
+function pfPaint() {
+  if (!pf.uid || !pf.box || !pf.box.isConnected) return;
+  const sc = pf.ov ? $("#pfv") : $("#list"), y = sc.scrollTop; drawProfile(); sc.scrollTop = y;
+}
+const afterDelete = () => { loadFeed(); if (pf.uid) pfLoad(pf.uid); };
+async function openProfile(uid) {
+  await ensureNames([uid]); loadPhotos([uid]);
+  infoProfile = uid;
+  const o = $("#pfv"); o.classList.remove("hide"); o.replaceChildren();
+  const w = el("div", "pfw"); o.append(w); o.scrollTop = 0;
+  pf = blankPf(); pfStart(w, uid, true);
+}
+function closeProfile() {
+  const o = $("#pfv"); o.classList.add("hide"); o.replaceChildren(); infoProfile = null;
+  if (pf.ov) pf = blankPf();
+}
+function drawProfile() {
+  const box = pf.box, uid = pf.uid, mine = uid === me.id, nm = names[uid] || "Someone", rl = mine ? null : rel(uid), bl = !mine && blocked.has(uid);
+  box.replaceChildren();
+  if (pf.ov) {
+    const b = el("div", "pfb"), bk = el("button", "", "←"); bk.type = "button"; bk.onclick = closeProfile;
+    b.append(bk, el("div", "pt", nm)); box.append(b);
+  }
+  const cv = el("div", "pcv"), pa = el("div", "pav");
+  if (coverUrl[uid]) cv.style.backgroundImage = 'url("' + coverUrl[uid] + '")';
+  pa.append(avatar(uid, nm[0].toUpperCase(), "xxl", bl ? null : uid));
+  if (mine) {
+    const c1 = el("button", "camb", "📷"), c2 = el("button", "camb", "📷"); c1.type = c2.type = "button";
+    c1.onclick = () => pickPhoto("cover"); c2.onclick = () => pickPhoto("avatar"); cv.append(c1); pa.append(c2);
+  }
+  let sub = "";
+  if (mine) { const nF = fr.filter(f => f.status === "accepted").length; sub = nF + (nF === 1 ? " friend" : " friends"); }
+  else if (bl) sub = "Blocked";
+  else {
+    sub = rl && rl.status === "accepted" ? "Friends" : rl && rl.status === "pending" ? (rl.incoming ? "Sent you a friend request" : "Friend request sent") : "";
+    if (online.has(uid)) sub += (sub ? " · " : "") + "Active now";
+  }
+  box.append(cv, pa, el("div", "pname", nm)); if (sub) box.append(el("div", "psub", sub));
+  // action buttons
+  const act = el("div", "pact");
+  const btn = (t, cls, fn) => { const b = el("button", cls, t); b.type = "button"; b.onclick = e => { e.stopPropagation(); closePop(); fn(e); }; act.append(b); return b; };
+  const refresh = async () => { await loadFriends(); pfPaint(); };
+  if (mine) {
+    btn("＋ Add to story", "", pickStory);
+    btn("✏️ Edit profile", "gray", e => popMenu(e.currentTarget, [["Change profile photo", () => pickPhoto("avatar")], ["Change cover photo", () => pickPhoto("cover")]]));
+  } else if (bl) {
+    btn("Unblock", "", () => doUnblock(uid));
+  } else {
+    if (!rl) btn("➕ Add friend", "", async () => { const {error} = await sb.from("friendships").insert({addressee: uid}); if (error) return alert(error.message); refresh(); });
+    else if (rl.status === "pending" && !rl.incoming) btn("⏳ Cancel request", "gray", async () => { await sb.from("friendships").delete().eq("id", rl.id); refresh(); });
+    else if (rl.status === "pending") {
+      btn("✅ Accept", "", async () => { await sb.from("friendships").update({status: "accepted"}).eq("id", rl.id); refresh(); });
+      btn("Decline", "gray", async () => { await sb.from("friendships").delete().eq("id", rl.id); refresh(); });
+    }
+    btn("💬 Message", rl && rl.status === "accepted" ? "" : "gray", () => { closeProfile(); openDM(uid); });
+    btn("⋯", "gray sq", e => popMenu(e.currentTarget, [
+      ["Audio call", () => { closeProfile(); callUser(uid, false); }],
+      ["Video call", () => { closeProfile(); callUser(uid, true); }],
+      ["Block", () => doBlock(uid), "red"]]));
+  }
+  box.append(act);
+  if (bl) return box.append(el("div", "hint", "You blocked this person."));
+  // Posts | Clips
+  const tb = el("div", "ptabs");
+  [["posts", "Posts"], ["clips", "Clips"]].forEach(([k, t]) => { const b = el("button", pf.tab === k ? "on" : "", t); b.type = "button"; b.onclick = () => { pf.tab = k; pfPaint(); }; tb.append(b); });
+  box.append(tb);
+  if (!pf.loaded) return box.append(el("div", "hint", "Loading…"));
+  if (pf.tab === "posts") {
+    if (!pf.posts.length) box.append(el("div", "hint", mine ? "You haven't posted anything yet." : "No posts yet."));
+    pf.posts.forEach(p => box.append(postCard(p, true)));
+  } else if (!pf.clips.length) box.append(el("div", "hint", mine ? "You haven't added any clips yet." : "No clips yet."));
+  else {
+    const g = el("div", "cgrid");
+    pf.clips.forEach((p, i) => {
+      const t = el("div", "ct"), v = el("video"); v.muted = true; v.playsInline = true; v.preload = "metadata"; v.src = (p.url || "") + "#t=0.1";
+      t.append(v, el("div", "cl", "❤️ " + (flikes[p.id] || []).length)); t.onclick = () => openClip(pf.clips, i); g.append(t);
+    });
+    box.append(g);
+  }
+}
+function openClip(list, i0) {
+  let i = i0; const ov = el("div", "sv"), hd = el("div", "st"), box = el("div", "smd"), bar = el("div", "cbar");
+  const close = () => ov.remove();
+  const draw = () => {
+    const p = list[i], u = p.user_id, nm = names[u] || "Someone", L = flikes[p.id] || [], mid = el("div", "mid");
+    hd.replaceChildren(); mid.append(el("div", "t1", nm), el("div", "t2", agoS(p.created_at)));
+    hd.append(avatar(u, nm[0].toUpperCase(), "sm"), mid);
+    if (u === me.id) { const d = el("button", "", "🗑"); d.onclick = async () => { if (!confirm("Delete this clip?")) return; sb.storage.from("chat-images").remove([p.media_path]); await sb.from("posts").delete().eq("id", p.id); close(); afterDelete(); }; hd.append(d); }
+    const x = el("button", "", "✕"); x.onclick = close; hd.append(x);
+    box.replaceChildren(); const v = el("video"); v.src = p.url || ""; v.controls = true; v.loop = true; v.playsInline = true; v.autoplay = true;
+    v.play().catch(() => { v.muted = true; v.play().catch(() => {}); }); box.append(v);
+    bar.replaceChildren(); if (p.body) bar.append(el("div", "cap", p.body));
+    const row = el("div", "cr"), lk = el("button", "", (L.includes(me.id) ? "❤️ " : "🤍 ") + L.length);
+    lk.onclick = async () => { await toggleLike(p); draw(); }; row.append(lk);
+    if (list.length > 1) {
+      const pv = el("button", "", "‹"), nx = el("button", "", "›"); pv.disabled = i === 0; nx.disabled = i === list.length - 1;
+      pv.onclick = () => { i--; draw(); }; nx.onclick = () => { i++; draw(); }; row.append(pv, nx);
+    }
+    bar.append(row);
+  };
+  ov.append(hd, box, bar); document.body.append(ov); draw();
+}
+
+// ---------- MENU (Facebook style): Settings and privacy + Log out ----------
+const MI = {
+  gear: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  down: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
+  up: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>',
+  right: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
+  block: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>',
+  trash: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'
+};
+let mset = false, mblk = false;
+function openMenu() { mset = false; mblk = false; $("#mnu").classList.remove("hide"); drawMenu(); $("#mnu").scrollTop = 0; }
+function closeMenu() { $("#mnu").classList.add("hide"); }
+function drawMenu() {
+  const o = $("#mnu"), y = o.scrollTop; o.replaceChildren();
+  const w = el("div", "mw"), top = el("div", "mtop"), bk = el("button", "", "←"), card = el("div", "mcard"), chv = el("div", "chv");
+  bk.type = "button"; bk.onclick = closeMenu; top.append(bk, el("b", null, "Menu"));
+  chv.innerHTML = MI.right; card.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase()), el("div", "nmv", names[me.id] || "Me"), chv);
+  card.onclick = () => { closeMenu(); setTab("menu"); };
+  w.append(top, card);
+  const sr = el("div", "mrow"), sv = el("span"); sr.innerHTML = MI.gear; sv.innerHTML = mset ? MI.up : MI.down;
+  sr.append(el("span", "mt", "Settings and privacy"), sv); sr.onclick = () => { mset = !mset; drawMenu(); }; w.append(sr);
+  if (mset) {
+    const sub = el("div", "msub");
+    sub.append(toggleRow("Read receipts", "Show and send when messages are seen", pref.rcpt !== false, v => { pref.rcpt = v; savePref(); updateSeen(); if (v) markSeen(cur); }));
+    sub.append(toggleRow("Typing indicator", "Show and send when someone is typing", pref.typ !== false, v => { pref.typ = v; savePref(); showTyping(); }));
+    const br = el("div", "mrow s"), bc = el("span"); br.innerHTML = MI.block; bc.innerHTML = mblk ? MI.up : MI.down;
+    br.append(el("span", "mt", "Blocked accounts" + (blocked.size ? " (" + blocked.size + ")" : "")), bc); br.onclick = () => { mblk = !mblk; drawMenu(); }; sub.append(br);
+    if (mblk) {
+      if (!blocked.size) sub.append(el("div", "hint", "No blocked accounts."));
+      [...blocked].forEach(u => {
+        const d = el("div", "irow"), mid = el("div", "mid"), b = el("button", "sm gray", "Unblock"); b.type = "button";
+        b.onclick = async e => { e.stopPropagation(); await doUnblock(u); drawMenu(); };
+        mid.append(el("div", "t1", names[u] || "Someone")); d.append(avatar(u, (names[u] || "?")[0].toUpperCase(), "md"), mid, b); sub.append(d);
+      });
+    }
+    const dr = el("div", "mrow s red"); dr.innerHTML = MI.trash; dr.append(el("span", "mt", "Delete account")); dr.onclick = deleteAccount; sub.append(dr);
+    w.append(sub);
+  }
+  const lo = el("button", "mlog", "Log out"); lo.type = "button"; lo.onclick = () => { closeMenu(); sb.auth.signOut(); };
+  w.append(el("div", "msp"), lo); o.append(w); o.scrollTop = y;
 }
 
 // ---------- DELETE ACCOUNT ----------
@@ -916,7 +1246,7 @@ function resetChatView() {
   cur = null; leaveTyping(); closeInfo(); $("#app").classList.remove("open"); $("#title").textContent = "Select a chat";
   $("#msgs").replaceChildren(el("div", "empty", "Select a chat to get started.")); updateHead();
 }
-function closeInfo() { $("#info").classList.add("hide"); infoProfile = null; }
+function closeInfo() { $("#info").classList.add("hide"); infoProfile = null; closeProfile(); }
 function toggleMute(id, v) { if (v === undefined) v = !pref.mute[id]; if (v) pref.mute[id] = 1; else delete pref.mute[id]; savePref(); render(); }
 function toggleRow(label, sub, on, fn) {
   const r = el("div", "irow"), mid = el("div", "mid"), sw = el("button", "tg" + (on ? " on" : "")); sw.type = "button";
@@ -1041,30 +1371,6 @@ async function doUnblock(uid) {
   blocked.delete(uid); await loadFriends(); updateHead(); toast((names[uid] || "Person") + " unblocked");
   if (infoProfile === uid) openProfile(uid);
 }
-async function openProfile(uid) {
-  await ensureNames([uid]);
-  infoProfile = uid;
-  const p = $("#info"); p.classList.remove("hide"); p.replaceChildren(); p.scrollTop = 0;
-  const hd = el("div", "ihead"), bk = el("button", "ghost", "←"); bk.type = "button"; bk.onclick = closeInfo;
-  hd.append(bk, el("div", null, "Profile")); p.append(hd);
-  const nm = names[uid] || "Someone", rl = rel(uid), bl = blocked.has(uid);
-  const sub = bl ? "Blocked" : (rl && rl.status === "accepted" ? "Friends" : rl && rl.status === "pending" ? (rl.incoming ? "Sent you a friend request" : "Friend request sent") : "");
-  const top = el("div", "itop");
-  top.append(avatar(uid, nm[0].toUpperCase(), "xl", uid), el("div", "iname", nm), el("div", "t2", online.has(uid) && !bl ? "Active now" : sub));
-  p.append(top);
-  if (uid === me.id) return;
-  const refresh = async () => { await loadFriends(); openProfile(uid); };
-  if (!bl) {
-    if (!rl) p.append(actRow("➕", "Add friend", async () => { const {error} = await sb.from("friendships").insert({addressee: uid}); if (error) return alert(error.message); refresh(); }));
-    else if (rl.status === "pending" && !rl.incoming) p.append(actRow("⏳", "Cancel friend request", async () => { await sb.from("friendships").delete().eq("id", rl.id); refresh(); }));
-    else if (rl.status === "pending") p.append(actRow("✅", "Accept friend request", async () => { await sb.from("friendships").update({status: "accepted"}).eq("id", rl.id); refresh(); }));
-    p.append(actRow("💬", "Message", () => { closeInfo(); openDM(uid); }));
-    p.append(actRow("📞", "Audio call", () => { closeInfo(); callUser(uid, false); }));
-    p.append(actRow("🎥", "Video call", () => { closeInfo(); callUser(uid, true); }));
-  }
-  p.append(actRow("⛔", bl ? "Unblock" : "Block", () => bl ? doUnblock(uid) : doBlock(uid), bl ? "" : "red"));
-}
-
 // ---------- DM STYLE: last seen + intro ----------
 function ago(ts) {
   const m = Math.floor((Date.now() - ts) / 60000);
@@ -1220,7 +1526,7 @@ function activeRow(box) {
   fs.forEach(u => { const c = el("div", "act"); c.append(avatar(u, (names[u] || "?")[0].toUpperCase(), "lg", u), el("div", "t2", (names[u] || "").split(" ")[0])); c.onclick = () => openDM(u); row.append(c); });
   box.append(row);
 }
-$("#ham").onclick = () => setTab("menu");
+$("#ham").onclick = openMenu;
 $("#newg").onclick = openNewGroup;
 
 // ---------- NEW GROUP SCREEN, PEOPLE, PHOTOS ----------
@@ -1270,7 +1576,7 @@ async function loadPhotos(ids) {
     if (p.avatar_path) { const u = await imgUrl(p.avatar_path); if (u) { photoUrl[p.id] = u; ch = true; } }
     if (p.cover_path) { const u = await imgUrl(p.cover_path); if (u) { coverUrl[p.id] = u; ch = true; } }
   }));
-  if (ch && me) { render(); updateHead(); }
+  if (ch && me) { render(); updateHead(); pfPaint(); }
 }
 function pickPhoto(kind) { const i = document.createElement("input"); i.type = "file"; i.accept = "image/*"; i.onchange = () => { if (i.files[0]) uploadPhoto(kind, i.files[0]); }; i.click(); }
 async function uploadPhoto(kind, file) {
