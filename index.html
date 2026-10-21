@@ -72,10 +72,11 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 <div id="auth" class="hide">
  <form id="af">
   <h1>💬 Chatter</h1>
-  <input id="em" type="text" placeholder="Email or mobile number" required autocomplete="username">
+  <input id="em" type="text" placeholder="Email" required autocomplete="username">
   <input id="pw" type="password" placeholder="Password" required minlength="6" autocomplete="current-password">
   <button id="ab">Log in</button>
   <div id="amsg"></div>
+  <button type="button" class="ghost" id="fp">Forgot password?</button>
   <button type="button" class="ghost" id="sw">Create new account</button>
  </form>
  <div id="wiz" class="hide">
@@ -135,40 +136,46 @@ let tab = "chats", filter = "all", query = "", results = null, cur = null, seen 
 
 // ---------- AUTH ----------
 function showAuth() {
+  W.reset = false;
   $("#app").classList.add("hide"); $("#auth").classList.remove("hide");
   $("#af").classList.remove("hide"); $("#wiz").classList.add("hide");
 }
 $("#af").onsubmit = async e => {
   e.preventDefault();
   const msg = $("#amsg"); msg.textContent = "One moment…";
-  const id = $("#em").value.trim(), ph = id.includes("@") ? null : normPhone(id);
-  if (!id.includes("@") && !ph) return msg.textContent = "Enter your email or a valid mobile number.";
-  const {error} = await sb.auth.signInWithPassword({...(ph ? {phone: ph} : {email: id}), password: $("#pw").value});
+  const id = $("#em").value.trim();
+  if (!/^\S+@\S+\.\S+$/.test(id)) return msg.textContent = "Enter a valid email address.";
+  const {error} = await sb.auth.signInWithPassword({email: id, password: $("#pw").value});
   msg.textContent = error ? error.message : "";
 };
 
-function normPhone(x) {
-  const raw = (x || "").trim(), d = raw.replace(/\D/g, "");
-  if (raw.startsWith("+")) return d.length >= 8 && d.length <= 15 ? "+" + d : null;
-  if (d.length === 11 && d.startsWith("09")) return "+63" + d.slice(1);
-  if (d.length === 10 && d.startsWith("9")) return "+63" + d;
-  if (d.length === 12 && d.startsWith("63")) return "+" + d;
-  return null;
-}
 // ---------- SIGN UP WIZARD (name > birthday > gender > email > password > 6-digit code) ----------
-const STEPS = ["name", "bday", "gender", "contact", "pw", "otp"];
-const W = {step: 0, d: {first: "", last: "", bday: "", gender: "", email: "", phone: "", pw: ""}, mode: "phone", timer: null};
-const target = () => W.mode === "phone" ? W.d.phone : W.d.email;
-const cred = () => W.mode === "phone" ? {phone: W.d.phone} : {email: W.d.email};
+const STEPS = ["name", "bday", "gender", "contact", "pw", "otp"], RSTEPS = ["remail", "rcode", "rnew"];
+const W = {step: 0, d: {first: "", last: "", bday: "", gender: "", email: "", pw: ""}, timer: null, reset: false, rEmail: ""};
+const target = () => W.d.email;
+const cred = () => ({email: W.d.email});
 const wfield = (id, ph, type, val, x) => { const i = el("input"); i.id = id; i.placeholder = ph; i.type = type || "text"; i.value = val || ""; return Object.assign(i, x || {}); };
 const wmsg = t => { $("#wmsg").textContent = t || ""; };
 const wval = id => ($("#" + id) || {}).value || "";
 
 function wShow(n) {
-  W.step = n; const s = STEPS[n], b = $("#wbody"); b.replaceChildren(); wmsg(); clearInterval(W.timer);
+  W.step = n; const s = (W.reset ? RSTEPS : STEPS)[n], b = $("#wbody"); b.replaceChildren(); wmsg(); clearInterval(W.timer);
   $("#wres").classList.add("hide"); $("#walt").classList.add("hide"); $("#wnext").textContent = "Next"; $("#wnext").disabled = false;
   const head = (t, p) => { $("#wt").textContent = t; $("#wp").textContent = p; };
-  if (s === "name") {
+  if (s === "remail") {
+    head("Reset your password", "Enter your account email. We'll send a 6-digit code.");
+    b.append(wfield("w1", "Email", "email", W.rEmail, {autocomplete: "email"})); $("#wnext").textContent = "Send code";
+  } else if (s === "rcode") {
+    head("Enter the code", "We sent a 6-digit code to " + W.rEmail + ". It may take a minute. Check spam too.");
+    const o = wfield("w1", "000000", "text", "", {maxLength: 8, inputMode: "numeric", autocomplete: "one-time-code"}); o.className = "otp";
+    o.oninput = () => { o.value = o.value.replace(/\D/g, ""); };
+    b.append(o); $("#wnext").textContent = "Confirm"; wCooldown(30);
+  } else if (s === "rnew") {
+    head("Create a new password", "Use at least 6 characters.");
+    const p = wfield("w1", "New password", "password", "", {autocomplete: "new-password"});
+    const l = el("label", "small", " Show password"), c = el("input"); c.type = "checkbox"; c.style.cssText = "width:auto;padding:0"; c.onchange = () => { p.type = c.checked ? "text" : "password"; };
+    l.prepend(c); b.append(p, l); $("#wnext").textContent = "Save password";
+  } else if (s === "name") {
     head("What's your name?", "Enter the name you use in real life.");
     b.append(wfield("w1", "First name", "text", W.d.first, {maxLength: 30, autocomplete: "given-name"}), wfield("w2", "Last name", "text", W.d.last, {maxLength: 30, autocomplete: "family-name"}));
   } else if (s === "bday") {
@@ -180,18 +187,15 @@ function wShow(n) {
       const l = el("label", "opt", t), r = el("input"); r.type = "radio"; r.name = "g"; r.value = v; r.checked = W.d.gender === v; l.append(r); b.append(l);
     });
   } else if (s === "contact") {
-    const ph = W.mode === "phone";
-    head(ph ? "What's your mobile number?" : "What's your email?", ph ? "Enter the mobile number where you can be contacted. We'll text a confirmation code. Example: 09171234567." : "Enter the email where you can be contacted. We'll send a confirmation code here.");
-    b.append(ph ? wfield("w1", "Mobile number", "tel", W.d.phone, {autocomplete: "tel", inputMode: "tel"}) : wfield("w1", "Email", "email", W.d.email, {autocomplete: "email"}));
-    const alt = $("#walt"); alt.classList.remove("hide"); alt.textContent = ph ? "Sign up with email" : "Sign up with mobile number";
-    alt.onclick = () => { W.mode = ph ? "email" : "phone"; wShow(3); };
+    head("What's your email?", "Enter the email where you can be contacted. We'll send a confirmation code here.");
+    b.append(wfield("w1", "Email", "email", W.d.email, {autocomplete: "email"}));
   } else if (s === "pw") {
     head("Create a password", "Use at least 6 characters.");
     const p = wfield("w1", "Password", "password", W.d.pw, {autocomplete: "new-password"});
     const l = el("label", "small", " Show password"), c = el("input"); c.type = "checkbox"; c.style.cssText = "width:auto;padding:0"; c.onchange = () => { p.type = c.checked ? "text" : "password"; };
     l.prepend(c); b.append(p, l); $("#wnext").textContent = "Sign up";
   } else {
-    head("Enter the confirmation code", "We sent a 6-digit code to " + target() + ". It may take a minute." + (W.mode === "email" ? " Check spam too." : ""));
+    head("Enter the confirmation code", "We sent a 6-digit code to " + target() + ". It may take a minute." + " Check spam too.");
     const o = wfield("w1", "000000", "text", "", {maxLength: 8, inputMode: "numeric", autocomplete: "one-time-code"}); o.className = "otp";
     o.oninput = () => { o.value = o.value.replace(/\D/g, ""); };
     b.append(o); $("#wnext").textContent = "Confirm"; wCooldown(30);
@@ -205,15 +209,40 @@ function wCooldown(sec) {
 }
 $("#wres").onclick = async () => {
   wmsg(); $("#wres").disabled = true;
-  const {error} = await sb.auth.resend({type: W.mode === "phone" ? "sms" : "signup", ...cred()});
+  const {error} = W.reset ? await sb.auth.resetPasswordForEmail(W.rEmail) : await sb.auth.resend({type: "signup", ...cred()});
   if (error) { wmsg(error.message); $("#wres").disabled = false; return; }
   wmsg("A new code was sent."); wCooldown(60);
 };
-$("#sw").onclick = () => { $("#af").classList.add("hide"); $("#wiz").classList.remove("hide"); wShow(0); };
-$("#wback").onclick = () => { if (W.step === 0) { clearInterval(W.timer); showAuth(); } else wShow(W.step - 1); };
+$("#fp").onclick = () => { W.reset = true; W.rEmail = $("#em").value.trim().toLowerCase(); $("#af").classList.add("hide"); $("#wiz").classList.remove("hide"); wShow(0); };
+$("#sw").onclick = () => { W.reset = false; $("#af").classList.add("hide"); $("#wiz").classList.remove("hide"); wShow(0); };
+$("#wback").onclick = () => { if (W.reset) { clearInterval(W.timer); if (W.step === 2) return sb.auth.signOut(); if (W.step === 0) return showAuth(); return wShow(W.step - 1); } if (W.step === 0) { clearInterval(W.timer); showAuth(); } else wShow(W.step - 1); };
 $("#wiz").onkeydown = e => { if (e.key === "Enter" && e.target.tagName === "INPUT" && e.target.type !== "checkbox") { e.preventDefault(); $("#wnext").click(); } };
 
+async function resetNext() {
+  const s = RSTEPS[W.step], btn = $("#wnext"); wmsg();
+  if (s === "remail") {
+    const m = wval("w1").trim().toLowerCase(); if (!/^\S+@\S+\.\S+$/.test(m)) return wmsg("Enter a valid email address.");
+    btn.disabled = true; W.rEmail = m;
+    const {error} = await sb.auth.resetPasswordForEmail(m);
+    if (error) { btn.disabled = false; return wmsg(error.message); }
+    return wShow(1);
+  }
+  if (s === "rcode") {
+    const code = wval("w1").replace(/\D/g, ""); if (code.length < 6) return wmsg("Enter the 6-digit code.");
+    btn.disabled = true;
+    const {error} = await sb.auth.verifyOtp({email: W.rEmail, token: code, type: "recovery"});
+    if (error) { btn.disabled = false; return wmsg(/expired|invalid/i.test(error.message) ? "That code is wrong or has expired. Try again or resend." : error.message); }
+    return wShow(2);
+  }
+  const pw = wval("w1"); if (pw.length < 6) return wmsg("Password must be at least 6 characters.");
+  btn.disabled = true;
+  const {error} = await sb.auth.updateUser({password: pw});
+  if (error) { btn.disabled = false; return wmsg(error.message); }
+  W.reset = false;
+  const {data} = await sb.auth.getSession(); if (data.session && !me) start(data.session.user);
+}
 $("#wnext").onclick = async () => {
+  if (W.reset) return resetNext();
   const s = STEPS[W.step]; wmsg();
   if (s === "name") {
     const f = wval("w1").trim(), l = wval("w2").trim();
@@ -233,8 +262,7 @@ $("#wnext").onclick = async () => {
   }
   if (s === "contact") {
     const v = wval("w1").trim();
-    if (W.mode === "phone") { const n = normPhone(v); if (!n) return wmsg("Enter a valid mobile number, e.g. 09171234567."); W.d.phone = n; }
-    else { const m = v.toLowerCase(); if (!/^\S+@\S+\.\S+$/.test(m)) return wmsg("Enter a valid email address."); W.d.email = m; }
+    const m = v.toLowerCase(); if (!/^\S+@\S+\.\S+$/.test(m)) return wmsg("Enter a valid email address."); W.d.email = m;
     return wShow(4);
   }
   const btn = $("#wnext"); btn.disabled = true;
@@ -243,18 +271,18 @@ $("#wnext").onclick = async () => {
     W.d.pw = p;
     const {data, error} = await sb.auth.signUp({...cred(), password: p, options: {data: {
       username: W.d.first + " " + W.d.last, first_name: W.d.first, last_name: W.d.last, birthday: W.d.bday, gender: W.d.gender}}});
-    if (error) { btn.disabled = false; return wmsg(/sms|provider|phone/i.test(error.message) ? error.message + " (SMS may not be set up yet. Try signing up with email instead.)" : error.message); }
-    if (W.mode === "email" && data.user && data.user.identities && !data.user.identities.length) { btn.disabled = false; return wmsg("This email already has an account. Go back and log in."); }
+    if (error) { btn.disabled = false; return wmsg(error.message); }
+    if (data.user && data.user.identities && !data.user.identities.length) { btn.disabled = false; return wmsg("This email already has an account. Go back and log in."); }
     if (data.session) return;   // email confirmation is off: logged in right away
     return wShow(5);
   }
   const code = wval("w1").replace(/\D/g, "");
   if (code.length < 6) { btn.disabled = false; return wmsg("Enter the 6-digit code."); }
-  const {error} = await sb.auth.verifyOtp({...cred(), token: code, type: W.mode === "phone" ? "sms" : "signup"});
+  const {error} = await sb.auth.verifyOtp({...cred(), token: code, type: "signup"});
   if (error) { btn.disabled = false; return wmsg(error.message.includes("expired") || error.message.includes("invalid") ? "That code is wrong or has expired. Try again or resend." : error.message); }
 };
 sb.auth.onAuthStateChange((ev, session) => {
-  if (session && !me) start(session.user);
+  if (session && !me && !W.reset) start(session.user);
   if (!session) { me = null; sb.removeAllChannels(); cur = null; results = null; showAuth(); }
 });
 
