@@ -506,6 +506,7 @@ function setTab(t) {
   $("#sqw").classList.toggle("hide", t === "notifs" || t === "menu" || t === "feed");
   if (t === "feed") { feedDirty = true; loadFeed(); }
   if (t === "menu") pf = blankPf();
+  if (t === "notifs") loadActivity();
   $("#chips").classList.toggle("hide", t !== "chats");
   $("#sq").placeholder = t === "people" ? "Find an account (username)…" : "Search";
   render();
@@ -582,10 +583,11 @@ function render() {
   } else if (tab === "notifs") {
     const seenT = +localStorage.getItem("nseen") || 0;
     const items = [...fr.filter(f => f.status === "accepted" || (f.status === "pending" && f.addressee === me.id)).map(f => ({f, t: Date.parse(f.updated_at || f.created_at || "") || 0})), ...act.map(a => ({a, t: a.t}))].sort((x, y) => y.t - x.t);
+    if (actErr) box.append(el("div", "hint", "Couldn't load likes/comments: " + actErr + ". Run upgrade8.sql and upgrade9.sql in Supabase."));
     if (!items.length) box.append(el("div", "hint", "No new notifications."));
     else box.append(el("div", "sec", "Earlier"));
     items.forEach(({f, a, t}) => {
-      if (a) return actRow(box, a, t, seenT);
+      if (a) return notifActRow(box, a, t, seenT);
       const u = f.requester === me.id ? f.addressee : f.requester, inc = f.status === "pending", nm = names[u] || "Someone", d = el("div", "item"), mid = el("div", "mid");
       mid.append(el("div", "t1", nm), el("div", "t2", (inc ? "Sent you a friend request." : "You are now friends. Tap to chat.") + (t ? " · " + ago2(t) : "")));
       if (inc) {
@@ -606,7 +608,7 @@ function render() {
 
 
 // ---------- ACTIVITY NOTIFICATIONS: likes / comments on my posts, new posts from friends ----------
-let act = [], actMine = new Set(), actT = null, pov = null;
+let act = [], actMine = new Set(), actT = null, pov = null, actErr = "";
 const actSoon = () => { clearTimeout(actT); actT = setTimeout(loadActivity, 800); };
 const frIds = () => fr.filter(f => f.status === "accepted").map(f => f.requester === me.id ? f.addressee : f.requester);
 const actUnseen = () => { const s = +localStorage.getItem("nseen") || 0; return act.filter(a => a.t > s).length; };
@@ -615,8 +617,10 @@ function paintNBadge() { const b = $("#b-notifs"), n = nBadge(); b.textContent =
 async function loadActivity() {
   if (!me) return;
   try { if (!localStorage.getItem("nseen")) localStorage.setItem("nseen", Date.now()); } catch (e) {}
-  const run = async mk => { let r = await mk(true); if (r.error) r = await mk(false); return r.data || []; };
+  actErr = "";
+  const run = async mk => { let r = await mk(true); if (r.error) r = await mk(false); if (r.error) actErr = r.error.message; return r.data || []; };
   const mine = await sb.from("posts").select("id,kind,body").eq("user_id", me.id).in("kind", ["post", "clip"]).order("created_at", {ascending: false}).limit(100);
+  if (mine.error) actErr = mine.error.message;
   const my = mine.data || [], ids = my.map(x => x.id), pm = {}; my.forEach(x => pm[x.id] = x); actMine = new Set(ids);
   const fids = frIds(), since = new Date(Date.now() - 30 * 864e5).toISOString();
   const [L, C, P] = await Promise.all([
@@ -630,7 +634,7 @@ async function loadActivity() {
   await ensureNames(act.map(a => a.u));
   paintNBadge(); if (tab === "notifs") render();
 }
-function actRow(box, a, t, seenT) {
+function notifActRow(box, a, t, seenT) {
   const nm = names[a.u] || "Someone", d = el("div", "item"), mid = el("div", "mid"), w = a.kind === "clip" ? "clip" : "post";
   const sn = (a.txt || "").trim(), cut = sn.length > 70 ? sn.slice(0, 70) + "…" : sn;
   const msg = a.type === "like" ? "❤️ Liked your " + w + "." : a.type === "comment" ? "💬 Commented on your " + w + (cut ? ": " + cut : ".") : "📝 Posted a new " + w + (cut ? ": " + cut : ".");
