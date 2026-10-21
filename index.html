@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="fil"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chatter</title>
+<style>
+:root{--bg:#fff;--bg2:#f0f2f5;--tx:#050505;--mut:#65676b;--me:#0866ff;--metx:#fff;--oth:#e9ebee;--line:#e2e4e8;--dot:#0866ff}
+@media(prefers-color-scheme:dark){:root{--bg:#000;--bg2:#242526;--tx:#e4e6eb;--mut:#9a9da3;--oth:#303233;--line:#2a2b2c}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--tx);font:15px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.hide{display:none!important}
+input{border:0;background:var(--bg2);color:var(--tx);border-radius:20px;padding:10px 14px;font:inherit;outline:none;min-width:0}
+button{border:0;background:var(--me);color:var(--metx);border-radius:20px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer}
+button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);color:var(--tx)}button.sm{padding:6px 14px;font-size:13px}
+#auth{height:100%;display:flex;align-items:center;justify-content:center;padding:16px}
+#auth form{width:100%;max-width:340px;display:flex;flex-direction:column;gap:10px}
+#auth h1{margin:0 0 6px;text-align:center}#auth input{border:1px solid var(--line);background:var(--bg)}
+#amsg{color:var(--mut);font-size:13px;text-align:center;min-height:18px}
+.app{display:grid;grid-template-columns:380px 1fr;height:100%;padding-top:env(safe-area-inset-top,0px)}
+.side{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line)}
+.side h1{margin:0;padding:12px 16px 6px;font-size:26px;letter-spacing:-.5px}
+.sw{padding:4px 16px 8px}.sw input{width:100%}
+.chips{display:flex;gap:8px;padding:2px 16px 8px}
+.chip{background:var(--bg2);color:var(--tx);padding:6px 14px;font-size:14px}.chip.on{background:#0866ff26;color:var(--me)}
+#list{flex:1;overflow-y:auto}
+.item{display:flex;align-items:center;gap:12px;padding:8px 16px;cursor:pointer}.item:active,.item.on{background:var(--bg2)}
+.av{width:52px;height:52px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;flex:none}
+.av.sm{width:30px;height:30px;font-size:13px}
+.mid{flex:1;min-width:0}.t1{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t2{color:var(--mut);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.unread .t1,.unread .t2{font-weight:700;color:var(--tx)}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--dot);flex:none}
+.hint{color:var(--mut);padding:20px 16px;text-align:center}
+.sec{font-size:13px;font-weight:700;color:var(--mut);padding:12px 16px 2px}
+.tabs{display:flex;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);background:var(--bg)}
+.tab{flex:1;background:none;color:var(--mut);border-radius:0;padding:8px 0 6px;font-size:11px;font-weight:600;position:relative}
+.tab span{display:block;font-size:22px;line-height:1.1}.tab.on{color:var(--me)}
+.bd{position:absolute;top:2px;left:55%;background:#f02849;color:#fff;border-radius:10px;font-size:11px;padding:0 5px;min-width:16px}
+.menu{padding:12px 16px;display:flex;flex-direction:column;gap:12px}
+.menu .row2{display:flex;gap:8px}.menu .row2 input{flex:1}
+.main{display:flex;flex-direction:column;min-height:0}
+.head{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);font-weight:700}
+.back{display:none;font-size:22px;padding:0 8px}
+#msgs{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:3px}
+.row{display:flex;gap:8px;align-items:flex-end}.row.me{justify-content:flex-end}
+.col{display:flex;flex-direction:column;max-width:75%}.row.me .col{align-items:flex-end}
+.nm{font-size:12px;color:var(--mut);margin:6px 0 2px 10px}
+.bub{background:var(--oth);padding:8px 13px;border-radius:18px;white-space:pre-wrap;overflow-wrap:anywhere}
+.row.me .bub{background:var(--me);color:var(--metx)}
+.tm{font-size:11px;color:var(--mut);margin:1px 8px 4px}
+.empty{margin:auto;color:var(--mut);text-align:center}
+.compose{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}.compose input{flex:1}
+@media(max-width:700px){.app{grid-template-columns:1fr}.main{display:none}.app.open .side{display:none}.app.open .main{display:flex}.back{display:block}}
+</style></head>
+<body>
+<div id="auth" class="hide">
+ <form id="af">
+  <h1>💬 Chatter</h1>
+  <input id="un" class="hide" placeholder="Username" maxlength="30">
+  <input id="em" type="email" placeholder="Email" required autocomplete="email">
+  <input id="pw" type="password" placeholder="Password (min. 6)" required minlength="6" autocomplete="current-password">
+  <button id="ab">Mag-login</button>
+  <div id="amsg"></div>
+  <button type="button" class="ghost" id="sw">Wala pang account? Mag-sign up</button>
+ </form>
+</div>
+
+<div class="app hide" id="app">
+ <aside class="side">
+  <h1 id="ptitle">Chatter</h1>
+  <div class="sw" id="sqw"><input id="sq" style="width:100%" maxlength="30"></div>
+  <div class="chips" id="chips">
+   <button class="chip on" data-f="all">All</button><button class="chip" data-f="unread">Unread</button><button class="chip" data-f="groups">Global</button>
+  </div>
+  <div id="list"></div>
+  <nav class="tabs" id="tabs">
+   <button class="tab on" data-t="chats"><span>💬</span>Messages<i class="bd hide" id="b-chats"></i></button>
+   <button class="tab" data-t="people"><span>👥</span>People</button>
+   <button class="tab" data-t="notifs"><span>🔔</span>Notifications<i class="bd hide" id="b-notifs"></i></button>
+   <button class="tab" data-t="menu"><span>☰</span>Menu</button>
+  </nav>
+ </aside>
+ <section class="main">
+  <div class="head"><button class="ghost back" id="back">‹</button><span id="title">Pumili ng chat</span></div>
+  <div id="msgs"><div class="empty">Pumili ng chat para magsimula.</div></div>
+  <form class="compose" id="f"><input id="in" placeholder="Mag-type ng mensahe…" autocomplete="off" maxlength="1000"><button>Send</button></form>
+ </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+// ====== ILAGAY DITO ANG SUPABASE KEYS MO (Project Settings > API Keys) ======
+const SUPABASE_URL = "https://ykyphsopgnhfdnvytswp.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_lzh6KRFUa8tG2ObZcaDK4w_LJ_QUqUO";
+// ==========================================================================
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const $ = s => document.querySelector(s);
+const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+const fmt = t => { const d = new Date(t), n = new Date(); return d.toDateString() === n.toDateString() ? d.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"}) : d.toLocaleDateString([], {month: "short", day: "numeric"}); };
+const colorFor = id => { let h = 0; for (const c of id || "") h = (h * 31 + c.charCodeAt(0)) % 360; return "hsl(" + h + " 55% 45%)"; };
+const avatar = (id, label, cls) => { const a = el("div", "av " + (cls || ""), label); a.style.background = colorFor(id); return a; };
+let rd = {}; try { rd = JSON.parse(localStorage.getItem("rd") || "{}"); } catch (e) {}
+const markRead = (rid, ts) => { rd[rid] = ts; try { localStorage.setItem("rd", JSON.stringify(rd)); } catch (e) {} };
+
+let me, names = {}, rooms = [], members = {}, latest = {}, fr = [];
+let tab = "chats", filter = "all", query = "", results = null, cur = null, seen = new Set(), lastUid = null, signup = false;
+
+// ---------- AUTH ----------
+function showAuth() { $("#app").classList.add("hide"); $("#auth").classList.remove("hide"); }
+$("#sw").onclick = () => {
+  signup = !signup;
+  $("#un").classList.toggle("hide", !signup); $("#un").required = signup;
+  $("#ab").textContent = signup ? "Mag-sign up" : "Mag-login";
+  $("#sw").textContent = signup ? "May account na? Mag-login" : "Wala pang account? Mag-sign up";
+  $("#amsg").textContent = "";
+};
+$("#af").onsubmit = async e => {
+  e.preventDefault();
+  const email = $("#em").value.trim(), password = $("#pw").value, msg = $("#amsg");
+  msg.textContent = "Sandali…";
+  if (signup) {
+    const {data, error} = await sb.auth.signUp({email, password, options: {data: {username: $("#un").value.trim()}, emailRedirectTo: location.protocol.startsWith("http") ? location.origin + location.pathname : undefined}});
+    if (error) return msg.textContent = error.message;
+    if (!data.session) return msg.textContent = "Tingnan ang email mo para i-confirm ang account, tapos mag-login.";
+  } else {
+    const {error} = await sb.auth.signInWithPassword({email, password});
+    if (error) return msg.textContent = error.message;
+  }
+};
+sb.auth.onAuthStateChange((ev, session) => {
+  if (session && !me) start(session.user);
+  if (!session) { me = null; sb.removeAllChannels(); cur = null; results = null; showAuth(); }
+});
+
+// ---------- DATA ----------
+async function ensureNames(ids) {
+  const need = [...new Set(ids)].filter(i => i && !names[i]); if (!need.length) return;
+  const {data} = await sb.from("profiles").select("id,username").in("id", need);
+  (data || []).forEach(p => names[p.id] = p.username);
+  need.forEach(i => { if (!names[i]) names[i] = "Someone"; });
+}
+const rel = uid => {
+  const f = fr.find(f => (f.requester === me.id && f.addressee === uid) || (f.requester === uid && f.addressee === me.id));
+  return f ? {id: f.id, status: f.status, incoming: f.addressee === me.id} : null;
+};
+const other = r => (members[r.id] || []).find(u => u !== me.id);
+const title = r => r.is_dm ? (names[other(r)] || "Chat") : r.name;
+const hasUnread = r => { const l = latest[r.id]; return !!l && l.user_id !== me.id && (!rd[r.id] || l.created_at > rd[r.id]); };
+const stamp = r => Date.parse(latest[r.id] ? latest[r.id].created_at : r.created_at) || 0;
+
+async function loadChats() {
+  const [r, m, l] = await Promise.all([
+    sb.from("rooms").select("*"), sb.from("room_members").select("*"),
+    sb.from("messages").select("*").order("created_at", {ascending: false}).limit(300)]);
+  rooms = r.data || []; members = {}; latest = {};
+  (m.data || []).forEach(x => { (members[x.room_id] = members[x.room_id] || []).push(x.user_id); });
+  (l.data || []).forEach(x => { if (!latest[x.room_id]) latest[x.room_id] = x; });
+  await ensureNames([...(m.data || []).map(x => x.user_id), ...Object.values(latest).map(x => x.user_id)]);
+  render();
+}
+async function loadFriends() {
+  const {data} = await sb.from("friendships").select("*");
+  fr = data || [];
+  await ensureNames(fr.flatMap(f => [f.requester, f.addressee]));
+  render();
+}
+async function start(user) {
+  me = user;
+  $("#auth").classList.add("hide"); $("#app").classList.remove("hide");
+  await ensureNames([me.id]);
+  await Promise.all([loadChats(), loadFriends()]);
+  sb.channel("msgs").on("postgres_changes", {event: "INSERT", schema: "public", table: "messages"}, onMsg).subscribe();
+  sb.channel("rooms").on("postgres_changes", {event: "INSERT", schema: "public", table: "rooms"}, loadChats).subscribe();
+  sb.channel("mem").on("postgres_changes", {event: "INSERT", schema: "public", table: "room_members", filter: "user_id=eq." + me.id}, loadChats).subscribe();
+  sb.channel("friends").on("postgres_changes", {event: "*", schema: "public", table: "friendships"}, loadFriends).subscribe();
+  setTab("chats");
+  const g = rooms.find(r => !r.is_dm);
+  if (g && innerWidth > 700) openRoom(g.id);
+}
+async function onMsg(p) {
+  const m = p.new;
+  if (!rooms.find(r => r.id === m.room_id)) return loadChats();
+  latest[m.room_id] = m;
+  await ensureNames([m.user_id]);
+  if (m.room_id === cur) { addMsg(m, cur); markRead(cur, m.created_at); }
+  render();
+}
+
+// ---------- UI: PANELS ----------
+function setTab(t) {
+  tab = t; results = null; query = ""; $("#sq").value = "";
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("on", b.dataset.t === t));
+  $("#ptitle").textContent = {chats: "Chatter", people: "People", notifs: "Notifications", menu: "Menu"}[t];
+  $("#sqw").classList.toggle("hide", t === "notifs" || t === "menu");
+  $("#chips").classList.toggle("hide", t !== "chats");
+  $("#sq").placeholder = t === "people" ? "Hanapin ang account (username)…" : "Search";
+  render();
+}
+document.querySelectorAll(".tab").forEach(b => b.onclick = () => setTab(b.dataset.t));
+document.querySelectorAll(".chip").forEach(b => b.onclick = () => {
+  filter = b.dataset.f; document.querySelectorAll(".chip").forEach(c => c.classList.toggle("on", c === b)); render();
+});
+let st;
+$("#sq").oninput = e => {
+  const q = e.target.value.trim().replace(/[%_\\,]/g, "");
+  if (tab === "chats") { query = q.toLowerCase(); return render(); }
+  clearTimeout(st);
+  if (!q) { results = null; return render(); }
+  st = setTimeout(async () => {
+    const {data} = await sb.from("profiles").select("id,username").ilike("username", "%" + q + "%").neq("id", me.id).limit(20);
+    results = data || []; results.forEach(p => names[p.id] = p.username); render();
+  }, 250);
+};
+
+function userRow(box, uid) {
+  const r = rel(uid), name = names[uid] || "Someone", btns = [];
+  const btn = (txt, cls, fn) => { const b = el("button", "sm " + cls, txt); b.onclick = e => { e.stopPropagation(); fn(); }; return b; };
+  if (!r) btns.push(btn("Add", "", async () => { const {error} = await sb.from("friendships").insert({addressee: uid}); if (error) alert(error.message); loadFriends(); }));
+  else if (r.status === "pending" && !r.incoming) btns.push(btn("Pending ✕", "gray", async () => { await sb.from("friendships").delete().eq("id", r.id); loadFriends(); }));
+  else if (r.status === "pending") {
+    btns.push(btn("Accept", "", async () => { await sb.from("friendships").update({status: "accepted"}).eq("id", r.id); loadFriends(); }));
+    btns.push(btn("✕", "gray", async () => { await sb.from("friendships").delete().eq("id", r.id); loadFriends(); }));
+  } else btns.push(btn("Message", "gray", () => openDM(uid)));
+  const d = el("div", "item"), mid = el("div", "mid"); mid.append(el("div", "t1", name));
+  d.append(avatar(uid, name[0].toUpperCase()), mid, ...btns);
+  d.onclick = () => { if (r && r.status === "accepted") openDM(uid); };
+  box.append(d);
+}
+
+function render() {
+  if (!me) return;
+  const box = $("#list"); box.replaceChildren();
+  const nUn = rooms.filter(hasUnread).length, nReq = fr.filter(f => f.status === "pending" && f.addressee === me.id).length;
+  [["chats", nUn], ["notifs", nReq]].forEach(([k, n]) => { const b = $("#b-" + k); b.textContent = n; b.classList.toggle("hide", !n); });
+
+  if (tab === "chats") {
+    const rs = rooms.filter(r => (filter !== "groups" || !r.is_dm) && (filter !== "unread" || hasUnread(r)) && title(r).toLowerCase().includes(query))
+      .sort((a, b) => stamp(b) - stamp(a));
+    if (!rs.length) box.append(el("div", "hint", filter === "unread" ? "Walang unread." : "Wala pang message. Pumunta sa People para magdagdag ng kaibigan."));
+    rs.forEach(r => {
+      const l = latest[r.id], un = hasUnread(r), t = title(r);
+      const d = el("div", "item" + (un ? " unread" : "") + (cur === r.id ? " on" : "")), mid = el("div", "mid");
+      let pv = "Magsimula ng usapan";
+      if (l) pv = (l.user_id === me.id ? "You: " : (r.is_dm ? "" : (names[l.user_id] || "") + ": ")) + l.body;
+      mid.append(el("div", "t1", t), el("div", "t2", pv + (l ? " · " + fmt(l.created_at) : "")));
+      d.append(avatar(r.id, r.is_dm ? t[0].toUpperCase() : (r.name === "General" ? "🌐" : "👥")), mid);
+      if (un) d.append(el("div", "dot"));
+      d.onclick = () => openRoom(r.id); box.append(d);
+    });
+  } else if (tab === "people") {
+    if (results) {
+      box.append(el("div", "sec", "Mga resulta"));
+      if (!results.length) box.append(el("div", "hint", "Walang nakitang account."));
+      results.forEach(p => userRow(box, p.id));
+    } else {
+      const fs = fr.filter(f => f.status === "accepted").map(f => f.requester === me.id ? f.addressee : f.requester);
+      box.append(el("div", "sec", "Mga kaibigan (" + fs.length + ")"));
+      if (!fs.length) box.append(el("div", "hint", "Wala pang kaibigan. I-search ang username sa taas para mag-add."));
+      fs.forEach(uid => userRow(box, uid));
+    }
+  } else if (tab === "notifs") {
+    const inc = fr.filter(f => f.status === "pending" && f.addressee === me.id);
+    box.append(el("div", "sec", "Friend requests"));
+    if (!inc.length) box.append(el("div", "hint", "Walang bagong notification."));
+    inc.forEach(f => userRow(box, f.requester));
+  } else {
+    const m = el("div", "menu"), card = el("div", "item"), mid = el("div", "mid");
+    card.style.padding = "0"; mid.append(el("div", "t1", names[me.id]), el("div", "t2", me.email));
+    card.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase()), mid);
+    const row = el("div", "row2"), ni = el("input"); ni.placeholder = "Bagong global chat…"; ni.maxLength = 40;
+    const nb = el("button", "sm", "Gawa"); nb.onclick = () => createRoom(ni.value);
+    row.append(ni, nb);
+    const out = el("button", "gray", "Logout"); out.onclick = () => sb.auth.signOut();
+    m.append(card, el("div", "sec", "Gumawa ng global chat (makikita ng lahat)"), row, out);
+    box.append(m);
+  }
+}
+
+// ---------- CHAT ----------
+async function openDM(uid) {
+  const {data, error} = await sb.rpc("start_dm", {other: uid});
+  if (error) return alert(error.message);
+  if (!rooms.find(r => r.id === data)) await loadChats();
+  setTab("chats"); openRoom(data);
+}
+async function openRoom(id) {
+  cur = id; seen = new Set(); lastUid = null;
+  const r = rooms.find(x => x.id === id); if (!r) return;
+  $("#title").textContent = title(r); $("#app").classList.add("open");
+  if (latest[id]) markRead(id, latest[id].created_at);
+  render();
+  const box = $("#msgs"); box.replaceChildren();
+  const {data, error} = await sb.from("messages").select("*").eq("room_id", id).order("created_at", {ascending: false}).limit(200);
+  if (cur !== id) return;
+  if (error) { box.textContent = error.message; return; }
+  if (!data.length) box.append(el("div", "empty", "Wala pang mensahe. Magsimula ng usapan!"));
+  await ensureNames(data.map(m => m.user_id));
+  data.reverse().forEach(m => addMsg(m, id));
+  box.scrollTop = box.scrollHeight;
+}
+function addMsg(m, forRoom) {
+  if (seen.has(m.id) || cur !== forRoom) return; seen.add(m.id);
+  const nm = names[m.user_id] || "Someone", box = $("#msgs"), e = box.querySelector(".empty"); if (e) e.remove();
+  const near = box.scrollHeight - box.scrollTop - box.clientHeight < 120, mine = m.user_id === me.id;
+  const row = el("div", "row" + (mine ? " me" : ""));
+  if (!mine) row.append(avatar(m.user_id, nm[0].toUpperCase(), "sm"));
+  const col = el("div", "col");
+  const r = rooms.find(x => x.id === cur);
+  if (!mine && !(r && r.is_dm) && lastUid !== m.user_id) col.append(el("div", "nm", nm));
+  col.append(el("div", "bub", m.body), el("div", "tm", fmt(m.created_at)));
+  row.append(col); box.append(row); lastUid = m.user_id;
+  if (near || mine) box.scrollTop = box.scrollHeight;
+}
+$("#f").onsubmit = async e => {
+  e.preventDefault();
+  const i = $("#in"), body = i.value.trim();
+  if (!body || !cur) return;
+  i.value = "";
+  const {error} = await sb.from("messages").insert({room_id: cur, body});
+  if (error) { i.value = body; alert("Hindi na-send: " + error.message); }
+};
+async function createRoom(name) {
+  name = name.trim(); if (!name) return;
+  const {data, error} = await sb.from("rooms").insert({name}).select().single();
+  if (error) return alert(error.message);
+  await loadChats(); setTab("chats"); openRoom(data.id);
+}
+$("#back").onclick = () => { $("#app").classList.remove("open"); cur = null; render(); };
+sb.auth.getSession().then(({data}) => { if (!data.session) showAuth(); });
+</script>
+</body></html>
