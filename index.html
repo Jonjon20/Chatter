@@ -39,6 +39,17 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .danger{background:#f02849;color:#fff}
 .menu .row2{display:flex;gap:8px}.menu .row2 input{flex:1}
 .main{display:flex;flex-direction:column;min-height:0}
+.main{position:relative}
+#info{position:absolute;inset:0;z-index:5;background:var(--bg);overflow-y:auto}
+.ihead{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);font-weight:700}.ihead button{font-size:22px;padding:0 8px}
+.itop{display:flex;flex-direction:column;align-items:center;gap:4px;padding:20px 16px 8px}.iname{font-size:20px;font-weight:700;text-align:center}.itop .t2:empty{display:none}
+.av.xl{width:96px;height:96px;font-size:38px}.av.xl .odot{width:22px;height:22px;border-width:3px}
+.av.xs{width:16px;height:16px;font-size:9px}
+.iq{display:flex;justify-content:center;gap:28px;padding:12px 16px 8px}.qb{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--mut)}.qb button{width:46px;height:46px;border-radius:50%;padding:0;font-size:20px}
+.irow{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer}.irow:active{background:var(--bg2)}.irow.red{color:#f02849}.irow .ic{width:26px;text-align:center;font-size:20px}
+.tg{width:44px;height:26px;border-radius:13px;padding:0;background:var(--line);position:relative;flex:none}.tg::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s}.tg.on{background:var(--me)}.tg.on::after{left:21px}
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:3px}.mgrid img{width:100%;aspect-ratio:1;object-fit:cover;background:var(--bg2);cursor:pointer}.mgrid .hint{grid-column:1/-1}
+.seen{display:flex;gap:2px;justify-content:flex-end;align-items:center;margin:0 4px 2px;font-size:11px;color:var(--mut)}
 .head{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);font-weight:700}
 .back{display:none;font-size:22px;padding:0 8px}
 #msgs{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:3px}
@@ -125,12 +136,14 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
   </nav>
  </aside>
  <section class="main">
-  <div class="head"><button class="ghost back" id="back">‹</button><div class="hd"><div id="title">Select a chat</div><div class="sub" id="sub"></div></div><div class="cb hide" id="cb"><button type="button" class="gray" id="vc" title="Voice call">📞</button><button type="button" class="gray" id="vd" title="Video call">🎥</button></div></div>
+  <div class="head"><button class="ghost back" id="back">‹</button><div class="hd"><div id="title">Select a chat</div><div class="sub" id="sub"></div></div><div class="cb hide" id="cb"><button type="button" class="gray" id="vc" title="Voice call">📞</button><button type="button" class="gray" id="vd" title="Video call">🎥</button><button type="button" class="gray" id="ib" title="Chat info">ⓘ</button></div></div>
+  <div class="bar hide" id="sbar"><input id="sbi" placeholder="Search in conversation…" maxlength="40"><span id="sbc"></span><button type="button" class="gray sm" id="sbx">✕</button></div>
   <div id="msgs"><div class="empty">Select a chat to get started.</div></div>
   <div class="typing" id="typing"></div>
   <div class="bar hide" id="eb"><span>✎ Editing message</span><button type="button" class="gray sm" id="ec">✕</button></div>
   <div class="bar hide" id="pv"></div>
   <form class="compose" id="f"><button type="button" class="gray att" id="att">📎</button><input type="file" id="file" accept="image/*" class="hide"><input id="in" placeholder="Type a message…" autocomplete="off" maxlength="1000"><button id="send">Send</button></form>
+  <div id="info" class="hide"></div>
  </section>
 </div>
 
@@ -158,7 +171,8 @@ const pvText = l => l.deleted_at ? "Message unsent" : callPv(l) || (l.image_path
 let rd = {}; try { rd = JSON.parse(localStorage.getItem("rd") || "{}"); } catch (e) {}
 const markRead = (rid, ts) => { rd[rid] = ts; try { localStorage.setItem("rd", JSON.stringify(rd)); } catch (e) {} };
 
-let me, names = {}, rooms = [], members = {}, latest = {}, fr = [], online = new Set();
+let me, names = {}, rooms = [], members = {}, latest = {}, fr = [], online = new Set(), reads = {};
+let pref = {rcpt: true, typ: true, mute: {}}; try { Object.assign(pref, JSON.parse(localStorage.getItem("pf") || "{}")); } catch (e) {}
 let tab = "chats", filter = "all", query = "", results = null, cur = null, seen = new Set(), lastUid = null, signup = false;
 
 // ---------- AUTH ----------
@@ -326,7 +340,7 @@ const rel = uid => {
 };
 const other = r => (members[r.id] || []).find(u => u !== me.id);
 const title = r => r.is_dm ? (names[other(r)] || "Chat") : r.name;
-const hasUnread = r => { const l = latest[r.id]; return !!l && l.user_id !== me.id && (!rd[r.id] || l.created_at > rd[r.id]); };
+const hasUnread = r => { if (pref.mute && pref.mute[r.id]) return false; const l = latest[r.id]; return !!l && l.user_id !== me.id && (!rd[r.id] || l.created_at > rd[r.id]); };
 const pin = r => (!r.is_dm && !r.is_group && r.name === "General") ? 1 : 0;
 const stamp = r => Date.parse(latest[r.id] ? latest[r.id].created_at : r.created_at) || 0;
 
@@ -335,10 +349,11 @@ async function loadChats() {
     sb.from("rooms").select("*"), sb.from("room_members").select("*"),
     sb.from("messages").select("*").order("created_at", {ascending: false}).limit(300)]);
   rooms = r.data || []; members = {}; latest = {};
-  (m.data || []).forEach(x => { (members[x.room_id] = members[x.room_id] || []).push(x.user_id); });
+  (m.data || []).forEach(x => { (members[x.room_id] = members[x.room_id] || []).push(x.user_id); if (x.last_read_at) (reads[x.room_id] = reads[x.room_id] || {})[x.user_id] = Date.parse(x.last_read_at); });
   (l.data || []).forEach(x => { if (!latest[x.room_id]) latest[x.room_id] = x; });
   await ensureNames([...(m.data || []).map(x => x.user_id), ...Object.values(latest).map(x => x.user_id)]);
-  render();
+  if (cur && !rooms.find(x => x.id === cur)) resetChatView();
+  updateSeen(); render();
 }
 async function loadFriends() {
   const {data} = await sb.from("friendships").select("*");
@@ -347,13 +362,14 @@ async function loadFriends() {
   render();
 }
 async function start(user) {
-  me = user;
+  me = user; reads = {};
   $("#auth").classList.add("hide"); $("#app").classList.remove("hide");
   await ensureNames([me.id]);
   await Promise.all([loadChats(), loadFriends()]);
   sb.channel("msgs").on("postgres_changes", {event: "INSERT", schema: "public", table: "messages"}, onMsg).on("postgres_changes", {event: "UPDATE", schema: "public", table: "messages"}, onMsgUpd).subscribe();
   joinPresence();
-  sb.channel("rooms").on("postgres_changes", {event: "INSERT", schema: "public", table: "rooms"}, loadChats).subscribe();
+  sb.channel("rooms").on("postgres_changes", {event: "INSERT", schema: "public", table: "rooms"}, loadChats).on("postgres_changes", {event: "DELETE", schema: "public", table: "rooms"}, loadChats).subscribe();
+  sb.channel("reads").on("postgres_changes", {event: "UPDATE", schema: "public", table: "room_members"}, p => { const x = p.new; if (!x || !x.last_read_at) return; (reads[x.room_id] = reads[x.room_id] || {})[x.user_id] = Date.parse(x.last_read_at); if (x.room_id === cur) updateSeen(); }).subscribe();
   sb.channel("mem").on("postgres_changes", {event: "INSERT", schema: "public", table: "room_members", filter: "user_id=eq." + me.id}, loadChats).subscribe();
   sb.channel("friends").on("postgres_changes", {event: "*", schema: "public", table: "friendships"}, loadFriends).subscribe();
   listenInbox();
@@ -366,7 +382,7 @@ async function onMsg(p) {
   if (!rooms.find(r => r.id === m.room_id)) return loadChats();
   latest[m.room_id] = m;
   await ensureNames([m.user_id]);
-  if (m.room_id === cur) { addMsg(m, cur); markRead(cur, m.created_at); }
+  if (m.room_id === cur) { addMsg(m, cur); markRead(cur, m.created_at); if (m.user_id !== me.id) markSeen(cur); }
   render();
 }
 
@@ -528,7 +544,7 @@ async function openDM(uid) {
   setTab("chats"); openRoom(data);
 }
 async function openRoom(id) {
-  cur = id; seen = new Set(); lastUid = null;
+  cur = id; seen = new Set(); lastUid = null; closeInfo(); $("#sbar").classList.add("hide"); $("#sbi").value = "";
   const r = rooms.find(x => x.id === id); if (!r) return;
   $("#title").textContent = title(r); $("#app").classList.add("open");
   rows = {}; stopEdit(); setPend(null); joinTyping(id); updateHead();
@@ -542,6 +558,7 @@ async function openRoom(id) {
   await ensureNames(data.map(m => m.user_id));
   data.reverse().forEach(m => addMsg(m, id));
   box.scrollTop = box.scrollHeight;
+  updateSeen(); markSeen(id);
 }
 let rows = {}, editing = null, pend = null, busy = false, tch = null, typers = {}, tT = null, lastTyp = 0;
 const urls = {}, uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2));
@@ -571,6 +588,7 @@ function addMsg(m, forRoom) {
   fill(m); lastUid = m.user_id;
   if (!mine) { delete typers[m.user_id]; showTyping(); }
   if (near || mine) box.scrollTop = box.scrollHeight;
+  updateSeen(); if (!$("#sbar").classList.contains("hide")) runSearch();
 }
 function fill(m) {
   const o = rows[m.id]; if (!o) return; o.m = m;
@@ -593,7 +611,7 @@ function fill(m) {
   const mb = o.row.querySelector(".more");
   if (mb) { mb.classList.toggle("hide", gone || !!cl); if (gone) o.row.classList.remove("sel"); }
 }
-function afterChange(m) { if (latest[m.room_id] && latest[m.room_id].id === m.id) latest[m.room_id] = m; fill(m); render(); }
+function afterChange(m) { if (latest[m.room_id] && latest[m.room_id].id === m.id) latest[m.room_id] = m; fill(m); render(); updateSeen(); }
 function onMsgUpd(p) { if (p.new.room_id === cur || latest[p.new.room_id]) afterChange(p.new); }
 
 // ---- edit / unsend ----
@@ -679,12 +697,12 @@ function showTyping() {
   clearTimeout(tT);
   const now = Date.now(), ns = [];
   for (const k in typers) { if (typers[k].until > now) ns.push(typers[k].name); else delete typers[k]; }
-  $("#typing").textContent = !ns.length ? "" : ns.length === 1 ? ns[0] + " is typing…" : ns.join(", ") + " are typing…";
+  $("#typing").textContent = (pref.typ === false || !ns.length) ? "" : ns.length === 1 ? ns[0] + " is typing…" : ns.join(", ") + " are typing…";
   if (ns.length) tT = setTimeout(showTyping, 1000);
 }
 $("#in").addEventListener("input", () => {
   const n = Date.now();
-  if (editing || !tch || !$("#in").value || n - lastTyp < 2500) return;
+  if (pref.typ === false || editing || !tch || !$("#in").value || n - lastTyp < 2500) return;
   lastTyp = n; tch.send({type: "broadcast", event: "typing", payload: {uid: me.id, name: names[me.id]}});
 });
 function joinPresence() {
@@ -694,8 +712,104 @@ function joinPresence() {
 }
 function updateHead() {
   const r = rooms.find(x => x.id === cur), s = $("#sub"), on = !!(r && r.is_dm && online.has(other(r)));
-  s.textContent = on ? "● Online" : (r && r.is_group ? (members[r.id] || []).length + " members" : ""); s.className = "sub" + (on ? " on" : ""); $("#cb").classList.toggle("hide", !(r && (r.is_dm || r.is_group)));
+  s.textContent = on ? "● Online" : (r && r.is_group ? (members[r.id] || []).length + " members" : ""); s.className = "sub" + (on ? " on" : ""); $("#cb").classList.toggle("hide", !r); const cl = !!(r && (r.is_dm || r.is_group)); $("#vc").classList.toggle("hide", !cl); $("#vd").classList.toggle("hide", !cl);
 }
+
+// ---------- SEEN + CHAT INFO ----------
+const savePref = () => { try { localStorage.setItem("pf", JSON.stringify(pref)); } catch (e) {} };
+let msT = null;
+function markSeen(rid) {
+  if (!rid || !me || pref.rcpt === false || document.visibilityState !== "visible") return;
+  const r = rooms.find(x => x.id === rid); if (!r || !(r.is_dm || r.is_group)) return;
+  clearTimeout(msT);
+  msT = setTimeout(() => { (reads[rid] = reads[rid] || {})[me.id] = Date.now(); sb.rpc("mark_read", {rid}).then(() => {}); }, 300);
+}
+document.addEventListener("visibilitychange", () => { if (cur && me) markSeen(cur); });
+function updateSeen() {
+  document.querySelectorAll("#msgs .seen").forEach(e => e.remove());
+  const r = rooms.find(x => x.id === cur); if (!r || !me || pref.rcpt === false || !(r.is_dm || r.is_group)) return;
+  let last = null;
+  for (const id in rows) { const o = rows[id]; if (o.m.user_id === me.id && !o.m.deleted_at && (!last || Date.parse(o.m.created_at) > Date.parse(last.m.created_at))) last = o; }
+  if (!last) return;
+  const t = Date.parse(last.m.created_at), rd2 = reads[cur] || {};
+  const ids = (members[cur] || []).filter(u => u !== me.id && rd2[u] && rd2[u] >= t);
+  if (!ids.length) return;
+  const s = el("div", "seen");
+  ids.slice(0, 5).forEach(u => { const a = avatar(u, (names[u] || "?")[0].toUpperCase(), "xs"); a.title = "Seen by " + (names[u] || "Someone"); s.append(a); });
+  if (ids.length > 5) s.append(el("span", null, "+" + (ids.length - 5)));
+  last.row.querySelector(".col").append(s);
+  if (last.near) $("#msgs").scrollTop = $("#msgs").scrollHeight;
+}
+function resetChatView() {
+  cur = null; leaveTyping(); closeInfo(); $("#app").classList.remove("open"); $("#title").textContent = "Select a chat";
+  $("#msgs").replaceChildren(el("div", "empty", "Select a chat to get started.")); updateHead();
+}
+function closeInfo() { $("#info").classList.add("hide"); }
+function toggleMute(id, v) { if (v === undefined) v = !pref.mute[id]; if (v) pref.mute[id] = 1; else delete pref.mute[id]; savePref(); render(); }
+function toggleRow(label, sub, on, fn) {
+  const r = el("div", "irow"), mid = el("div", "mid"), sw = el("button", "tg" + (on ? " on" : "")); sw.type = "button";
+  mid.append(el("div", "t1", label)); if (sub) mid.append(el("div", "t2", sub));
+  sw.onclick = e => { e.stopPropagation(); const v = !sw.classList.contains("on"); sw.classList.toggle("on", v); fn(v); };
+  r.onclick = () => sw.click(); r.append(mid, sw); return r;
+}
+function actRow(ic, label, fn, cls) {
+  const r = el("div", "irow" + (cls ? " " + cls : "")); r.append(el("span", "ic", ic), el("div", "mid", label)); r.onclick = fn; return r;
+}
+function openInfo(view) {
+  const r = rooms.find(x => x.id === cur); if (!r) return;
+  const p = $("#info"); p.classList.remove("hide"); p.replaceChildren(); p.scrollTop = 0;
+  const hd = el("div", "ihead"), bk = el("button", "ghost", "←"); bk.type = "button"; bk.onclick = view ? () => openInfo() : closeInfo;
+  hd.append(bk, el("div", null, view === "media" ? "Media" : "Chat info")); p.append(hd);
+  if (view === "media") return drawMedia(p, r);
+  const dm = r.is_dm, u = dm ? other(r) : null, nm = title(r), muted = !!pref.mute[r.id];
+  const top = el("div", "itop");
+  top.append(avatar(r.id, dm ? nm[0].toUpperCase() : (r.is_group ? "👥" : "🌐"), "xl", dm ? u : null), el("div", "iname", nm),
+    el("div", "t2", dm ? (online.has(u) ? "Active now" : "") : (members[r.id] || []).length + " members"));
+  const q = el("div", "iq");
+  const qb = (ic, lb, fn) => { const b = el("div", "qb"), c = el("button", "gray", ic); c.type = "button"; c.onclick = fn; b.append(c, el("div", null, lb)); return b; };
+  q.append(qb("🔍", "Search", startSearch), qb("🖼", "Media", () => openInfo("media")), qb(muted ? "🔕" : "🔔", muted ? "Unmute" : "Mute", () => { toggleMute(r.id); openInfo(); }));
+  p.append(top, q, el("div", "sec", "Actions"));
+  p.append(actRow("🖼", "View all media", () => openInfo("media")));
+  p.append(toggleRow("Mute chat", "Hide the unread badge for this chat", muted, v => toggleMute(r.id, v)));
+  if (dm) p.append(actRow("👥", "Create group chat with " + nm, () => { gdraft.sel.add(u); closeInfo(); $("#app").classList.remove("open"); setTab("menu"); }));
+  if (r.is_group) {
+    p.append(el("div", "sec", "Members (" + (members[r.id] || []).length + ")"));
+    (members[r.id] || []).forEach(m => { const row = el("div", "irow"); row.style.cursor = "default"; row.append(avatar(m, (names[m] || "?")[0].toUpperCase(), "sm", m), el("div", "mid", (names[m] || "Someone") + (m === me.id ? " (you)" : ""))); p.append(row); });
+  }
+  p.append(el("div", "sec", "Privacy & support"));
+  p.append(toggleRow("Read receipts", "Show and send when messages are seen", pref.rcpt !== false, v => { pref.rcpt = v; savePref(); updateSeen(); if (v) markSeen(cur); }));
+  p.append(toggleRow("Typing indicator", "Show and send when someone is typing", pref.typ !== false, v => { pref.typ = v; savePref(); showTyping(); }));
+  if (dm) p.append(actRow("🗑", "Delete chat", deleteChat, "red"));
+}
+async function drawMedia(p, r) {
+  const g = el("div", "mgrid"); g.append(el("div", "hint", "Loading…")); p.append(g);
+  const {data, error} = await sb.from("messages").select("id,image_path").eq("room_id", r.id).not("image_path", "is", null).is("deleted_at", null).order("created_at", {ascending: false}).limit(200);
+  g.replaceChildren();
+  if (error) return g.append(el("div", "hint", error.message));
+  if (!data.length) return g.append(el("div", "hint", "No photos yet."));
+  data.forEach(m => { const im = el("img"); im.alt = "Photo"; im.onclick = () => { if (im.src) window.open(im.src, "_blank", "noopener"); }; g.append(im); imgUrl(m.image_path).then(u => { if (u) im.src = u; }); });
+}
+function startSearch() { closeInfo(); $("#sbar").classList.remove("hide"); $("#sbi").value = ""; $("#sbi").focus(); runSearch(); }
+function stopSearch() { $("#sbar").classList.add("hide"); $("#sbi").value = ""; runSearch(); }
+function runSearch() {
+  const q = $("#sbi").value.trim().toLowerCase(); let n = 0;
+  for (const id in rows) { const o = rows[id], hit = !q || (!o.m.deleted_at && (o.m.body || "").toLowerCase().includes(q)); o.row.classList.toggle("hide", !hit); if (q && hit) n++; }
+  $("#sbc").textContent = q ? n + " found" : "";
+  if (!q) $("#msgs").scrollTop = $("#msgs").scrollHeight;
+}
+async function deleteChat() {
+  const r = rooms.find(x => x.id === cur); if (!r || !r.is_dm) return;
+  if (!confirm("Delete this chat with " + title(r) + "? All messages and photos are deleted for BOTH of you. This cannot be undone.")) return;
+  try {
+    const {data: im} = await sb.from("messages").select("image_path").eq("room_id", r.id).not("image_path", "is", null);
+    const list = (im || []).map(x => x.image_path).filter(Boolean);
+    for (let i = 0; i < list.length; i += 100) await sb.storage.from("chat-images").remove(list.slice(i, i + 100));
+    const {error} = await sb.rpc("delete_chat", {rid: r.id}); if (error) throw error;
+    delete reads[r.id]; resetChatView(); await loadChats();
+  } catch (err) { alert("Couldn't delete chat: " + (err.message || err)); }
+}
+$("#ib").onclick = () => openInfo();
+$("#sbi").oninput = runSearch; $("#sbx").onclick = stopSearch;
 
 // ---------- CALLS: voice & video (DMs + groups only; WebRTC, signaling over Supabase Realtime) ----------
 const ICE = {iceServers: [{urls: "stun:stun.l.google.com:19302"}, {urls: "stun:stun1.l.google.com:19302"}]};
