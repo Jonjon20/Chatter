@@ -170,6 +170,7 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .cm{padding:8px 14px 10px;display:flex;flex-direction:column;gap:8px}.cm .fci{display:flex;gap:8px;align-items:flex-start}
 .cm .fcb{background:var(--bg2);border-radius:18px;padding:7px 12px;font-size:15px;overflow-wrap:anywhere}.cm .fcb b{display:block;font-size:13px}.cm input{width:100%}
 .rl{position:relative;height:calc(100% - 56px);scroll-snap-align:start;background:#000;color:#fff}.rl video{width:100%;height:100%;object-fit:contain}.rl .ov{position:absolute;left:12px;right:70px;bottom:16px;text-shadow:0 1px 3px #000}.rl .sd{position:absolute;right:10px;bottom:30px;display:flex;flex-direction:column;gap:14px}.rl .sd button{background:#0008;color:#fff;border-radius:50%;width:48px;height:48px;padding:0;font-size:12px}
+.pov{position:fixed;inset:0;z-index:45;background:var(--bg2);display:flex;flex-direction:column}.pvt{display:flex;align-items:center;gap:10px;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--line);background:var(--bg);font-weight:700}.pvb{flex:1;overflow-y:auto;max-width:640px;width:100%;margin:0 auto}
 #pfv,#mnu{position:fixed;inset:0;z-index:65;overflow-y:auto;padding-top:env(safe-area-inset-top,0px)}
 #pfv{background:var(--bg2)}#mnu{background:var(--bg2);z-index:62}
 .pfw{max-width:640px;margin:0 auto;background:var(--bg);min-height:100%}
@@ -426,7 +427,7 @@ $("#wnext").onclick = async () => {
 };
 sb.auth.onAuthStateChange((ev, session) => {
   if (session && !me && !W.reset) start(session.user);
-  if (!session) { if (call) endCall(); dismissRing(); closeMenu(); closeProfile(); me = null; sb.removeAllChannels(); cur = null; results = null; showAuth(); }
+  if (!session) { if (call) endCall(); dismissRing(); closeMenu(); closeProfile(); closePov(); act = []; actMine = new Set(); me = null; sb.removeAllChannels(); cur = null; results = null; showAuth(); }
 });
 
 // ---------- DATA ----------
@@ -462,7 +463,7 @@ async function loadFriends() {
   const {data} = await sb.from("friendships").select("*");
   fr = data || [];
   await ensureNames(fr.flatMap(f => [f.requester, f.addressee]));
-  render();
+  render(); actSoon();
 }
 async function start(user) {
   me = user; reads = {}; blocked = new Set();
@@ -476,6 +477,10 @@ async function start(user) {
   sb.channel("reads").on("postgres_changes", {event: "UPDATE", schema: "public", table: "room_members"}, p => { const x = p.new; if (!x || !x.last_read_at) return; (reads[x.room_id] = reads[x.room_id] || {})[x.user_id] = Date.parse(x.last_read_at); if (x.room_id === cur) updateSeen(); }).subscribe();
   sb.channel("mem").on("postgres_changes", {event: "INSERT", schema: "public", table: "room_members", filter: "user_id=eq." + me.id}, loadChats).subscribe();
   sb.channel("friends").on("postgres_changes", {event: "*", schema: "public", table: "friendships"}, loadFriends).subscribe();
+  const forMe = p => { const x = p.new; if (x && x.user_id !== me.id && actMine.has(x.post_id)) actSoon(); };
+  sb.channel("act").on("postgres_changes", {event: "INSERT", schema: "public", table: "post_likes"}, forMe).on("postgres_changes", {event: "INSERT", schema: "public", table: "post_comments"}, forMe)
+    .on("postgres_changes", {event: "INSERT", schema: "public", table: "posts"}, p => { const x = p.new; if (x && x.user_id !== me.id && (x.kind === "post" || x.kind === "clip") && frIds().includes(x.user_id)) actSoon(); }).subscribe();
+  loadActivity();
   listenInbox();
   setTab("chats");
   const g = rooms.find(r => !r.is_dm);
@@ -543,7 +548,7 @@ function render() {
   const nUn = rooms.filter(hasUnread).length, nReq = fr.filter(f => f.status === "pending" && f.addressee === me.id).length;
   const pt = document.querySelector('.tab[data-t="menu"] span');
   if (pt && pt.dataset.me !== me.id) { pt.replaceChildren(avatar(me.id, (names[me.id] || "?")[0].toUpperCase(), "sm")); pt.dataset.me = me.id; }
-  [["chats", nUn], ["notifs", nReq]].forEach(([k, n]) => { const b = $("#b-" + k); b.textContent = n; b.classList.toggle("hide", !n); });
+  [["chats", nUn], ["notifs", nBadge()]].forEach(([k, n]) => { const b = $("#b-" + k); b.textContent = n; b.classList.toggle("hide", !n); });
 
   if (tab === "chats") {
     activeRow(box);
@@ -576,10 +581,11 @@ function render() {
     }
   } else if (tab === "notifs") {
     const seenT = +localStorage.getItem("nseen") || 0;
-    const items = fr.filter(f => f.status === "accepted" || (f.status === "pending" && f.addressee === me.id)).map(f => ({f, t: Date.parse(f.updated_at || f.created_at || "") || 0})).sort((x, y) => y.t - x.t);
+    const items = [...fr.filter(f => f.status === "accepted" || (f.status === "pending" && f.addressee === me.id)).map(f => ({f, t: Date.parse(f.updated_at || f.created_at || "") || 0})), ...act.map(a => ({a, t: a.t}))].sort((x, y) => y.t - x.t);
     if (!items.length) box.append(el("div", "hint", "No new notifications."));
     else box.append(el("div", "sec", "Earlier"));
-    items.forEach(({f, t}) => {
+    items.forEach(({f, a, t}) => {
+      if (a) return actRow(box, a, t, seenT);
       const u = f.requester === me.id ? f.addressee : f.requester, inc = f.status === "pending", nm = names[u] || "Someone", d = el("div", "item"), mid = el("div", "mid");
       mid.append(el("div", "t1", nm), el("div", "t2", (inc ? "Sent you a friend request." : "You are now friends. Tap to chat.") + (t ? " · " + ago2(t) : "")));
       if (inc) {
@@ -597,6 +603,55 @@ function render() {
 }
 
 
+
+
+// ---------- ACTIVITY NOTIFICATIONS: likes / comments on my posts, new posts from friends ----------
+let act = [], actMine = new Set(), actT = null, pov = null;
+const actSoon = () => { clearTimeout(actT); actT = setTimeout(loadActivity, 800); };
+const frIds = () => fr.filter(f => f.status === "accepted").map(f => f.requester === me.id ? f.addressee : f.requester);
+const actUnseen = () => { const s = +localStorage.getItem("nseen") || 0; return act.filter(a => a.t > s).length; };
+const nBadge = () => fr.filter(f => f.status === "pending" && f.addressee === me.id).length + (tab === "notifs" ? 0 : actUnseen());
+function paintNBadge() { const b = $("#b-notifs"), n = nBadge(); b.textContent = n > 99 ? "99+" : n; b.classList.toggle("hide", !n); }
+async function loadActivity() {
+  if (!me) return;
+  try { if (!localStorage.getItem("nseen")) localStorage.setItem("nseen", Date.now()); } catch (e) {}
+  const run = async mk => { let r = await mk(true); if (r.error) r = await mk(false); return r.data || []; };
+  const mine = await sb.from("posts").select("id,kind,body").eq("user_id", me.id).in("kind", ["post", "clip"]).order("created_at", {ascending: false}).limit(100);
+  const my = mine.data || [], ids = my.map(x => x.id), pm = {}; my.forEach(x => pm[x.id] = x); actMine = new Set(ids);
+  const fids = frIds(), since = new Date(Date.now() - 30 * 864e5).toISOString();
+  const [L, C, P] = await Promise.all([
+    ids.length ? run(o => { const b = sb.from("post_likes").select("*").in("post_id", ids).neq("user_id", me.id); return (o ? b.order("created_at", {ascending: false}) : b).limit(60); }) : [],
+    ids.length ? run(() => sb.from("post_comments").select("*").in("post_id", ids).neq("user_id", me.id).order("created_at", {ascending: false}).limit(60)) : [],
+    fids.length ? run(() => sb.from("posts").select("id,user_id,kind,body,created_at").in("user_id", fids).in("kind", ["post", "clip"]).gte("created_at", since).order("created_at", {ascending: false}).limit(40)) : []]);
+  const tm = x => Date.parse(x.created_at || "") || 0;
+  act = [...L.map(x => ({type: "like", t: tm(x), u: x.user_id, pid: x.post_id, kind: (pm[x.post_id] || {}).kind})),
+    ...C.map(x => ({type: "comment", t: tm(x), u: x.user_id, pid: x.post_id, kind: (pm[x.post_id] || {}).kind, txt: x.body})),
+    ...P.map(x => ({type: "post", t: tm(x), u: x.user_id, pid: x.id, kind: x.kind, txt: x.body}))].sort((a, b) => b.t - a.t).slice(0, 100);
+  await ensureNames(act.map(a => a.u));
+  paintNBadge(); if (tab === "notifs") render();
+}
+function actRow(box, a, t, seenT) {
+  const nm = names[a.u] || "Someone", d = el("div", "item"), mid = el("div", "mid"), w = a.kind === "clip" ? "clip" : "post";
+  const sn = (a.txt || "").trim(), cut = sn.length > 70 ? sn.slice(0, 70) + "…" : sn;
+  const msg = a.type === "like" ? "❤️ Liked your " + w + "." : a.type === "comment" ? "💬 Commented on your " + w + (cut ? ": " + cut : ".") : "📝 Posted a new " + w + (cut ? ": " + cut : ".");
+  mid.append(el("div", "t1", nm), el("div", "t2", msg + (t ? " · " + ago2(t) : "")));
+  d.append(avatar(a.u, nm[0].toUpperCase(), "", a.u), mid); if (t > seenT) d.append(el("div", "dot"));
+  d.onclick = () => openPost(a.pid); box.append(d);
+}
+function povPaint() { if (pov && pov.box.isConnected) pov.box.replaceChildren(postCard(pov.p, true)); }
+function closePov() { if (pov) { pov.ov.remove(); pov = null; } }
+async function openPost(id) {
+  closePov();
+  const {data: p} = await sb.from("posts").select("*").eq("id", id).maybeSingle();
+  if (!p) return toast("That post isn't available anymore.");
+  const [l, c] = await Promise.all([sb.from("post_likes").select("*").eq("post_id", id), sb.from("post_comments").select("*").eq("post_id", id).order("created_at").limit(300)]);
+  flikes[id] = (l.data || []).map(x => x.user_id); fcm[id] = c.data || []; fopen.add(id);
+  await ensureNames([p.user_id, ...fcm[id].map(x => x.user_id)]);
+  if (p.media_path) p.url = await imgUrl(p.media_path);
+  const ov = el("div", "pov"), top = el("div", "pvt"), x = el("button", "gray sm", "‹ Back"), box = el("div", "pvb");
+  x.type = "button"; x.onclick = closePov; top.append(x, el("div", "", p.kind === "clip" ? "Clip" : "Post")); ov.append(top, box); document.body.append(ov);
+  pov = {ov, box, p}; povPaint();
+}
 
 // ---------- NEWSFEED + CLIPS + STORIES ----------
 let fmode = "post", feedDirty = false, fposts = [], flikes = {}, fcm = {}, fopen = new Set(), fdraft = {txt: "", file: null, url: null, open: false, vis: "public"}, fbusy = false, fstories = [], fhide = new Set();
@@ -638,7 +693,7 @@ async function loadFeed() {
   await Promise.all(fposts.map(async p => { if (p.media_path) p.url = await imgUrl(p.media_path); }));
   feedDirty = true; if (tab === "feed") render();
 }
-const fkeep = fn => { const b = $("#list"), y = b.scrollTop; fn(); feedDirty = true; render(); b.scrollTop = y; pfPaint(); };
+const fkeep = fn => { const b = $("#list"), y = b.scrollTop; fn(); feedDirty = true; render(); b.scrollTop = y; pfPaint(); povPaint(); };
 function feedRender() {
   const box = $("#list"); if (!feedDirty) return; feedDirty = false; box.replaceChildren(); box.dataset.t = "feed";
   // top bar: hamburger + Newsfeed / Clips
@@ -708,7 +763,7 @@ async function doPost() {
   if (fbusy || (kind === "clip" ? !f : (!f && !txt))) return;
   fbusy = true; feedDirty = true; render();
   if (await postMedia(f, txt, kind, fdraft.vis)) { dropFile(); fdraft.txt = ""; fdraft.open = false; }
-  fbusy = false; await loadFeed();
+  fbusy = false; await loadFeed(); actSoon();
 }
 // ----- stories (kind = "story", visible for 24 hours) -----
 function pickStory() {
@@ -798,7 +853,7 @@ function postCard(p, inProfile) {
   const mb = el("button", "hx"), xb = el("button", "hx"); mb.type = xb.type = "button"; mb.innerHTML = FI.dots; xb.innerHTML = FI.x;
   mb.onclick = e => { e.stopPropagation(); popMenu(mb, u === me.id
     ? [[p.visibility === "friends" ? "Make public" : "Make friends only", () => setVis(p)], ["Delete post", async () => { if (!confirm("Delete this post?")) return; if (p.media_path) sb.storage.from("chat-images").remove([p.media_path]); await sb.from("posts").delete().eq("id", p.id); afterDelete(); }, "red"]]
-    : [["Message " + nm, () => { closeProfile(); openDM(u); }], ...(inProfile ? [] : [["Hide post", () => hidePost(p)]])]); };
+    : [["Message " + nm, () => { closeProfile(); closePov(); openDM(u); }], ...(inProfile ? [] : [["Hide post", () => hidePost(p)]])]); };
   xb.onclick = () => hidePost(p);
   h.append(av, n, mb); if (!inProfile) h.append(xb); c.append(h);
   if (p.body) c.append(el("div", "pb", p.body));
@@ -863,7 +918,7 @@ function pfPaint() {
   if (!pf.uid || !pf.box || !pf.box.isConnected) return;
   const sc = pf.ov ? $("#pfv") : $("#list"), y = sc.scrollTop; drawProfile(); sc.scrollTop = y;
 }
-const afterDelete = () => { loadFeed(); if (pf.uid) pfLoad(pf.uid); };
+const afterDelete = () => { closePov(); loadFeed(); if (pf.uid) pfLoad(pf.uid); };
 async function openProfile(uid) {
   await ensureNames([uid]); loadPhotos([uid]);
   infoProfile = uid;
