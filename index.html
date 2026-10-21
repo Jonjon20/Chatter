@@ -138,6 +138,8 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .cmp .cph{flex:1;min-width:0;border:1px solid var(--mut);border-radius:22px;padding:8px 18px;font-size:17px;cursor:pointer;min-height:38px;display:flex;align-items:center}
 .cmp .pi2{background:none;color:var(--mut);padding:2px;line-height:0}
 .drf{margin:0 14px 14px;display:flex;flex-direction:column;gap:8px}.drf textarea{background:var(--bg2);color:var(--tx);border:0;border-radius:12px;padding:10px;font:inherit;resize:none}
+.drf .pv{position:relative}.drf .pv img,.drf .pv video{display:block;width:100%;max-height:280px;object-fit:cover;border-radius:12px;background:#000}.drf .pv .rm{position:absolute;top:6px;right:6px;width:30px;height:30px;padding:0;border-radius:50%;background:#000a;color:#fff;font-size:15px}
+.drf select{background:var(--bg2);color:var(--tx);border:0;border-radius:16px;padding:7px 10px;font:inherit;font-size:14px}.drf .r.w{flex-wrap:wrap}
 .drf .r{display:flex;gap:8px;align-items:center}.drf .r span{flex:1;min-width:0;color:var(--mut);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .str{display:flex;gap:8px;overflow-x:auto;padding:0 12px 14px;scrollbar-width:none}.str::-webkit-scrollbar{display:none}
 .sc{position:relative;flex:none;width:120px;height:224px;border-radius:14px;overflow:hidden;background:#2a2b2c;border:1px solid var(--line);cursor:pointer;color:#fff}
@@ -597,8 +599,9 @@ function render() {
 
 
 // ---------- NEWSFEED + CLIPS + STORIES ----------
-let fmode = "post", feedDirty = false, fposts = [], flikes = {}, fcm = {}, fopen = new Set(), fdraft = {txt: "", file: null}, fbusy = false, fstories = [], fhide = new Set();
+let fmode = "post", feedDirty = false, fposts = [], flikes = {}, fcm = {}, fopen = new Set(), fdraft = {txt: "", file: null, url: null, open: false, vis: "public"}, fbusy = false, fstories = [], fhide = new Set();
 try { fhide = new Set(JSON.parse(localStorage.getItem("fhide") || "[]")); } catch (e) {}
+try { if (localStorage.getItem("fvis") === "friends") fdraft.vis = "friends"; } catch (e) {}
 const agoS = t => { const s = Math.max(0, (Date.now() - Date.parse(t)) / 1000); if (s < 60) return "now"; if (s < 3600) return Math.floor(s / 60) + "m"; if (s < 86400) return Math.floor(s / 3600) + "h"; if (s < 604800) return Math.floor(s / 86400) + "d"; return Math.floor(s / 604800) + "w"; };
 const FI = {
   ham: '<svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M3 5.5h18M3 12h18M3 18.5h18"/></svg>',
@@ -606,6 +609,7 @@ const FI = {
   plus: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg>',
   dots: '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
   x: '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>',
+  friends: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="8" r="3.6"/><path d="M2 20c0-3.6 3.1-6 7-6s7 2.4 7 6z"/><circle cx="17" cy="9" r="3" opacity=".85"/><path d="M17.5 14c3 .2 5.5 2 5.5 5.2V20h-5c0-2.3-.8-4.3-2.2-5.8.5-.1 1-.2 1.7-.2z" opacity=".85"/></svg>',
   globe: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c3 3 3 16.5 0 19M12 2.5c-3 3-3 16.5 0 19"/></svg>',
   heart: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20.5S3 15 3 8.8A4.8 4.8 0 0 1 12 6.6 4.8 4.8 0 0 1 21 8.8C21 15 12 20.5 12 20.5z"/></svg>',
   heartOn: '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20.5S3 15 3 8.8A4.8 4.8 0 0 1 12 6.6 4.8 4.8 0 0 1 21 8.8C21 15 12 20.5 12 20.5z"/></svg>',
@@ -640,17 +644,29 @@ function feedRender() {
   // top bar: hamburger + Newsfeed / Clips
   const fm = el("div", "fm"), hb = el("button", "hb"), tt = el("div", "tt");
   hb.type = "button"; hb.innerHTML = FI.ham; hb.onclick = openMenu;
-  [["post", "Newsfeed"], ["clip", "Clips"]].forEach(([k, t]) => { const b = el("button", fmode === k ? "on" : "", t); b.type = "button"; b.onclick = () => { fmode = k; fposts = []; feedDirty = true; render(); loadFeed(); }; tt.append(b); });
+  [["post", "Newsfeed"], ["clip", "Clips"]].forEach(([k, t]) => { const b = el("button", fmode === k ? "on" : "", t); b.type = "button"; b.onclick = () => { if (fmode !== k) { dropFile(); fdraft.open = false; fdraft.txt = ""; } fmode = k; fposts = []; feedDirty = true; render(); loadFeed(); }; tt.append(b); });
   fm.append(hb, tt, el("div", "sp")); box.append(fm);
   // "What's on your mind?"
-  const cmp = el("div", "cmp"), ph = el("div", "cph", fmode === "clip" ? "Add a clip (video)" : "What's on your mind?"), gi = el("button", "pi2");
-  ph.onclick = () => pickMedia(); gi.type = "button"; gi.innerHTML = FI.photo; gi.onclick = () => pickMedia();
+  const cmp = el("div", "cmp"), ph = el("div", "cph", fmode === "clip" ? "Add a clip" : "What's on your mind?"), gi = el("button", "pi2");
+  ph.onclick = () => openDraft(); gi.type = "button"; gi.innerHTML = FI.photo; gi.onclick = () => pickMedia();
   cmp.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase(), "fa"), ph, gi); box.append(cmp);
-  if (fdraft.file) {
-    const d = el("div", "drf"), t = el("textarea"), r = el("div", "r"), nm = el("span", null, fdraft.file.name), go = el("button", "sm", fbusy ? "Posting…" : "Post"), no = el("button", "sm gray", "Cancel");
-    t.placeholder = "Say something…"; t.rows = 2; t.value = fdraft.txt; t.oninput = () => fdraft.txt = t.value;
-    go.disabled = fbusy; go.onclick = doPost; no.onclick = () => { fdraft = {txt: "", file: null}; feedDirty = true; render(); };
-    r.append(nm, no, go); d.append(t, r); box.append(d);
+  if (fdraft.open || fdraft.file) {
+    const clip = fmode === "clip", d = el("div", "drf"), t = el("textarea"), r = el("div", "r w"), sel = el("select"), go = el("button", "sm", fbusy ? "Posting…" : "Post"), no = el("button", "sm gray", "Cancel");
+    const ok = () => !fbusy && (clip ? !!fdraft.file : (!!fdraft.file || !!fdraft.txt.trim()));
+    t.placeholder = clip ? "Write a caption…" : "What's on your mind?"; t.rows = 3; t.maxLength = 2000; t.value = fdraft.txt;
+    t.oninput = () => { fdraft.txt = t.value; go.disabled = !ok(); };
+    [["public", "🌐 Public"], ["friends", "👥 Friends"]].forEach(([v, l]) => { const o = el("option", null, l); o.value = v; sel.append(o); });
+    sel.value = fdraft.vis; sel.disabled = fbusy;
+    sel.onchange = () => { fdraft.vis = sel.value; try { localStorage.setItem("fvis", fdraft.vis); } catch (e) {} };
+    d.append(t);
+    if (fdraft.file) {
+      const pv = el("div", "pv"), vid = fdraft.file.type.startsWith("video"), m = el(vid ? "video" : "img"), rm = el("button", "rm", "✕");
+      m.src = fdraft.url; if (vid) { m.controls = true; m.playsInline = true; m.muted = true; }
+      rm.type = "button"; rm.onclick = () => { dropFile(); feedDirty = true; render(); }; pv.append(m, rm); d.append(pv);
+    } else { const at = el("button", "sm gray", clip ? "🎬 Select video" : "📷 Photo / video"); at.type = "button"; at.onclick = pickMedia; r.append(at); }
+    go.disabled = !ok(); go.onclick = doPost;
+    no.onclick = () => { dropFile(); fdraft.txt = ""; fdraft.open = false; feedDirty = true; render(); };
+    r.append(sel, no, go); d.append(r); box.append(d);
   }
   if (fmode === "post") box.append(storiesRow());
   const vis = fposts.filter(p => !fhide.has(p.id));
@@ -658,27 +674,40 @@ function feedRender() {
   if (fmode === "clip") { vis.forEach(reel); watchReels(); return; }
   vis.forEach(p => box.append(postCard(p)));
 }
+function dropFile() { if (fdraft.url) { try { URL.revokeObjectURL(fdraft.url); } catch (e) {} } fdraft.file = null; fdraft.url = null; }
+function openDraft() { fdraft.open = true; feedDirty = true; render(); setTimeout(() => { const t = document.querySelector(".drf textarea"); if (t) t.focus(); }, 60); }
 function pickMedia() {
   const i = document.createElement("input"); i.type = "file"; i.accept = fmode === "clip" ? "video/*" : "image/*,video/*";
-  i.onchange = () => { const f = i.files[0]; if (!f) return; if (f.size > 45 * 1048576) return alert("File is too big (max 45 MB)."); fdraft.file = f; feedDirty = true; render(); }; i.click();
+  i.onchange = () => {
+    const f = i.files[0]; if (!f) return;
+    if (fmode === "clip" && !f.type.startsWith("video")) return alert("Please choose a video for your clip.");
+    if (f.size > 45 * 1048576) return alert("File is too big (max 45 MB).");
+    dropFile(); fdraft.file = f; fdraft.url = URL.createObjectURL(f); fdraft.open = true; feedDirty = true; render();
+  }; i.click();
 }
-async function postMedia(f, body, kind) {
+async function postMedia(f, body, kind, vis) {
+  let path = null;
   try {
-    const vid = f.type.startsWith("video"), path = me.id + "/" + uid() + (vid ? ".mp4" : ".jpg");
-    const blob = vid ? f : await shrink(f);
-    const up = await sb.storage.from("chat-images").upload(path, blob, {contentType: vid ? (f.type || "video/mp4") : "image/jpeg"}); if (up.error) throw up.error;
-    const {error} = await sb.from("posts").insert({body, media_path: path, media_type: vid ? "video" : "image", kind});
-    if (error) { sb.storage.from("chat-images").remove([path]); throw error; }
+    let vid = false;
+    if (f) {
+      vid = f.type.startsWith("video"); path = me.id + "/" + uid() + (vid ? ".mp4" : ".jpg");
+      const blob = vid ? f : await shrink(f);
+      const up = await sb.storage.from("chat-images").upload(path, blob, {contentType: vid ? (f.type || "video/mp4") : "image/jpeg"}); if (up.error) throw up.error;
+    }
+    const {error} = await sb.from("posts").insert({body, media_path: path, media_type: f ? (vid ? "video" : "image") : null, kind, visibility: vis || "public"});
+    if (error) { if (path) sb.storage.from("chat-images").remove([path]); throw error; }
     return true;
   } catch (e) {
     const m = e.message || String(e);
-    alert("Couldn't post: " + m + (kind === "story" && /check|kind/i.test(m) ? "\n\nRun upgrade7.sql in the Supabase SQL Editor, then try again." : ""));
+    alert("Couldn't post: " + m + (/visibility|null value|violates|check|kind/i.test(m) ? "\n\nRun upgrade8.sql in the Supabase SQL Editor, then try again." : ""));
     return false;
   }
 }
 async function doPost() {
-  if (fbusy || !fdraft.file) return; fbusy = true; feedDirty = true; render();
-  if (await postMedia(fdraft.file, fdraft.txt.trim(), fmode)) fdraft = {txt: "", file: null};
+  const kind = fmode, txt = fdraft.txt.trim(), f = fdraft.file;
+  if (fbusy || (kind === "clip" ? !f : (!f && !txt))) return;
+  fbusy = true; feedDirty = true; render();
+  if (await postMedia(f, txt, kind, fdraft.vis)) { dropFile(); fdraft.txt = ""; fdraft.open = false; }
   fbusy = false; await loadFeed();
 }
 // ----- stories (kind = "story", visible for 24 hours) -----
@@ -750,6 +779,10 @@ function popMenu(anchor, items) {
   const x = Math.min(Math.max(8, a.right - w), innerWidth - w - 8); let y = a.bottom + 6; if (y + h > innerHeight - 8) y = Math.max(8, a.top - h - 6);
   pop.style.left = x + "px"; pop.style.top = y + "px";
 }
+async function setVis(p) {
+  const v = p.visibility === "friends" ? "public" : "friends", {error} = await sb.from("posts").update({visibility: v}).eq("id", p.id);
+  if (error) return alert(error.message); p.visibility = v; fkeep(() => {});
+}
 function hidePost(p) { fhide.add(p.id); try { localStorage.setItem("fhide", JSON.stringify([...fhide].slice(-300))); } catch (e) {} fkeep(() => {}); }
 function postCard(p, inProfile) {
   const u = p.user_id, nm = names[u] || "Someone", c = el("div", "pc"), h = el("div", "ph1"), n = el("div", "pn"), cm = fcm[p.id] || [], L = flikes[p.id] || [], on = L.includes(me.id);
@@ -760,11 +793,11 @@ function postCard(p, inProfile) {
     const fl = el("span", "fl", "Add friend"); fl.onclick = async () => { const {error} = await sb.from("friendships").insert({addressee: u}); if (error) return alert(error.message); await loadFriends(); fkeep(() => {}); };
     l1.append(el("span", "dot", "·"), fl);
   } else if (r && r.status === "pending") l1.append(el("span", "dot", "·"), el("span", "fl mut", "Pending"));
-  const l2 = el("div", "l2"), gl = el("span"); gl.innerHTML = FI.globe; l2.append(el("span", null, agoS(p.created_at) + " ·"), gl);
+  const l2 = el("div", "l2"), gl = el("span"); gl.innerHTML = p.visibility === "friends" ? FI.friends : FI.globe; gl.title = p.visibility === "friends" ? "Friends" : "Public"; l2.append(el("span", null, agoS(p.created_at) + " ·"), gl);
   n.append(l1, l2);
   const mb = el("button", "hx"), xb = el("button", "hx"); mb.type = xb.type = "button"; mb.innerHTML = FI.dots; xb.innerHTML = FI.x;
   mb.onclick = e => { e.stopPropagation(); popMenu(mb, u === me.id
-    ? [["Delete post", async () => { if (!confirm("Delete this post?")) return; if (p.media_path) sb.storage.from("chat-images").remove([p.media_path]); await sb.from("posts").delete().eq("id", p.id); afterDelete(); }, "red"]]
+    ? [[p.visibility === "friends" ? "Make public" : "Make friends only", () => setVis(p)], ["Delete post", async () => { if (!confirm("Delete this post?")) return; if (p.media_path) sb.storage.from("chat-images").remove([p.media_path]); await sb.from("posts").delete().eq("id", p.id); afterDelete(); }, "red"]]
     : [["Message " + nm, () => { closeProfile(); openDM(u); }], ...(inProfile ? [] : [["Hide post", () => hidePost(p)]])]); };
   xb.onclick = () => hidePost(p);
   h.append(av, n, mb); if (!inProfile) h.append(xb); c.append(h);
@@ -791,7 +824,7 @@ function reel(p) {
   const r = el("div", "rl"), v = el("video"), ov = el("div", "ov"), sd = el("div", "sd");
   v.src = p.url || ""; v.loop = true; v.muted = true; v.playsInline = true; v.preload = "metadata"; v.onclick = () => { v.muted = !v.muted; };
   const who = el("div", "ovh"); who.append(avatar(p.user_id, (names[p.user_id] || "?")[0].toUpperCase(), "sm"), el("div", "t1", names[p.user_id] || "Someone")); who.onclick = e => { e.stopPropagation(); openProfile(p.user_id); };
-  ov.append(who, el("div", "", p.body || ""));
+  ov.append(who); if (p.visibility === "friends") { const ft = el("div", "", "👥 Friends only"); ft.style.cssText = "font-size:12px;opacity:.85;margin-bottom:2px"; ov.append(ft); } ov.append(el("div", "", p.body || ""));
   sd.append(likeBtn(p));
   if (p.user_id === me.id) { const d = el("button", "", "🗑"); d.onclick = async () => { if (!confirm("Delete this clip?")) return; sb.storage.from("chat-images").remove([p.media_path]); await sb.from("posts").delete().eq("id", p.id); loadFeed(); }; sd.append(d); }
   r.append(v, ov, sd); $("#list").append(r);
@@ -1587,6 +1620,14 @@ async function uploadPhoto(kind, file) {
     const up = await sb.storage.from("chat-images").upload(path, blob, {contentType: "image/jpeg"}); if (up.error) throw up.error;
     const {error} = await sb.rpc("set_profile_photo", {kind, path}); if (error) throw error;
     delete photoDone[me.id]; await loadPhotos([me.id]); render();
+    // also share it on the newsfeed (own copy of the file, so deleting the post or the old photo never breaks either)
+    try {
+      const p2 = me.id + "/post-" + Date.now() + ".jpg", up2 = await sb.storage.from("chat-images").upload(p2, blob, {contentType: "image/jpeg"});
+      if (!up2.error) {
+        const r = await sb.from("posts").insert({body: kind === "cover" ? "updated their cover photo." : "updated their profile picture.", media_path: p2, media_type: "image", kind: "post"});
+        if (r.error) sb.storage.from("chat-images").remove([p2]); else if (tab === "feed" && fmode === "post") loadFeed();
+      }
+    } catch (e) {}
   } catch (e) { alert("Couldn't upload photo: " + (e.message || e)); }
 }
 
