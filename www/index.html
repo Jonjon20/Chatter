@@ -224,7 +224,8 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .rpr .rpill{display:flex;align-items:center;gap:6px;background:#0009;color:#fff;border-radius:14px;padding:4px 6px 4px 10px;font-size:13px;font-weight:600}
 .rpr .rpic{background:none;color:#fff;padding:2px;line-height:0}.rpr .rpic svg{width:15px;height:15px}
 .rpl{position:absolute;top:10px;left:12px;z-index:3;background:#0007;color:#fff;border-radius:14px;padding:4px 10px;font-size:12px;font-weight:600;display:none}
-.rsub{text-align:center;padding:0 0 8px}
+.rsub{text-align:center;padding:0 0 8px}.rrow{margin-left:44px}
+.nmbg{position:fixed;inset:0;z-index:85;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px}.nmc{width:100%;max-width:380px;background:var(--bg2);color:var(--tx);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}.nmc h4{margin:0;text-align:center;font-size:15px}.nmc .nr{display:flex;gap:10px;align-items:flex-start}.nmc textarea{flex:1;min-height:70px;resize:none;border-radius:12px}.nmc .nf{display:flex;justify-content:flex-end}
 .sheet.acts{max-height:none;padding-bottom:env(safe-area-inset-bottom,0px)}.acts button{width:100%;padding:16px;background:none;color:var(--tx);font-size:16px;font-weight:600;border-radius:0}.acts button+button{border-top:1px solid var(--line)}
 .sbar .av{flex:none}
 </style></head>
@@ -1141,42 +1142,106 @@ function confirmSheet(label, fn) {
   ov.style.zIndex = 78; a.type = c.type = "button"; ov.onclick = e => { if (e.target === ov) close(); }; c.onclick = close; a.onclick = async () => { close(); await fn(); };
   sh.append(a, c); ov.append(sh); document.body.append(ov);
 }
+const frr = {}, frh = {}, rrOpen = new Set(), REP3_MSG = "Replies on reposts aren't set up yet. Run clips_repost3.sql in the Supabase SQL Editor.";
+const REP_EMOJI = ["😍", "😂", "😭", "🥰", "🔥", "👏", "🙌", "❤️", "😮"], whenS = t => agoS(t) === "now" ? "Just now" : agoS(t);
+async function loadRepostExtras(p) {
+  const [r, h] = await Promise.all([sb.from("repost_replies").select("*").eq("post_id", p.id).order("created_at").limit(500), sb.from("repost_hearts").select("*").eq("post_id", p.id)]);
+  if (r.error || h.error) return;
+  frr[p.id] = r.data || []; const m = frh[p.id] = new Map();
+  (h.data || []).forEach(x => { if (!m.has(x.target)) m.set(x.target, new Set()); m.get(x.target).add(x.user_id); });
+  await ensureNames((r.data || []).map(x => x.user_id));
+}
+async function toggleRH(p, target, redraw) {
+  const m = frh[p.id] = frh[p.id] || new Map(); if (!m.has(target)) m.set(target, new Set());
+  const S = m.get(target), on = S.has(me.id); on ? S.delete(me.id) : S.add(me.id); redraw();
+  const r = on ? await sb.from("repost_hearts").delete().eq("post_id", p.id).eq("target", target).eq("user_id", me.id) : await sb.from("repost_hearts").insert({post_id: p.id, target});
+  if (r.error) { on ? S.add(me.id) : S.delete(me.id); redraw(); alert(/repost_hearts|schema cache|relation/i.test(r.error.message) ? REP3_MSG : r.error.message); }
+}
 async function openReposts(p, focus) {
-  const {sh, body} = sheet("Reposts"), bar = el("div", "sbar"), inp = el("input"), go = el("button", "sm", "Repost"), me0 = repMap(p.id).get(me.id);
-  let editing = false;
-  inp.placeholder = "Add to your repost…"; inp.maxLength = 200; go.type = "button"; if (me0 && me0.comment) inp.value = me0.comment;
-  const toggleGo = () => { go.style.display = (inp.value.trim() || editing) ? "" : "none"; go.textContent = repMap(p.id).has(me.id) ? "Save" : "Repost"; };
+  const {sh, body} = sheet("Reposts"), bar = el("div", "sbar"), inp = el("input"), go = el("button", "sm", "Send"), rb = el("div", "t2"), emr = el("div", "emr"), emb = el("button", "lnk", "🙂");
+  let replyTo = null, stash = "";
+  const mineRp = () => repMap(p.id).get(me.id), kOf = u => "rp:" + p.id + ":" + u;
+  inp.maxLength = 200; inp.readOnly = true; inp.placeholder = "Add to your repost…"; inp.value = (mineRp() && mineRp().comment) || "";
+  go.type = emb.type = "button"; emb.style.cssText = "font-size:22px;padding:0 2px"; rb.style.cssText = "padding:6px 14px 0;display:none;cursor:pointer"; emr.style.display = "none";
+  REP_EMOJI.forEach(x => { const b = el("button", "", x); b.type = "button"; b.onclick = () => { inp.value += x; inp.focus(); toggleGo(); }; emr.append(b); });
+  const toggleGo = () => { go.style.display = replyTo && inp.value.trim() ? "" : "none"; };
   const refreshReel = () => { const u = reelUI[p.id]; if (u) { paintRepost(p, u.rb); bubPaint(p); } };
+  const setReply = r => {
+    if (r && !replyTo) stash = inp.value; if (!r && replyTo) inp.value = stash;
+    replyTo = r; inp.readOnly = !r; emr.style.display = r ? "" : "none";
+    if (r) { inp.value = r.pre || ""; inp.placeholder = "Reply to " + r.name + "…"; rb.textContent = "Replying to " + r.name + "  ✕"; rb.style.display = "block"; setTimeout(() => inp.focus(), 30); }
+    else { inp.placeholder = "Add to your repost…"; rb.style.display = "none"; }
+    toggleGo();
+  };
+  rb.onclick = () => setReply(null);
+  const heart = target => {
+    const S = (frh[p.id] && frh[p.id].get(target)) || new Set(), on = S.has(me.id), hb = el("button", "chb" + (on ? " on" : ""));
+    hb.type = "button"; hb.innerHTML = (on ? FI.heartOn : FI.heart) + (S.size ? "<span>" + S.size + "</span>" : ""); hb.onclick = () => toggleRH(p, target, draw); return hb;
+  };
+  const replyRow = x => {
+    const nm = names[x.user_id] || "Someone", d = el("div", "fci2 rrow"), mid = el("div", "mid"), meta = el("div", "t2"), rp = el("button", "lnk", "Reply");
+    rp.type = "button"; rp.onclick = () => setReply({ru: x.repost_user_id, name: nm, pre: x.user_id === me.id ? "" : "@" + nm + " "});
+    meta.append(document.createTextNode(whenS(x.created_at) + " · "), rp);
+    if (x.user_id === me.id) { const dl = el("button", "lnk", "Delete"); dl.type = "button"; dl.style.marginLeft = "12px"; dl.onclick = () => confirmSheet("Delete reply", async () => { const {error} = await sb.from("repost_replies").delete().eq("id", x.id); if (error) return alert(error.message); frr[p.id] = (frr[p.id] || []).filter(y => y.id !== x.id); draw(); }); meta.append(dl); }
+    mid.append(el("div", "t1", nm), el("div", null, x.body), meta); d.append(avatar(x.user_id, nm[0].toUpperCase(), "sm", x.user_id), mid, heart("r:" + x.id)); return d;
+  };
   const rowFor = (u, r) => {
-    const nm = names[u] || "Someone", d = el("div", "fci2"), mid = el("div", "mid"), meta = el("div", "t2"), mine = u === me.id, when = agoS(r.at) === "now" ? "Just now" : agoS(r.at);
+    const nm = names[u] || "Someone", d = el("div", "fci2"), mid = el("div", "mid"), meta = el("div", "t2"), mine = u === me.id, rp = el("button", "lnk", "Reply");
     mid.append(el("div", "t1", nm)); if (r.comment) mid.append(el("div", null, r.comment));
-    const a = el("button", "lnk", mine ? "Edit" : "Reply"); a.type = "button";
-    a.onclick = mine ? () => { editing = true; inp.focus(); toggleGo(); } : () => { closeSheet(); openPeople(p, u); };
-    meta.append(document.createTextNode(when + " · "), a);
-    if (mine) { const x = el("button", "lnk", "Delete"); x.type = "button"; x.style.marginLeft = "12px"; x.onclick = () => confirmSheet("Delete repost", async () => { await unRepost(p, (reelUI[p.id] || {}).rb); inp.value = ""; editing = false; draw(); }); meta.append(x); }
-    mid.append(meta); d.append(avatar(u, nm[0].toUpperCase(), "md", u), mid); return d;
+    rp.type = "button"; rp.onclick = () => setReply({ru: u, name: nm, pre: ""});
+    meta.append(document.createTextNode(whenS(r.at) + " · "), rp);
+    if (mine) {
+      const ed = el("button", "lnk", "Edit"), x = el("button", "lnk", "Delete"); ed.type = x.type = "button"; x.style.marginLeft = "12px";
+      ed.onclick = () => { setReply(null); noteModal(); };
+      x.onclick = () => confirmSheet("Delete repost", async () => { await unRepost(p, (reelUI[p.id] || {}).rb); inp.value = ""; draw(); });
+      meta.append(ed, x);
+    }
+    mid.append(meta); d.append(avatar(u, nm[0].toUpperCase(), "md", u), mid, heart(String(u))); return d;
   };
   const draw = () => {
     const keep = body.scrollTop, ent = repSorted(p.id), fc = ent.filter(([u]) => u !== me.id && isFriend(u)).length;
     body.replaceChildren(); body.append(el("div", "t2 rsub", ent.length + " in total, " + fc + " from friends"));
     if (!ent.length) body.append(el("div", "hint", "No reposts yet."));
-    ent.forEach(([u, r]) => body.append(rowFor(u, r))); body.scrollTop = keep; toggleGo();
+    ent.forEach(([u, r]) => {
+      body.append(rowFor(u, r)); const ks = (frr[p.id] || []).filter(x => String(x.repost_user_id) === String(u));
+      if (ks.length) {
+        const k = kOf(u), open = rrOpen.has(k), vb = el("button", "lnk", open ? "Hide replies ⌃" : "View " + ks.length + (ks.length === 1 ? " reply" : " replies") + " ⌄");
+        vb.type = "button"; vb.style.marginLeft = "44px"; vb.onclick = () => { open ? rrOpen.delete(k) : rrOpen.add(k); draw(); }; body.append(vb);
+        if (open) ks.forEach(x => body.append(replyRow(x)));
+      }
+    });
+    body.scrollTop = keep; toggleGo();
   };
-  const save = async () => {
-    const t = inp.value.trim(), M = repMap(p.id), mine = M.get(me.id); if (!t && !mine) return;
+  const sendReply = async () => {
+    const t = inp.value.trim(); if (!t || !replyTo) return; go.disabled = true;
+    const {data, error} = await sb.from("repost_replies").insert({post_id: p.id, repost_user_id: replyTo.ru, body: t}).select().single(); go.disabled = false;
+    if (error) return alert(/repost_replies|schema cache|relation/i.test(error.message) ? REP3_MSG : error.message);
+    (frr[p.id] = frr[p.id] || []).push(data); rrOpen.add(kOf(replyTo.ru)); setReply(null); draw();
+  };
+  const save = async t => {
+    const M = repMap(p.id), mine = M.get(me.id); t = (t || "").trim(); if (!t && !mine) return;
     if (frepOK === false) return alert(REP_MSG);
-    go.disabled = true; let r;
-    if (mine) r = await sb.from("post_reposts").update({comment: t || null}).eq("post_id", p.id).eq("user_id", me.id);
-    else r = await sb.from("post_reposts").insert({post_id: p.id, comment: t});
-    go.disabled = false;
+    let r = mine ? await sb.from("post_reposts").update({comment: t || null}).eq("post_id", p.id).eq("user_id", me.id) : await sb.from("post_reposts").insert({post_id: p.id, comment: t});
     if (r.error) return alert(/comment|column/i.test(r.error.message) ? "Adding text to a repost isn't set up yet. Run clips_repost2.sql in the Supabase SQL Editor." : r.error.message);
     if (mine) mine.comment = t; else M.set(me.id, {note: "", comment: t, at: new Date().toISOString()});
-    editing = false; refreshReel(); draw(); if (!mine) toast("Reposted");
+    inp.value = t; refreshReel(); draw(); if (!mine) toast("Reposted");
   };
-  go.onclick = save; inp.oninput = toggleGo; inp.onkeydown = e => { if (e.key === "Enter") save(); };
-  bar.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase(), "sm"), inp, go); sh.append(bar);
-  draw(); if (focus) { editing = true; toggleGo(); setTimeout(() => inp.focus(), 80); }
+  // "Add note to your repost" popup
+  const noteModal = () => {
+    const bg = el("div", "nmbg"), card = el("div", "nmc"), row = el("div", "nr"), ta = el("textarea"), ems = el("div", "emr"), fo = el("div", "nf"), add = el("button", "sm", mineRp() ? "Save" : "Add");
+    ta.placeholder = "Say something…"; ta.maxLength = 200; ta.value = (mineRp() && mineRp().comment) || ""; add.type = "button";
+    REP_EMOJI.forEach(x => { const b = el("button", "", x); b.type = "button"; b.onclick = () => { ta.value += x; ta.focus(); }; ems.append(b); });
+    row.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase(), "md"), ta); fo.append(add); card.append(el("h4", null, "Add note to your repost"), row, ems, fo); bg.append(card);
+    bg.onclick = e => { if (e.target === bg) bg.remove(); };
+    add.onclick = async () => { const t = ta.value; bg.remove(); await save(t); };
+    document.body.append(bg); setTimeout(() => ta.focus(), 50);
+  };
+  go.onclick = sendReply; inp.onclick = () => { if (!replyTo) noteModal(); }; inp.oninput = toggleGo; inp.onkeydown = e => { if (e.key === "Enter") sendReply(); };
+  emb.onclick = () => { if (!replyTo) return noteModal(); emr.style.display = emr.style.display === "none" ? "" : "none"; };
+  bar.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase(), "sm"), inp, emb, go); sh.append(rb, emr, bar);
+  draw(); if (focus) setTimeout(noteModal, 80);
   await ensureNames([...repMap(p.id).keys()]); if (document.getElementById("sheet")) draw();
+  await loadRepostExtras(p); if (document.getElementById("sheet")) draw();
 }
 // load reposts for the Clips feed; clips reposted by me / friends float up
 async function loadReposts() {
