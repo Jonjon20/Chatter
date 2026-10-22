@@ -214,11 +214,19 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .bb{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;flex:none;cursor:pointer}
 .bb .nb{max-width:92px;background:#2a2b2e;color:#fff;font-size:12px;line-height:1.2;border-radius:14px;padding:5px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bb .nb.ph{color:#a8a8a8}
 .bb .av{width:44px;height:44px;border:2px solid #ffffff40;font-size:17px}
-.bb .bd{position:absolute;right:-5px;bottom:-4px;display:flex}.bb .bd i{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #000;margin-left:-4px}.bb .bd i svg{width:11px;height:11px}.bb .bd .h{background:#ff2d55;color:#fff}.bb .bd .r{background:#7c4dff;color:#fff}
+.bb .bdg{position:absolute;right:-5px;bottom:-4px;display:flex}.bb .bdg i{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #000;margin-left:-4px}.bb .bdg i svg{width:11px;height:11px}.bb .bdg .h{background:#ff2d55;color:#fff}.bb .bdg .r{background:#7c4dff;color:#fff}
 .emr{display:flex;justify-content:center;gap:10px;padding:8px 12px;flex-wrap:wrap}.emr button{background:none;font-size:26px;padding:4px 6px;border-radius:50%}.emr button.on{background:var(--line)}
 .npn{display:flex;flex-direction:column;align-items:center;gap:10px;padding:6px 0 10px}.npn .nb{background:var(--oth);color:var(--tx);border-radius:16px;padding:8px 14px;font-size:15px}.npn .nb.ph{color:var(--mut)}
 .npn .nav{position:relative}.npn .nav .av{width:88px;height:88px;font-size:34px}.npn .nav i{position:absolute;right:-2px;bottom:-2px;width:28px;height:28px;border-radius:50%;background:#7c4dff;color:#fff;display:flex;align-items:center;justify-content:center;border:3px solid var(--bg2)}.npn .nav i svg{width:15px;height:15px}
 .npn input{width:100%;max-width:320px;text-align:center}.npn .wide{width:100%;padding:12px;border-radius:10px;font-weight:600}
+.rpr{display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer;text-shadow:none}
+.rpr .stk{display:flex}.rpr .stk .av{width:26px;height:26px;font-size:11px;border:2px solid #000;margin-left:-8px}.rpr .stk .av:first-child{margin-left:0}
+.rpr .rpill{display:flex;align-items:center;gap:6px;background:#0009;color:#fff;border-radius:14px;padding:4px 6px 4px 10px;font-size:13px;font-weight:600}
+.rpr .rpic{background:none;color:#fff;padding:2px;line-height:0}.rpr .rpic svg{width:15px;height:15px}
+.rpl{position:absolute;top:10px;left:12px;z-index:3;background:#0007;color:#fff;border-radius:14px;padding:4px 10px;font-size:12px;font-weight:600;display:none}
+.rsub{text-align:center;padding:0 0 8px}
+.sheet.acts{max-height:none;padding-bottom:env(safe-area-inset-bottom,0px)}.acts button{width:100%;padding:16px;background:none;color:var(--tx);font-size:16px;font-weight:600;border-radius:0}.acts button+button{border-top:1px solid var(--line)}
+.sbar .av{flex:none}
 </style></head>
 <body>
 <div id="auth" class="hide">
@@ -905,27 +913,27 @@ function postCard(p, inProfile) {
 function reel(p) {
   const r = el("div", "rl"), v = el("video"), ov = el("div", "ov"), sd = el("div", "sd");
   v.src = p.url || ""; v.loop = true; v.muted = clipMuted; v.playsInline = true; v.preload = "metadata";
-  const who = el("div", "ovh"); who.append(avatar(p.user_id, (names[p.user_id] || "?")[0].toUpperCase(), "sm"), el("div", "t1", names[p.user_id] || "Someone")); who.onclick = e => { e.stopPropagation(); openProfile(p.user_id); };
-  const bub = el("div", "bubs"); ov.append(bub, who); if (p.visibility === "friends") { const ft = el("div", "", "👥 Friends only"); ft.style.cssText = "font-size:12px;opacity:.85;margin-bottom:2px"; ov.append(ft); } ov.append(el("div", "", p.body || ""));
+  const who = el("div", "ovh"); who.append(el("div", "t1", names[p.user_id] || "Someone")); who.onclick = e => { e.stopPropagation(); openProfile(p.user_id); };
+  const bub = el("div", "bubs"), rpr = el("div", "rpr"), rpl = el("div", "rpl"); rpr.onclick = e => { e.stopPropagation(); openReposts(p); }; ov.append(bub, rpr, who); if (p.visibility === "friends") { const ft = el("div", "", "👥 Friends only"); ft.style.cssText = "font-size:12px;opacity:.85;margin-bottom:2px"; ov.append(ft); } ov.append(el("div", "", p.body || ""));
   const rav = el("div", "rav"), ra = avatar(p.user_id, (names[p.user_id] || "?")[0].toUpperCase(), "fa"); ra.style.cursor = "pointer"; ra.onclick = () => openProfile(p.user_id); rav.append(ra);
   if (p.user_id !== me.id && !rel(p.user_id)) { const pl = el("button", "rplus", "+"); pl.type = "button"; pl.onclick = async () => { const {error} = await sb.from("friendships").insert({addressee: p.user_id}); if (error) return alert(error.message); pl.remove(); loadFriends(); }; rav.append(pl); }
   const lk = el("button"), cm = el("button"), sv = el("button"); lk.type = cm.type = sv.type = "button";
   paintLike(p, lk); paintCmt(p, cm); paintSave(p, sv);
   lk.onclick = () => reelLike(p, lk); cm.onclick = () => openCmts(p, () => paintCmt(p, cm)); sv.onclick = () => toggleSave(p, sv);
   const rpb = el("button"); rpb.type = "button"; paintRepost(p, rpb); rpb.onclick = () => toggleRepost(p, rpb);
-  reelUI[p.id] = {bub, rb: rpb, lk, p}; bubPaint(p);
+  reelUI[p.id] = {bub, rpr, rpl, rb: rpb, lk, p}; bubPaint(p);
   sd.append(rav, lk, cm, sv, rpb);
   if (p.user_id === me.id) { const d = el("button", "", "🗑"); d.onclick = async () => { if (!confirm("Delete this clip?")) return; sb.storage.from("chat-images").remove([p.media_path]); await sb.from("posts").delete().eq("id", p.id); loadFeed(); }; sd.append(d); }
   const mt = el("button", "rmute", clipMuted ? "🔇" : "🔊"); mt.type = "button";
   mt.onclick = () => { clipMuted = !clipMuted; document.querySelectorAll(".rl video").forEach(x => x.muted = clipMuted); document.querySelectorAll(".rmute").forEach(b => b.textContent = clipMuted ? "🔇" : "🔊"); };
   let lastTap = 0, tapT = null;
   r.addEventListener("click", e => {
-    if (e.target.closest(".sd,.ovh,.rmute,.bubs")) return;
+    if (e.target.closest(".sd,.ovh,.rmute,.bubs,.rpr")) return;
     const now = Date.now(), rc = r.getBoundingClientRect();
     if (now - lastTap < 300) { clearTimeout(tapT); lastTap = 0; if (!(flikes[p.id] || []).includes(me.id)) reelLike(p, lk); heartBurst(r, e.clientX - rc.left, e.clientY - rc.top); }
     else { lastTap = now; tapT = setTimeout(() => { v.paused ? v.play().catch(() => {}) : v.pause(); }, 280); }
   });
-  r.append(v, ov, sd, mt); $("#list").append(r);
+  r.append(v, ov, sd, mt, rpl); $("#list").append(r);
 }
 // ---------- CLIPS: like / comments sheet / save + collections ----------
 const bmIcon = on => '<svg viewBox="0 0 24 24" fill="' + (on ? "currentColor" : "none") + '" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4.5L5 21V4a1 1 0 0 1 1-1z"/></svg>';
@@ -1043,7 +1051,7 @@ const isFriend = u => { const r = rel(u); return !!r && r.status === "accepted";
 const RPI = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>';
 const RHI = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-8-5.2-8-11.2A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 8 2.8C20 15.8 12 21 12 21z"/></svg>';
 const NOTE_EMOJI = ["😍", "😭", "😂", "❤️", "😔", "🥹", "💔", "🙏"], QUICK_EMOJI = ["😂", "😮", "🔥", "🙌", "❤️"];
-function paintRepost(p, b) { const M = repMap(p.id), on = M.has(me.id); b.className = "rpb" + (on ? " on" : ""); b.innerHTML = RPI + "<span>" + M.size + "</span>"; }
+function paintRepost(p, b) { if (!b) return; const M = repMap(p.id), on = M.has(me.id); b.className = "rpb" + (on ? " on" : ""); b.innerHTML = RPI + "<span>" + M.size + "</span>"; }
 async function toggleRepost(p, b) {
   if (frepOK === false) return alert(REP_MSG);
   if (repMap(p.id).has(me.id)) return unRepost(p, b);
@@ -1063,12 +1071,12 @@ function repostToast(p, b) {
 }
 // avatars of me + my friends who liked / reposted this clip (heart or repost badge)
 function bubPaint(p) {
-  const ui = reelUI[p.id], w = ui && ui.bub; if (!w) return; w.replaceChildren();
+  const ui = reelUI[p.id], w = ui && ui.bub; if (!w) return; pillPaint(p); w.replaceChildren();
   const likes = new Set(flikes[p.id] || []), reps = repMap(p.id), order = [];
   const add = u => { if (u !== p.user_id && (likes.has(u) || reps.has(u)) && (u === me.id || isFriend(u)) && !order.includes(u)) order.push(u); };
   add(me.id); [...reps.entries()].sort((a, b) => String(b[1].at).localeCompare(String(a[1].at))).forEach(([u]) => add(u)); likes.forEach(add);
   order.slice(0, 8).forEach(u => {
-    const bb = el("div", "bb"), nm = names[u] || "Someone", rp = reps.get(u), bd = el("div", "bd");
+    const bb = el("div", "bb"), nm = names[u] || "Someone", rp = reps.get(u), bd = el("div", "bdg");
     if (rp && rp.note) bb.append(el("div", "nb", rp.note)); else if (rp && u === me.id) bb.append(el("div", "nb ph", "Drop an emoji…"));
     bb.append(avatar(u, nm[0].toUpperCase(), "fa"));
     if (likes.has(u)) { const i = el("i", "h"); i.innerHTML = RHI; bd.append(i); }
@@ -1113,13 +1121,70 @@ function openNoteSheet(p) {
   };
   wrap.append(nb, av, msg, emr, inp, save); body.append(wrap); paint();
 }
+// ---------- CLIPS: "N reposted" pill + Reposts sheet (TikTok style) ----------
+const PEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';
+const repRank = u => u === me.id ? 0 : isFriend(u) ? 1 : 2;
+const repSorted = id => [...repMap(id).entries()].sort((a, b) => (repRank(a[0]) - repRank(b[0])) || String(b[1].at).localeCompare(String(a[1].at)));
+function pillPaint(p) {
+  const ui = reelUI[p.id], w = ui && ui.rpr; if (!w) return; w.replaceChildren();
+  const M = repMap(p.id), ent = repSorted(p.id), frs = ent.filter(([u]) => u !== me.id && isFriend(u)).map(([u]) => names[u] || "Someone");
+  if (ui.rpl) { ui.rpl.textContent = frs.length ? "🔁 " + frs[0] + (frs.length > 1 ? " and " + (frs.length - 1) + (frs.length === 2 ? " other" : " others") : "") + " reposted" : ""; ui.rpl.style.display = frs.length ? "block" : "none"; }
+  if (!M.size) { w.style.display = "none"; return; }
+  w.style.display = "flex";
+  const st = el("div", "stk"), pill = el("div", "rpill"), mine = M.has(me.id), ic = el("button", "rpic");
+  ent.slice(0, 3).forEach(([u]) => st.append(avatar(u, (names[u] || "?")[0].toUpperCase(), "sm")));
+  ic.type = "button"; ic.innerHTML = mine ? PEN : RPI; ic.onclick = e => { e.stopPropagation(); mine ? openReposts(p, true) : toggleRepost(p, ui.rb); };
+  pill.append(el("span", null, M.size + " reposted"), ic); w.append(st, pill);
+}
+function confirmSheet(label, fn) {
+  const ov = el("div", "sheetbg"), sh = el("div", "sheet acts"), a = el("button", "", label), c = el("button", "", "Cancel"), close = () => ov.remove();
+  ov.style.zIndex = 78; a.type = c.type = "button"; ov.onclick = e => { if (e.target === ov) close(); }; c.onclick = close; a.onclick = async () => { close(); await fn(); };
+  sh.append(a, c); ov.append(sh); document.body.append(ov);
+}
+async function openReposts(p, focus) {
+  const {sh, body} = sheet("Reposts"), bar = el("div", "sbar"), inp = el("input"), go = el("button", "sm", "Repost"), me0 = repMap(p.id).get(me.id);
+  let editing = false;
+  inp.placeholder = "Add to your repost…"; inp.maxLength = 200; go.type = "button"; if (me0 && me0.comment) inp.value = me0.comment;
+  const toggleGo = () => { go.style.display = (inp.value.trim() || editing) ? "" : "none"; go.textContent = repMap(p.id).has(me.id) ? "Save" : "Repost"; };
+  const refreshReel = () => { const u = reelUI[p.id]; if (u) { paintRepost(p, u.rb); bubPaint(p); } };
+  const rowFor = (u, r) => {
+    const nm = names[u] || "Someone", d = el("div", "fci2"), mid = el("div", "mid"), meta = el("div", "t2"), mine = u === me.id, when = agoS(r.at) === "now" ? "Just now" : agoS(r.at);
+    mid.append(el("div", "t1", nm)); if (r.comment) mid.append(el("div", null, r.comment));
+    const a = el("button", "lnk", mine ? "Edit" : "Reply"); a.type = "button";
+    a.onclick = mine ? () => { editing = true; inp.focus(); toggleGo(); } : () => { closeSheet(); openPeople(p, u); };
+    meta.append(document.createTextNode(when + " · "), a);
+    if (mine) { const x = el("button", "lnk", "Delete"); x.type = "button"; x.style.marginLeft = "12px"; x.onclick = () => confirmSheet("Delete repost", async () => { await unRepost(p, (reelUI[p.id] || {}).rb); inp.value = ""; editing = false; draw(); }); meta.append(x); }
+    mid.append(meta); d.append(avatar(u, nm[0].toUpperCase(), "md", u), mid); return d;
+  };
+  const draw = () => {
+    const keep = body.scrollTop, ent = repSorted(p.id), fc = ent.filter(([u]) => u !== me.id && isFriend(u)).length;
+    body.replaceChildren(); body.append(el("div", "t2 rsub", ent.length + " in total, " + fc + " from friends"));
+    if (!ent.length) body.append(el("div", "hint", "No reposts yet."));
+    ent.forEach(([u, r]) => body.append(rowFor(u, r))); body.scrollTop = keep; toggleGo();
+  };
+  const save = async () => {
+    const t = inp.value.trim(), M = repMap(p.id), mine = M.get(me.id); if (!t && !mine) return;
+    if (frepOK === false) return alert(REP_MSG);
+    go.disabled = true; let r;
+    if (mine) r = await sb.from("post_reposts").update({comment: t || null}).eq("post_id", p.id).eq("user_id", me.id);
+    else r = await sb.from("post_reposts").insert({post_id: p.id, comment: t});
+    go.disabled = false;
+    if (r.error) return alert(/comment|column/i.test(r.error.message) ? "Adding text to a repost isn't set up yet. Run clips_repost2.sql in the Supabase SQL Editor." : r.error.message);
+    if (mine) mine.comment = t; else M.set(me.id, {note: "", comment: t, at: new Date().toISOString()});
+    editing = false; refreshReel(); draw(); if (!mine) toast("Reposted");
+  };
+  go.onclick = save; inp.oninput = toggleGo; inp.onkeydown = e => { if (e.key === "Enter") save(); };
+  bar.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase(), "sm"), inp, go); sh.append(bar);
+  draw(); if (focus) { editing = true; toggleGo(); setTimeout(() => inp.focus(), 80); }
+  await ensureNames([...repMap(p.id).keys()]); if (document.getElementById("sheet")) draw();
+}
 // load reposts for the Clips feed; clips reposted by me / friends float up
 async function loadReposts() {
-  const seq = fseq, ids = fposts.map(p => p.id), cols = "post_id,user_id,note,created_at";
+  const seq = fseq, ids = fposts.map(p => p.id), cols = "*";
   const [a, b] = await Promise.all([ids.length ? sb.from("post_reposts").select(cols).in("post_id", ids) : {data: []}, sb.from("post_reposts").select(cols).order("created_at", {ascending: false}).limit(80)]);
   if (seq !== fseq) return;
   frepOK = !(a.error || b.error); if (!frepOK) { frep = {}; return; }
-  frep = {}; const put = x => repMap(x.post_id).set(x.user_id, {note: x.note || "", at: x.created_at});
+  frep = {}; const put = x => repMap(x.post_id).set(x.user_id, {note: x.note || "", comment: x.comment || "", at: x.created_at});
   (a.data || []).forEach(put);
   const have = new Set(ids), mine = (b.data || []).filter(x => x.user_id === me.id || isFriend(x.user_id)), need = [...new Set(mine.map(x => x.post_id).filter(i => !have.has(i)))];
   if (need.length) {
@@ -1129,6 +1194,8 @@ async function loadReposts() {
     (c.data || []).forEach(x => (fcm[x.post_id] = fcm[x.post_id] || []).push(x));
     (rr.data || []).forEach(put); fposts = [...fposts, ...(pr.data || [])];
   }
+  await ensureNames([...new Set(Object.values(frep).flatMap(m => [...m.keys()]))]);
+  if (seq !== fseq) return;
   const at = {}; mine.forEach(x => { if (!at[x.post_id] || x.created_at > at[x.post_id]) at[x.post_id] = x.created_at; });
   const eff = p => (at[p.id] && at[p.id] > p.created_at) ? at[p.id] : p.created_at;
   fposts.sort((x, y) => String(eff(y)).localeCompare(String(eff(x))));
@@ -1140,7 +1207,7 @@ function liveClips() {
   const T = (table, event, fn) => ({t: table, e: event, fn});
   const likeAdd = ev => { const x = ev.new; if (!x || !reelUI[x.post_id]) return; const L = flikes[x.post_id] = flikes[x.post_id] || []; if (L.includes(x.user_id)) return; L.push(x.user_id); ensureNames([x.user_id]).then(() => liveFx(x.post_id)); };
   const likeDel = ev => { const o = ev.old; if (!o || !o.post_id || !o.user_id || !flikes[o.post_id]) return; flikes[o.post_id] = flikes[o.post_id].filter(u => u !== o.user_id); liveFx(o.post_id); };
-  const repSet = ev => { const x = ev.new; if (!x || !reelUI[x.post_id] || frepOK === false) return; repMap(x.post_id).set(x.user_id, {note: x.note || "", at: x.created_at}); ensureNames([x.user_id]).then(() => liveFx(x.post_id)); };
+  const repSet = ev => { const x = ev.new; if (!x || !reelUI[x.post_id] || frepOK === false) return; repMap(x.post_id).set(x.user_id, {note: x.note || "", comment: x.comment || "", at: x.created_at}); ensureNames([x.user_id]).then(() => liveFx(x.post_id)); };
   const repDel = ev => { const o = ev.old; if (!o || !o.post_id || !o.user_id || !frep[o.post_id]) return; frep[o.post_id].delete(o.user_id); liveFx(o.post_id); };
   const pc = (event, table) => ({event, schema: "public", table});
   liveCh = sb.channel("clipfx")
@@ -1155,10 +1222,10 @@ async function loadRepTab() {
   if (r.error) { S.err = true; S.loading = false; return pf.uid === uid && pfPaint(); }
   const ids = (r.data || []).map(x => x.post_id);
   if (ids.length) {
-    const [pr, l, rr] = await Promise.all([sb.from("posts").select("*").in("id", ids).eq("kind", "clip"), sb.from("post_likes").select("post_id,user_id").in("post_id", ids), sb.from("post_reposts").select("post_id,user_id,note,created_at").in("post_id", ids)]);
+    const [pr, l, rr] = await Promise.all([sb.from("posts").select("*").in("id", ids).eq("kind", "clip"), sb.from("post_likes").select("post_id,user_id").in("post_id", ids), sb.from("post_reposts").select("*").in("post_id", ids)]);
     const map = {}; (pr.data || []).forEach(p => map[p.id] = p);
     ids.forEach(i => flikes[i] = []); (l.data || []).forEach(x => flikes[x.post_id].push(x.user_id));
-    (rr.data || []).forEach(x => repMap(x.post_id).set(x.user_id, {note: x.note || "", at: x.created_at}));
+    (rr.data || []).forEach(x => repMap(x.post_id).set(x.user_id, {note: x.note || "", comment: x.comment || "", at: x.created_at}));
     S.posts = ids.map(i => map[i]).filter(Boolean);
     await ensureNames(S.posts.map(p => p.user_id));
     await Promise.all(S.posts.map(async p => { if (p.media_path) p.url = await imgUrl(p.media_path); }));
