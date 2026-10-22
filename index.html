@@ -758,7 +758,7 @@ async function postMedia(f, body, kind, vis) {
     return true;
   } catch (e) {
     const m = e.message || String(e);
-    alert("Couldn't post: " + m + (/visibility|null value|violates|check|kind/i.test(m) ? "\n\nRun upgrade8.sql in the Supabase SQL Editor, then try again." : ""));
+    alert("Couldn't post: " + m + (/mime type|not supported/i.test(m) ? "\n\nRun video_bucket.sql in the Supabase SQL Editor, then try again." : /visibility|null value|violates|check|kind/i.test(m) ? "\n\nRun upgrade8.sql in the Supabase SQL Editor, then try again." : ""));
     return false;
   }
 }
