@@ -169,6 +169,7 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .pc .ac{display:flex;border-top:1px solid var(--line);margin:6px 14px 0}.pc .ac button{flex:1;background:none;color:var(--mut);border-radius:0;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;padding:10px}.pc .ac button.on{color:#f3425f}
 .cm{padding:8px 14px 10px;display:flex;flex-direction:column;gap:8px}.cm .fci{display:flex;gap:8px;align-items:flex-start}
 .cm .fcb{background:var(--bg2);border-radius:18px;padding:7px 12px;font-size:15px;overflow-wrap:anywhere}.cm .fcb b{display:block;font-size:13px}.cm input{width:100%}
+.ftop{scroll-snap-align:start}
 .rl{position:relative;height:calc(100% - 56px);scroll-snap-align:start;background:#000;color:#fff}.rl video{width:100%;height:100%;object-fit:contain}.rl .ov{position:absolute;left:12px;right:70px;bottom:16px;text-shadow:0 1px 3px #000}.rl .sd{position:absolute;right:10px;bottom:30px;display:flex;flex-direction:column;gap:14px}.rl .sd button{background:#0008;color:#fff;border-radius:50%;width:48px;height:48px;padding:0;font-size:12px}
 .pov{position:fixed;inset:0;z-index:45;background:var(--bg2);display:flex;flex-direction:column}.pvt{display:flex;align-items:center;gap:10px;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--line);background:var(--bg);font-weight:700}.pvb{flex:1;overflow-y:auto;max-width:640px;width:100%;margin:0 auto}
 #pfv,#mnu{position:fixed;inset:0;z-index:65;overflow-y:auto;padding-top:env(safe-area-inset-top,0px)}
@@ -658,7 +659,7 @@ async function openPost(id) {
 }
 
 // ---------- NEWSFEED + CLIPS + STORIES ----------
-let fmode = "post", feedDirty = false, fposts = [], flikes = {}, fcm = {}, fopen = new Set(), fdraft = {txt: "", file: null, url: null, open: false, vis: "public"}, fbusy = false, fstories = [], fhide = new Set();
+let fmode = "post", feedDirty = false, fposts = [], flikes = {}, fcm = {}, fopen = new Set(), fdraft = {txt: "", file: null, url: null, open: false, vis: "public"}, fbusy = false, fstories = [], fhide = new Set(), fseq = 0, floading = false;
 try { fhide = new Set(JSON.parse(localStorage.getItem("fhide") || "[]")); } catch (e) {}
 try { if (localStorage.getItem("fvis") === "friends") fdraft.vis = "friends"; } catch (e) {}
 const agoS = t => { const s = Math.max(0, (Date.now() - Date.parse(t)) / 1000); if (s < 60) return "now"; if (s < 3600) return Math.floor(s / 60) + "m"; if (s < 86400) return Math.floor(s / 3600) + "h"; if (s < 604800) return Math.floor(s / 86400) + "d"; return Math.floor(s / 604800) + "w"; };
@@ -684,10 +685,12 @@ async function loadStories() {
   feedDirty = true; if (tab === "feed" && fmode === "post") render();
 }
 async function loadFeed() {
-  if (fmode === "post") loadStories();
-  const {data, error} = await sb.from("posts").select("*").eq("kind", fmode).order("created_at", {ascending: false}).limit(40);
-  if (error) { fposts = []; $("#list").textContent = "Newsfeed isn't set up yet (" + error.message + "). Run upgrade6.sql in Supabase."; return; }
-  fposts = data || []; const ids = fposts.map(p => p.id); flikes = {}; fcm = {};
+  const my = ++fseq, mode = fmode; floading = true;
+  if (mode === "post") loadStories();
+  const {data, error} = await sb.from("posts").select("*").eq("kind", mode).order("created_at", {ascending: false}).limit(40);
+  if (my !== fseq) return;
+  if (error) { floading = false; fposts = []; $("#list").textContent = "Newsfeed isn't set up yet (" + error.message + "). Run upgrade6.sql in Supabase."; return; }
+  const L0 = data || []; const ids = L0.map(p => p.id); flikes = {}; fcm = {}; fposts = L0;
   if (ids.length) {
     const [l, c] = await Promise.all([sb.from("post_likes").select("*").in("post_id", ids), sb.from("post_comments").select("*").in("post_id", ids).order("created_at").limit(500)]);
     (l.data || []).forEach(x => (flikes[x.post_id] = flikes[x.post_id] || []).push(x.user_id));
@@ -695,15 +698,16 @@ async function loadFeed() {
   }
   await ensureNames([...fposts.map(p => p.user_id), ...Object.values(fcm).flat().map(c => c.user_id)]);
   await Promise.all(fposts.map(async p => { if (p.media_path) p.url = await imgUrl(p.media_path); }));
-  feedDirty = true; if (tab === "feed") render();
+  if (my !== fseq) return;
+  floading = false; feedDirty = true; if (tab === "feed") render();
 }
 const fkeep = fn => { const b = $("#list"), y = b.scrollTop; fn(); feedDirty = true; render(); b.scrollTop = y; pfPaint(); povPaint(); };
 function feedRender() {
-  const box = $("#list"); if (!feedDirty) return; feedDirty = false; box.replaceChildren(); box.dataset.t = "feed";
+  const box = $("#list"); if (!feedDirty) return; feedDirty = false; box.replaceChildren(); box.dataset.t = "feed"; box.style.scrollSnapType = ""; if (reelObs) { reelObs.disconnect(); reelObs = null; }
   // top bar: hamburger + Newsfeed / Clips
   const fm = el("div", "fm"), hb = el("button", "hb"), tt = el("div", "tt");
   hb.type = "button"; hb.innerHTML = FI.ham; hb.onclick = openMenu;
-  [["post", "Newsfeed"], ["clip", "Clips"]].forEach(([k, t]) => { const b = el("button", fmode === k ? "on" : "", t); b.type = "button"; b.onclick = () => { if (fmode !== k) { dropFile(); fdraft.open = false; fdraft.txt = ""; } fmode = k; fposts = []; feedDirty = true; render(); loadFeed(); }; tt.append(b); });
+  [["post", "Newsfeed"], ["clip", "Clips"]].forEach(([k, t]) => { const b = el("button", fmode === k ? "on" : "", t); b.type = "button"; b.onclick = () => { if (fmode !== k) { dropFile(); fdraft.open = false; fdraft.txt = ""; } fmode = k; fposts = []; floading = true; feedDirty = true; render(); loadFeed(); }; tt.append(b); });
   fm.append(hb, tt, el("div", "sp")); box.append(fm);
   // "What's on your mind?"
   const cmp = el("div", "cmp"), ph = el("div", "cph", fmode === "clip" ? "Add a clip" : "What's on your mind?"), gi = el("button", "pi2");
@@ -729,8 +733,8 @@ function feedRender() {
   }
   if (fmode === "post") box.append(storiesRow());
   const vis = fposts.filter(p => !fhide.has(p.id));
-  if (!vis.length) box.append(el("div", "hint", fmode === "clip" ? "No clips yet. Add the first one!" : "No posts yet. Add friends or post something."));
-  if (fmode === "clip") { vis.forEach(reel); watchReels(); return; }
+  if (!vis.length) box.append(el("div", "hint", floading ? "Loading…" : fmode === "clip" ? "No clips yet. Add the first one!" : "No posts yet. Add friends or post something."));
+  if (fmode === "clip") { const top = el("div", "ftop"); [...box.children].forEach(c => top.append(c)); box.append(top); vis.forEach(reel); watchReels(); return; }
   vis.forEach(p => box.append(postCard(p)));
 }
 function dropFile() { if (fdraft.url) { try { URL.revokeObjectURL(fdraft.url); } catch (e) {} } fdraft.file = null; fdraft.url = null; }
