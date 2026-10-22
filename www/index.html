@@ -169,7 +169,10 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .pc .ac{display:flex;border-top:1px solid var(--line);margin:6px 14px 0}.pc .ac button{flex:1;background:none;color:var(--mut);border-radius:0;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;padding:10px}.pc .ac button.on{color:#f3425f}
 .cm{padding:8px 14px 10px;display:flex;flex-direction:column;gap:8px}.cm .fci{display:flex;gap:8px;align-items:flex-start}
 .cm .fcb{background:var(--bg2);border-radius:18px;padding:7px 12px;font-size:15px;overflow-wrap:anywhere}.cm .fcb b{display:block;font-size:13px}.cm input{width:100%}
-.ftop{scroll-snap-align:start}
+.ftop{position:sticky;top:0;z-index:6;background:var(--bg)}.ftop .fm{position:static}
+.rmute{position:absolute;top:10px;right:10px;background:#0006;color:#fff;border-radius:50%;width:36px;height:36px;padding:0;z-index:3;font-size:16px}
+.hburst{position:absolute;width:96px;height:96px;margin:-48px 0 0 -48px;color:#ff2d55;pointer-events:none;z-index:4;animation:hbst .9s ease-out forwards}.hburst svg{width:100%;height:100%;filter:drop-shadow(0 2px 8px #0008)}
+@keyframes hbst{0%{transform:scale(.3) rotate(var(--rot));opacity:0}20%{transform:scale(1.15) rotate(var(--rot));opacity:1}60%{transform:scale(1) rotate(var(--rot));opacity:1}100%{transform:translateY(-60px) scale(1.3) rotate(var(--rot));opacity:0}}
 .chb{display:flex;flex-direction:column;align-items:center;background:none;color:var(--mut);padding:2px 4px;font-size:11px;flex:none}.chb svg{width:18px;height:18px}.chb.on{color:#ff2d55}.lnk{background:none;color:var(--mut);padding:0 4px;font-size:12px;font-weight:600}
 .ct{position:relative}.ct img{width:100%;height:100%;object-fit:cover}.ct .tx{padding:8px;font-size:12px;overflow:hidden;height:100%;background:var(--bg2)}.ct .rmv{position:absolute;top:4px;right:4px;background:#0008;color:#fff;border-radius:50%;width:24px;height:24px;padding:0;font-size:13px;line-height:24px}
 .rl .sd{gap:14px;align-items:center}.rl .sd button{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;color:#fff;padding:2px;font-size:13px;font-weight:600;text-shadow:0 1px 3px #000}.rl .sd svg{width:34px;height:34px;filter:drop-shadow(0 1px 3px #0008)}.rl .sd button.on{color:#ff2d55}.rl .sd button.svb.on{color:#ffc928}
@@ -180,7 +183,7 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .sbar{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}.sbar input{flex:1;border-radius:20px}
 .crow{display:flex;align-items:center;gap:12px;padding:10px 6px}.crow .mid{flex:1}.crow button{width:34px;height:34px;border-radius:50%;padding:0;background:var(--line);color:var(--tx);font-size:18px}
 .stoast{position:fixed;left:12px;right:12px;bottom:84px;z-index:80;background:#2a2a2a;color:#fff;border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}.stoast button{background:none;color:#6bb6ff;padding:0;font-weight:600}
-.rl{position:relative;height:calc(100% - 56px);scroll-snap-align:start;background:#000;color:#fff}.rl video{width:100%;height:100%;object-fit:contain}.rl .ov{position:absolute;left:12px;right:70px;bottom:16px;text-shadow:0 1px 3px #000}.rl .sd{position:absolute;right:10px;bottom:30px;display:flex;flex-direction:column;gap:14px}.rl .sd button{background:#0008;color:#fff;border-radius:50%;width:48px;height:48px;padding:0;font-size:12px}
+.rl{position:relative;height:calc(100% - var(--ftop,56px));scroll-margin-top:var(--ftop,56px);scroll-snap-align:start;background:#000;color:#fff}.rl video{width:100%;height:100%;object-fit:contain}.rl .ov{position:absolute;left:12px;right:70px;bottom:16px;text-shadow:0 1px 3px #000}.rl .sd{position:absolute;right:10px;bottom:30px;display:flex;flex-direction:column;gap:14px}.rl .sd button{background:#0008;color:#fff;border-radius:50%;width:48px;height:48px;padding:0;font-size:12px}
 .pov{position:fixed;inset:0;z-index:45;background:var(--bg2);display:flex;flex-direction:column}.pvt{display:flex;align-items:center;gap:10px;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--line);background:var(--bg);font-weight:700}.pvb{flex:1;overflow-y:auto;max-width:640px;width:100%;margin:0 auto}
 #pfv,#mnu{position:fixed;inset:0;z-index:65;overflow-y:auto;padding-top:env(safe-area-inset-top,0px)}
 #pfv{background:var(--bg2)}#mnu{background:var(--bg2);z-index:62}
@@ -716,14 +719,15 @@ const fkeep = fn => { const b = $("#list"), y = b.scrollTop; fn(); feedDirty = t
 function feedRender() {
   const box = $("#list"); if (!feedDirty) return; feedDirty = false; box.replaceChildren(); box.dataset.t = "feed"; box.style.scrollSnapType = ""; if (reelObs) { reelObs.disconnect(); reelObs = null; }
   // top bar: hamburger + Newsfeed / Clips
+  const top = el("div", "ftop"); box.append(top);
   const fm = el("div", "fm"), hb = el("button", "hb"), tt = el("div", "tt");
   hb.type = "button"; hb.innerHTML = FI.ham; hb.onclick = openMenu;
   [["post", "Newsfeed"], ["clip", "Clips"]].forEach(([k, t]) => { const b = el("button", fmode === k ? "on" : "", t); b.type = "button"; b.onclick = () => { if (fmode !== k) { dropFile(); fdraft.open = false; fdraft.txt = ""; } fmode = k; fposts = []; floading = true; feedDirty = true; render(); loadFeed(); }; tt.append(b); });
-  fm.append(hb, tt, el("div", "sp")); box.append(fm);
+  fm.append(hb, tt, el("div", "sp")); top.append(fm);
   // "What's on your mind?"
   const cmp = el("div", "cmp"), ph = el("div", "cph", fmode === "clip" ? "Add a clip" : "What's on your mind?"), gi = el("button", "pi2");
   ph.onclick = () => openDraft(); gi.type = "button"; gi.innerHTML = FI.photo; gi.onclick = () => pickMedia();
-  cmp.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase(), "fa"), ph, gi); box.append(cmp);
+  cmp.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase(), "fa"), ph, gi); top.append(cmp);
   if (fdraft.open || fdraft.file) {
     const clip = fmode === "clip", d = el("div", "drf"), t = el("textarea"), r = el("div", "r w"), sel = el("select"), go = el("button", "sm", fbusy ? "Posting…" : "Post"), no = el("button", "sm gray", "Cancel");
     const ok = () => !fbusy && (clip ? !!fdraft.file : (!!fdraft.file || !!fdraft.txt.trim()));
@@ -740,12 +744,12 @@ function feedRender() {
     } else { const at = el("button", "sm gray", clip ? "🎬 Select video" : "📷 Photo / video"); at.type = "button"; at.onclick = pickMedia; r.append(at); }
     go.disabled = !ok(); go.onclick = doPost;
     no.onclick = () => { dropFile(); fdraft.txt = ""; fdraft.open = false; feedDirty = true; render(); };
-    r.append(sel, no, go); d.append(r); box.append(d);
+    r.append(sel, no, go); d.append(r); top.append(d);
   }
   if (fmode === "post") box.append(storiesRow());
   const vis = fposts.filter(p => !fhide.has(p.id));
   if (!vis.length) box.append(el("div", "hint", floading ? "Loading…" : fmode === "clip" ? "No clips yet. Add the first one!" : "No posts yet. Add friends or post something."));
-  if (fmode === "clip") { const top = el("div", "ftop"); [...box.children].forEach(c => top.append(c)); box.append(top); vis.forEach(reel); watchReels(); return; }
+  if (fmode === "clip") { box.style.setProperty("--ftop", top.offsetHeight + "px"); vis.forEach(reel); watchReels(); return; }
   vis.forEach(p => box.append(postCard(p)));
 }
 function dropFile() { if (fdraft.url) { try { URL.revokeObjectURL(fdraft.url); } catch (e) {} } fdraft.file = null; fdraft.url = null; }
@@ -889,7 +893,7 @@ function postCard(p, inProfile) {
 }
 function reel(p) {
   const r = el("div", "rl"), v = el("video"), ov = el("div", "ov"), sd = el("div", "sd");
-  v.src = p.url || ""; v.loop = true; v.muted = true; v.playsInline = true; v.preload = "metadata"; v.onclick = () => { v.muted = !v.muted; };
+  v.src = p.url || ""; v.loop = true; v.muted = clipMuted; v.playsInline = true; v.preload = "metadata";
   const who = el("div", "ovh"); who.append(avatar(p.user_id, (names[p.user_id] || "?")[0].toUpperCase(), "sm"), el("div", "t1", names[p.user_id] || "Someone")); who.onclick = e => { e.stopPropagation(); openProfile(p.user_id); };
   ov.append(who); if (p.visibility === "friends") { const ft = el("div", "", "👥 Friends only"); ft.style.cssText = "font-size:12px;opacity:.85;margin-bottom:2px"; ov.append(ft); } ov.append(el("div", "", p.body || ""));
   const rav = el("div", "rav"), ra = avatar(p.user_id, (names[p.user_id] || "?")[0].toUpperCase(), "fa"); ra.style.cursor = "pointer"; ra.onclick = () => openProfile(p.user_id); rav.append(ra);
@@ -900,7 +904,16 @@ function reel(p) {
   const shb = el("button"); shb.type = "button"; shb.innerHTML = SHI + "<span>Share</span>"; shb.onclick = () => shareClip(p);
   sd.append(rav, lk, cm, sv, shb);
   if (p.user_id === me.id) { const d = el("button", "", "🗑"); d.onclick = async () => { if (!confirm("Delete this clip?")) return; sb.storage.from("chat-images").remove([p.media_path]); await sb.from("posts").delete().eq("id", p.id); loadFeed(); }; sd.append(d); }
-  r.append(v, ov, sd); $("#list").append(r);
+  const mt = el("button", "rmute", clipMuted ? "🔇" : "🔊"); mt.type = "button";
+  mt.onclick = () => { clipMuted = !clipMuted; document.querySelectorAll(".rl video").forEach(x => x.muted = clipMuted); document.querySelectorAll(".rmute").forEach(b => b.textContent = clipMuted ? "🔇" : "🔊"); };
+  let lastTap = 0, tapT = null;
+  r.addEventListener("click", e => {
+    if (e.target.closest(".sd,.ovh,.rmute")) return;
+    const now = Date.now(), rc = r.getBoundingClientRect();
+    if (now - lastTap < 300) { clearTimeout(tapT); lastTap = 0; if (!(flikes[p.id] || []).includes(me.id)) reelLike(p, lk); heartBurst(r, e.clientX - rc.left, e.clientY - rc.top); }
+    else { lastTap = now; tapT = setTimeout(() => { v.paused ? v.play().catch(() => {}) : v.pause(); }, 280); }
+  });
+  r.append(v, ov, sd, mt); $("#list").append(r);
 }
 // ---------- CLIPS: like / comments sheet / save + collections ----------
 const bmIcon = on => '<svg viewBox="0 0 24 24" fill="' + (on ? "currentColor" : "none") + '" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4.5L5 21V4a1 1 0 0 1 1-1z"/></svg>';
@@ -1010,10 +1023,17 @@ async function openCollections(p, b) {
   };
   draw();
 }
+// ---------- CLIPS: sound on by default + double-tap heart ----------
+let clipMuted = false;
+document.addEventListener("pointerdown", () => { if (!clipMuted) document.querySelectorAll(".rl video").forEach(v => { if (v.muted) v.muted = false; }); }, {passive: true});
+function heartBurst(r, x, y) {
+  const h = el("div", "hburst"); h.innerHTML = FI.heartOn; h.style.left = x + "px"; h.style.top = y + "px"; h.style.setProperty("--rot", (Math.random() * 30 - 15) + "deg");
+  r.append(h); setTimeout(() => h.remove(), 900);
+}
 let reelObs = null;
 function watchReels() {
   const box = $("#list"); box.style.scrollSnapType = "y mandatory"; if (reelObs) reelObs.disconnect();
-  reelObs = new IntersectionObserver(es => es.forEach(e => { const v = e.target.querySelector("video"); if (!v) return; if (e.isIntersecting) v.play().catch(() => {}); else v.pause(); }), {root: box, threshold: 0.7});
+  reelObs = new IntersectionObserver(es => es.forEach(e => { const v = e.target.querySelector("video"); if (!v) return; if (e.isIntersecting) v.play().catch(err => { if (err && err.name === "NotAllowedError") { v.muted = true; v.play().catch(() => {}); } }); else v.pause(); }), {root: box, threshold: 0.7});
   box.querySelectorAll(".rl").forEach(r => reelObs.observe(r));
 }
 
