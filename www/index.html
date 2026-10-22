@@ -170,6 +170,16 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .cm{padding:8px 14px 10px;display:flex;flex-direction:column;gap:8px}.cm .fci{display:flex;gap:8px;align-items:flex-start}
 .cm .fcb{background:var(--bg2);border-radius:18px;padding:7px 12px;font-size:15px;overflow-wrap:anywhere}.cm .fcb b{display:block;font-size:13px}.cm input{width:100%}
 .ftop{scroll-snap-align:start}
+.chb{display:flex;flex-direction:column;align-items:center;background:none;color:var(--mut);padding:2px 4px;font-size:11px;flex:none}.chb svg{width:18px;height:18px}.chb.on{color:#ff2d55}.lnk{background:none;color:var(--mut);padding:0 4px;font-size:12px;font-weight:600}
+.ct{position:relative}.ct img{width:100%;height:100%;object-fit:cover}.ct .tx{padding:8px;font-size:12px;overflow:hidden;height:100%;background:var(--bg2)}.ct .rmv{position:absolute;top:4px;right:4px;background:#0008;color:#fff;border-radius:50%;width:24px;height:24px;padding:0;font-size:13px;line-height:24px}
+.rl .sd{gap:14px;align-items:center}.rl .sd button{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;color:#fff;padding:2px;font-size:13px;font-weight:600;text-shadow:0 1px 3px #000}.rl .sd svg{width:34px;height:34px;filter:drop-shadow(0 1px 3px #0008)}.rl .sd button.on{color:#ff2d55}.rl .sd button.svb.on{color:#ffc928}
+.rav{position:relative;margin-bottom:10px}.rl .sd .rplus{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);width:20px;height:20px;border-radius:50%;background:#fe2c55;color:#fff;padding:0;font-size:15px;line-height:20px;display:block;text-shadow:none}.rl .sd .rav .av{width:46px;height:46px;border:2px solid #fff;font-size:18px}
+.sheetbg{position:fixed;inset:0;z-index:75;background:rgba(0,0,0,.5);display:flex;align-items:flex-end}.sheet{width:100%;max-height:72%;display:flex;flex-direction:column;background:var(--bg2);color:var(--tx);border-radius:16px 16px 0 0}
+.sh{display:flex;align-items:center;justify-content:center;padding:14px 16px;font-weight:700;position:relative}.sh button{position:absolute;right:10px;background:none;color:var(--tx);font-size:20px}
+.sbody{overflow-y:auto;flex:1;padding:0 12px 8px;min-height:90px}.fci2{display:flex;gap:10px;padding:8px 0}.fci2 .t2{font-size:12px;white-space:normal}
+.sbar{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}.sbar input{flex:1;border-radius:20px}
+.crow{display:flex;align-items:center;gap:12px;padding:10px 6px}.crow .mid{flex:1}.crow button{width:34px;height:34px;border-radius:50%;padding:0;background:var(--line);color:var(--tx);font-size:18px}
+.stoast{position:fixed;left:12px;right:12px;bottom:84px;z-index:80;background:#2a2a2a;color:#fff;border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}.stoast button{background:none;color:#6bb6ff;padding:0;font-weight:600}
 .rl{position:relative;height:calc(100% - 56px);scroll-snap-align:start;background:#000;color:#fff}.rl video{width:100%;height:100%;object-fit:contain}.rl .ov{position:absolute;left:12px;right:70px;bottom:16px;text-shadow:0 1px 3px #000}.rl .sd{position:absolute;right:10px;bottom:30px;display:flex;flex-direction:column;gap:14px}.rl .sd button{background:#0008;color:#fff;border-radius:50%;width:48px;height:48px;padding:0;font-size:12px}
 .pov{position:fixed;inset:0;z-index:45;background:var(--bg2);display:flex;flex-direction:column}.pvt{display:flex;align-items:center;gap:10px;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--line);background:var(--bg);font-weight:700}.pvb{flex:1;overflow-y:auto;max-width:640px;width:100%;margin:0 auto}
 #pfv,#mnu{position:fixed;inset:0;z-index:65;overflow-y:auto;padding-top:env(safe-area-inset-top,0px)}
@@ -659,7 +669,7 @@ async function openPost(id) {
 }
 
 // ---------- NEWSFEED + CLIPS + STORIES ----------
-let fmode = "post", feedDirty = false, fposts = [], flikes = {}, fcm = {}, fopen = new Set(), fdraft = {txt: "", file: null, url: null, open: false, vis: "public"}, fbusy = false, fstories = [], fhide = new Set(), fseq = 0, floading = false;
+let fmode = "post", feedDirty = false, fposts = [], flikes = {}, fcm = {}, fopen = new Set(), fdraft = {txt: "", file: null, url: null, open: false, vis: "public"}, fbusy = false, fstories = [], fhide = new Set(), fseq = 0, floading = false, fsaves = {}, fsaveOK = null, fcl = {}, clOK = null;
 try { fhide = new Set(JSON.parse(localStorage.getItem("fhide") || "[]")); } catch (e) {}
 try { if (localStorage.getItem("fvis") === "friends") fdraft.vis = "friends"; } catch (e) {}
 const agoS = t => { const s = Math.max(0, (Date.now() - Date.parse(t)) / 1000); if (s < 60) return "now"; if (s < 3600) return Math.floor(s / 60) + "m"; if (s < 86400) return Math.floor(s / 3600) + "h"; if (s < 604800) return Math.floor(s / 86400) + "d"; return Math.floor(s / 604800) + "w"; };
@@ -696,6 +706,7 @@ async function loadFeed() {
     (l.data || []).forEach(x => (flikes[x.post_id] = flikes[x.post_id] || []).push(x.user_id));
     (c.data || []).forEach(x => (fcm[x.post_id] = fcm[x.post_id] || []).push(x));
   }
+  if (mode === "clip") { const sv = await sb.from("saved_posts").select("post_id,collection"); fsaveOK = !sv.error; fsaves = {}; (sv.data || []).forEach(x => (fsaves[x.post_id] = fsaves[x.post_id] || new Set()).add(x.collection)); }
   await ensureNames([...fposts.map(p => p.user_id), ...Object.values(fcm).flat().map(c => c.user_id)]);
   await Promise.all(fposts.map(async p => { if (p.media_path) p.url = await imgUrl(p.media_path); }));
   if (my !== fseq) return;
@@ -866,7 +877,7 @@ function postCard(p, inProfile) {
   h.append(av, n, mb); if (!inProfile) h.append(xb); c.append(h);
   if (p.body) c.append(el("div", "pb", p.body));
   if (p.url) { const m = el(p.media_type === "video" ? "video" : "img"); m.src = p.url; if (m.tagName === "VIDEO") { m.controls = true; m.playsInline = true; m.preload = "metadata"; } c.append(m); }
-  const toggleCm = () => fkeep(() => fopen.has(p.id) ? fopen.delete(p.id) : fopen.add(p.id));
+  const toggleCm = () => openCmts(p, () => fkeep(() => {}));
   if (L.length || cm.length) {
     const cn = el("div", "cn"), a = el("span", null, L.length ? "❤️ " + L.length : ""), b = el("span", null, cm.length ? cm.length + (cm.length === 1 ? " comment" : " comments") : "");
     b.style.cursor = "pointer"; b.onclick = toggleCm; cn.append(a, b); c.append(cn);
@@ -874,13 +885,6 @@ function postCard(p, inProfile) {
   const ac = el("div", "ac"), lb = el("button", on ? "on" : ""), cb = el("button", "");
   lb.type = cb.type = "button"; lb.innerHTML = (on ? FI.heartOn : FI.heart) + "<span>Like</span>"; cb.innerHTML = FI.cmt + "<span>Comment</span>";
   lb.onclick = () => toggleLike(p); cb.onclick = toggleCm; ac.append(lb, cb); c.append(ac);
-  if (fopen.has(p.id)) {
-    const w = el("div", "cm");
-    cm.forEach(x => { const row = el("div", "fci"), bub = el("div", "fcb"), cn2 = names[x.user_id] || "Someone"; bub.append(el("b", null, cn2), document.createTextNode(x.body)); row.append(avatar(x.user_id, cn2[0].toUpperCase(), "sm"), bub); w.append(row); });
-    const i = el("input"); i.placeholder = "Write a comment…"; i.maxLength = 500;
-    i.onkeydown = async e => { if (e.key !== "Enter" || !i.value.trim()) return; const body = i.value.trim(); i.value = ""; const {data} = await sb.from("post_comments").insert({post_id: p.id, body}).select().single(); if (data) fkeep(() => (fcm[p.id] = fcm[p.id] || []).push(data)); };
-    w.append(i); c.append(w);
-  }
   return c;
 }
 function reel(p) {
@@ -888,15 +892,168 @@ function reel(p) {
   v.src = p.url || ""; v.loop = true; v.muted = true; v.playsInline = true; v.preload = "metadata"; v.onclick = () => { v.muted = !v.muted; };
   const who = el("div", "ovh"); who.append(avatar(p.user_id, (names[p.user_id] || "?")[0].toUpperCase(), "sm"), el("div", "t1", names[p.user_id] || "Someone")); who.onclick = e => { e.stopPropagation(); openProfile(p.user_id); };
   ov.append(who); if (p.visibility === "friends") { const ft = el("div", "", "👥 Friends only"); ft.style.cssText = "font-size:12px;opacity:.85;margin-bottom:2px"; ov.append(ft); } ov.append(el("div", "", p.body || ""));
-  sd.append(likeBtn(p));
+  const rav = el("div", "rav"), ra = avatar(p.user_id, (names[p.user_id] || "?")[0].toUpperCase(), "fa"); ra.style.cursor = "pointer"; ra.onclick = () => openProfile(p.user_id); rav.append(ra);
+  if (p.user_id !== me.id && !rel(p.user_id)) { const pl = el("button", "rplus", "+"); pl.type = "button"; pl.onclick = async () => { const {error} = await sb.from("friendships").insert({addressee: p.user_id}); if (error) return alert(error.message); pl.remove(); loadFriends(); }; rav.append(pl); }
+  const lk = el("button"), cm = el("button"), sv = el("button"); lk.type = cm.type = sv.type = "button";
+  paintLike(p, lk); paintCmt(p, cm); paintSave(p, sv);
+  lk.onclick = () => reelLike(p, lk); cm.onclick = () => openCmts(p, () => paintCmt(p, cm)); sv.onclick = () => toggleSave(p, sv);
+  const shb = el("button"); shb.type = "button"; shb.innerHTML = SHI + "<span>Share</span>"; shb.onclick = () => shareClip(p);
+  sd.append(rav, lk, cm, sv, shb);
   if (p.user_id === me.id) { const d = el("button", "", "🗑"); d.onclick = async () => { if (!confirm("Delete this clip?")) return; sb.storage.from("chat-images").remove([p.media_path]); await sb.from("posts").delete().eq("id", p.id); loadFeed(); }; sd.append(d); }
   r.append(v, ov, sd); $("#list").append(r);
+}
+// ---------- CLIPS: like / comments sheet / save + collections ----------
+const bmIcon = on => '<svg viewBox="0 0 24 24" fill="' + (on ? "currentColor" : "none") + '" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4.5L5 21V4a1 1 0 0 1 1-1z"/></svg>';
+function paintLike(p, b) { const L = flikes[p.id] || [], on = L.includes(me.id); b.className = on ? "on" : ""; b.innerHTML = (on ? FI.heartOn : FI.heart) + "<span>" + L.length + "</span>"; }
+function paintCmt(p, b) { b.innerHTML = FI.cmt + "<span>" + (fcm[p.id] || []).length + "</span>"; }
+function paintSave(p, b) { const on = !!(fsaves[p.id] && fsaves[p.id].size); b.className = "svb" + (on ? " on" : ""); b.innerHTML = bmIcon(on) + "<span>" + (on ? "Saved" : "Save") + "</span>"; }
+async function reelLike(p, b) {
+  const L = flikes[p.id] || [], on = L.includes(me.id);
+  flikes[p.id] = on ? L.filter(x => x !== me.id) : [...L, me.id]; paintLike(p, b);
+  const r = on ? await sb.from("post_likes").delete().eq("post_id", p.id).eq("user_id", me.id) : await sb.from("post_likes").insert({post_id: p.id});
+  if (r.error) { flikes[p.id] = L; paintLike(p, b); }
+}
+const closeSheet = () => { const o = document.getElementById("sheet"); if (o) o.remove(); };
+function sheet(title) {
+  closeSheet(); const ov = el("div", "sheetbg"), sh = el("div", "sheet"), hd = el("div", "sh"), t = el("span", null, title), x = el("button", "", "✕"), body = el("div", "sbody");
+  ov.id = "sheet"; x.type = "button"; x.onclick = closeSheet; ov.onclick = e => { if (e.target === ov) closeSheet(); };
+  hd.append(t, x); sh.append(hd, body); ov.append(sh); document.body.append(ov); return {sh, t, body};
+}
+const rpOpen = new Set();
+async function loadCL(ids) {
+  if (!ids.length) return; const r = await sb.from("comment_likes").select("comment_id,user_id").in("comment_id", ids.map(String)); clOK = !r.error; if (r.error) return;
+  ids.forEach(i => fcl[String(i)] = new Set()); (r.data || []).forEach(x => (fcl[x.comment_id] = fcl[x.comment_id] || new Set()).add(x.user_id));
+}
+async function toggleCL(c, redraw) {
+  if (clOK === false) return alert("Comment likes aren't set up yet. Run clips_more.sql in the Supabase SQL Editor.");
+  const k = String(c.id), S = fcl[k] = fcl[k] || new Set(), on = S.has(me.id);
+  on ? S.delete(me.id) : S.add(me.id); redraw();
+  const r = on ? await sb.from("comment_likes").delete().eq("comment_id", k).eq("user_id", me.id) : await sb.from("comment_likes").insert({comment_id: k});
+  if (r.error) { on ? S.add(me.id) : S.delete(me.id); redraw(); alert(r.error.message); }
+}
+async function openCmts(p, onChange) {
+  const {sh, t, body} = sheet(""), bar = el("div", "sbar"), rb = el("div", "t2"), inp = el("input"), snd = el("button", "sm", "Send");
+  inp.placeholder = "Add comment…"; inp.maxLength = 500; snd.type = "button"; rb.style.cssText = "padding:6px 14px 0;display:none;cursor:pointer";
+  let reply = null;
+  const all = () => fcm[p.id] || [], kids = id => all().filter(r => String(r.parent_id) === String(id));
+  const setReply = c => { reply = c; const n = c ? (names[c.user_id] || "Someone") : ""; rb.style.display = c ? "block" : "none"; rb.textContent = c ? "Replying to " + n + "  ✕" : ""; inp.placeholder = c ? "Reply to " + n + "…" : "Add comment…"; if (c) inp.focus(); };
+  rb.onclick = () => setReply(null);
+  const row = (c, nested) => {
+    const nm = names[c.user_id] || "Someone", d = el("div", "fci2"), mid = el("div", "mid"), meta = el("div", "t2"), S = fcl[String(c.id)] || new Set(), on = S.has(me.id), hb = el("button", "chb" + (on ? " on" : "")), rp = el("button", "lnk", "Reply");
+    if (nested) d.style.marginLeft = "44px";
+    rp.type = hb.type = "button"; rp.onclick = () => setReply(c); meta.append(document.createTextNode(agoS(c.created_at) + " · "), rp);
+    mid.append(el("div", "t2", nm), el("div", null, c.body), meta);
+    hb.innerHTML = (on ? FI.heartOn : FI.heart) + (S.size ? "<span>" + S.size + "</span>" : ""); hb.onclick = () => toggleCL(c, draw);
+    d.append(avatar(c.user_id, nm[0].toUpperCase(), "sm"), mid, hb); return d;
+  };
+  const draw = () => {
+    const cm = all(), keep = body.scrollTop; t.textContent = cm.length + (cm.length === 1 ? " comment" : " comments"); body.replaceChildren();
+    const tops = cm.filter(c => !c.parent_id);
+    if (!tops.length) body.append(el("div", "hint", "No comments yet. Be the first!"));
+    tops.forEach(c => {
+      body.append(row(c, false)); const ks = kids(c.id);
+      if (ks.length) {
+        const k = String(c.id), open = rpOpen.has(k), vb = el("button", "lnk", open ? "Hide replies ⌃" : "View " + ks.length + (ks.length === 1 ? " reply" : " replies") + " ⌄");
+        vb.type = "button"; vb.style.marginLeft = "44px"; vb.onclick = () => { open ? rpOpen.delete(k) : rpOpen.add(k); draw(); }; body.append(vb);
+        if (open) ks.forEach(r => body.append(row(r, true)));
+      }
+    });
+    body.scrollTop = keep;
+  };
+  const send = async () => {
+    const b = inp.value.trim(); if (!b) return; inp.value = ""; snd.disabled = true;
+    const rowd = {post_id: p.id, body: b}; if (reply) rowd.parent_id = String(reply.parent_id || reply.id);
+    const {data, error} = await sb.from("post_comments").insert(rowd).select().single(); snd.disabled = false;
+    if (error) return alert(/parent_id|column/i.test(error.message) ? "Replies aren't set up yet. Run clips_more.sql in the Supabase SQL Editor." : error.message);
+    (fcm[p.id] = fcm[p.id] || []).push(data); if (rowd.parent_id) rpOpen.add(rowd.parent_id); setReply(null); draw(); if (!rowd.parent_id) body.scrollTop = body.scrollHeight; if (onChange) onChange();
+  };
+  snd.onclick = send; inp.onkeydown = e => { if (e.key === "Enter") send(); };
+  bar.append(inp, snd); sh.append(rb, bar); draw(); await loadCL(all().map(c => c.id)); draw();
+}
+const SHI = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 4l7 7-7 7v-4.2c-5 0-8.5 1.4-11 5.2.8-5.2 4-9.8 11-10.8V4z"/></svg>';
+async function shareClip(p) {
+  const url = location.origin + location.pathname, text = (names[p.user_id] || "Someone") + (p.body ? ": " + p.body : " shared a clip") + " — on Chatter";
+  try { if (navigator.share) { await navigator.share({title: "Chatter", text, url}); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+  try { await navigator.clipboard.writeText(text + "\n" + url); toast("Link copied"); } catch (e) { prompt("Copy this link:", url); }
+}
+async function toggleSave(p, b) {
+  if (fsaveOK === false) return alert("Saving isn't set up yet. Run clips_save.sql in the Supabase SQL Editor.");
+  if (fsaves[p.id] && fsaves[p.id].size) {
+    const {error} = await sb.from("saved_posts").delete().eq("post_id", p.id); if (error) return alert(error.message);
+    delete fsaves[p.id]; paintSave(p, b); return toast("Removed from saved");
+  }
+  const {error} = await sb.from("saved_posts").insert({post_id: p.id, collection: "Favorites"}); if (error) return alert(error.message);
+  fsaves[p.id] = new Set(["Favorites"]); paintSave(p, b);
+  const old = document.getElementById("stoast"); if (old) old.remove();
+  const tt = el("div", "stoast"), tx = el("span", null, "✔ Saved"), go = el("button", "", "Collections ›"); tt.id = "stoast"; go.type = "button";
+  go.onclick = () => { tt.remove(); openCollections(p, b); }; tt.append(tx, go); document.body.append(tt); setTimeout(() => tt.remove(), 4000);
+}
+async function openCollections(p, b) {
+  const {data} = await sb.from("saved_posts").select("post_id,collection"), cnt = {Favorites: 0};
+  (data || []).forEach(x => cnt[x.collection] = (cnt[x.collection] || 0) + 1);
+  const {body} = sheet("Save to collection");
+  const flip = async n => {
+    const S = fsaves[p.id] = fsaves[p.id] || new Set();
+    if (S.has(n)) { const {error} = await sb.from("saved_posts").delete().eq("post_id", p.id).eq("collection", n); if (error) return alert(error.message); S.delete(n); cnt[n]--; }
+    else { const {error} = await sb.from("saved_posts").insert({post_id: p.id, collection: n}); if (error) return alert(error.message); S.add(n); cnt[n]++; }
+    paintSave(p, b); draw();
+  };
+  const draw = () => {
+    body.replaceChildren();
+    Object.keys(cnt).forEach(n => {
+      const row = el("div", "crow"), mid = el("div", "mid"), on = !!(fsaves[p.id] && fsaves[p.id].has(n)), t = el("button", "", on ? "✓" : "+"); t.type = "button";
+      mid.append(el("div", "t1", n), el("div", "t2", cnt[n] + (cnt[n] === 1 ? " post" : " posts"))); t.onclick = () => flip(n); row.append(mid, t); body.append(row);
+    });
+    const nw = el("div", "crow"), mid = el("div", "mid"); mid.append(el("div", "t1", "Create new collection"), el("div", "t2", "Organize posts for quick revisits"));
+    nw.onclick = () => { const n = (prompt("Collection name") || "").trim().slice(0, 30); if (!n || n in cnt) return; cnt[n] = 0; flip(n); };
+    nw.append(mid); body.append(nw);
+  };
+  draw();
 }
 let reelObs = null;
 function watchReels() {
   const box = $("#list"); box.style.scrollSnapType = "y mandatory"; if (reelObs) reelObs.disconnect();
   reelObs = new IntersectionObserver(es => es.forEach(e => { const v = e.target.querySelector("video"); if (!v) return; if (e.isIntersecting) v.play().catch(() => {}); else v.pause(); }), {root: box, threshold: 0.7});
   box.querySelectorAll(".rl").forEach(r => reelObs.observe(r));
+}
+
+// ---------- PROFILE: Saved tab ----------
+async function loadSaved() {
+  const uid = pf.uid, S = pf.saved = {loading: true, rows: [], posts: {}, col: "All"};
+  const r = await sb.from("saved_posts").select("post_id,collection,created_at").order("created_at", {ascending: false});
+  if (r.error) { S.err = true; S.loading = false; return pf.uid === uid && pfPaint(); }
+  S.rows = r.data || [];
+  const ids = [...new Set(S.rows.map(x => x.post_id))];
+  if (ids.length) {
+    const [pr, l] = await Promise.all([sb.from("posts").select("*").in("id", ids), sb.from("post_likes").select("post_id,user_id").in("post_id", ids)]);
+    (pr.data || []).forEach(p => S.posts[p.id] = p);
+    ids.forEach(i => flikes[i] = []); (l.data || []).forEach(x => (flikes[x.post_id] = flikes[x.post_id] || []).push(x.user_id));
+    await ensureNames(Object.values(S.posts).map(p => p.user_id));
+    await Promise.all(Object.values(S.posts).map(async p => { if (p.media_path) p.url = await imgUrl(p.media_path); }));
+  }
+  S.loading = false; if (pf.uid === uid) pfPaint();
+}
+function drawSaved(box) {
+  const S = pf.saved; if (!S || S.loading) return box.append(el("div", "hint", "Loading…"));
+  if (S.err) return box.append(el("div", "hint", "Saved posts aren't set up yet. Run clips_save.sql in the Supabase SQL Editor."));
+  const cols = ["All", ...new Set(S.rows.map(x => x.collection))], chips = el("div", "chips"); chips.style.padding = "8px 0";
+  cols.forEach(c => { const n = c === "All" ? new Set(S.rows.map(x => x.post_id)).size : S.rows.filter(x => x.collection === c).length, b = el("button", "chip" + (S.col === c ? " on" : ""), c + " · " + n); b.type = "button"; b.onclick = () => { S.col = c; pfPaint(); }; chips.append(b); });
+  box.append(chips);
+  const ids = [...new Set(S.rows.filter(x => S.col === "All" || x.collection === S.col).map(x => x.post_id))].filter(i => S.posts[i]);
+  if (!ids.length) return box.append(el("div", "hint", "Nothing saved here yet. Tap Save on a clip to keep it."));
+  const L = ids.map(i => S.posts[i]), clips = L.filter(p => p.kind === "clip"), g = el("div", "cgrid");
+  L.forEach(p => {
+    const t = el("div", "ct"), rm = el("button", "rmv", "✕"); rm.type = "button";
+    if (p.kind === "clip") { const v = el("video"); v.muted = true; v.playsInline = true; v.preload = "metadata"; v.src = (p.url || "") + "#t=0.1"; t.append(v, el("div", "cl", "❤️ " + (flikes[p.id] || []).length)); t.onclick = () => openClip(clips, clips.indexOf(p)); }
+    else { if (p.url) { const im = el("img"); im.src = p.url; t.append(im); } else t.append(el("div", "tx", (p.body || "").slice(0, 80))); t.onclick = () => openPost(p.id); }
+    rm.onclick = async e => {
+      e.stopPropagation(); let q = sb.from("saved_posts").delete().eq("post_id", p.id); if (S.col !== "All") q = q.eq("collection", S.col);
+      const {error} = await q; if (error) return alert(error.message);
+      S.rows = S.rows.filter(x => !(x.post_id === p.id && (S.col === "All" || x.collection === S.col))); delete fsaves[p.id]; pfPaint();
+    };
+    t.append(rm); g.append(t);
+  });
+  box.append(g);
 }
 
 // ---------- PROFILE PAGE (Facebook style): cover, avatar, Posts + Clips ----------
@@ -987,12 +1144,13 @@ function drawProfile() {
   if (bl) return box.append(el("div", "hint", "You blocked this person."));
   // Posts | Clips
   const tb = el("div", "ptabs");
-  [["posts", "Posts"], ["clips", "Clips"]].forEach(([k, t]) => { const b = el("button", pf.tab === k ? "on" : "", t); b.type = "button"; b.onclick = () => { pf.tab = k; pfPaint(); }; tb.append(b); });
+  [["posts", "Posts"], ["clips", "Clips"], ...(mine && !pf.ov ? [["saved", "Saved"]] : [])].forEach(([k, t]) => { const b = el("button", pf.tab === k ? "on" : "", t); b.type = "button"; b.onclick = () => { pf.tab = k; if (k === "saved" && !pf.saved) loadSaved(); pfPaint(); }; tb.append(b); });
   box.append(tb);
   if (!pf.loaded) return box.append(el("div", "hint", "Loading…"));
   if (pf.tab === "posts") {
     if (!pf.posts.length) box.append(el("div", "hint", mine ? "You haven't posted anything yet." : "No posts yet."));
     pf.posts.forEach(p => box.append(postCard(p, true)));
+  } else if (pf.tab === "saved") { drawSaved(box);
   } else if (!pf.clips.length) box.append(el("div", "hint", mine ? "You haven't added any clips yet." : "No clips yet."));
   else {
     const g = el("div", "cgrid");
