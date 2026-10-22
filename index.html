@@ -506,7 +506,7 @@ function setTab(t) {
   document.querySelector(".side .ph").classList.toggle("hide", t === "feed");
   $("#sqw").classList.toggle("hide", t === "notifs" || t === "menu" || t === "feed");
   if (t === "feed") { feedDirty = true; loadFeed(); }
-  if (t === "menu") pf = blankPf();
+  if (t === "menu" || !pf.ov) pf = blankPf();
   if (t === "notifs") loadActivity();
   $("#chips").classList.toggle("hide", t !== "chats");
   $("#sq").placeholder = t === "people" ? "Find an account (username)…" : "Search";
@@ -924,6 +924,7 @@ function pfStart(box, uid, ov) {
 }
 function pfPaint() {
   if (!pf.uid || !pf.box || !pf.box.isConnected) return;
+  if (!pf.ov && tab !== "menu") return;
   const sc = pf.ov ? $("#pfv") : $("#list"), y = sc.scrollTop; drawProfile(); sc.scrollTop = y;
 }
 const afterDelete = () => { closePov(); loadFeed(); if (pf.uid) pfLoad(pf.uid); };
