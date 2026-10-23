@@ -392,7 +392,8 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .compose .att{width:44px;height:44px;padding:0;border-radius:50%;background:var(--cd2);display:flex;align-items:center;justify-content:center}
 #send{background:var(--pgrad);color:#fff;border-radius:22px;height:44px;padding:0 20px;box-shadow:0 4px 12px rgba(80,70,229,.3)}
 #st{position:fixed;inset:0;z-index:70;background:var(--bg);overflow-y:auto}#st .sw2{max-width:640px;margin:0 auto;padding-bottom:40px}#st .stp{padding:14px 18px;display:flex;flex-direction:column;gap:12px}#st .cap{color:var(--mut);font-size:13px;white-space:normal}#st input{width:100%}#st .ok{color:var(--me);font-weight:700;font-size:20px}
-</style></head>
+</style><style>.chatter-reduce-motion *, .chatter-reduce-motion *::before, .chatter-reduce-motion *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }</style>
+</head>
 <body>
 <div id="auth" class="hide">
  <form id="af">
@@ -734,7 +735,7 @@ $("#sq").oninput = e => {
 function userRow(box, uid) {
   const r = rel(uid), name = names[uid] || "Someone", btns = [];
   const btn = (txt, cls, fn) => { const b = el("button", "sm " + cls, txt); b.onclick = e => { e.stopPropagation(); fn(); }; return b; };
-  if (!r) btns.push(btn("Add", "", async () => { const {error} = await sb.from("friendships").insert({addressee: uid}); if (error) alert(error.message); loadFriends(); }));
+  if (!r) btns.push(btn("Add", "", async () => { const {error} = await sb.from("friendships").insert({addressee: uid}); if (error) alert(/CHATTER_FRIEND_REQUESTS_CLOSED/.test(error.message) ? "This person is not accepting friend requests." : /CHATTER_CANNOT_FRIEND_SELF/.test(error.message) ? "You cannot send a friend request to yourself." : error.message); loadFriends(); }));
   else if (r.status === "pending" && !r.incoming) btns.push(btn("Pending ✕", "gray", async () => { await sb.from("friendships").delete().eq("id", r.id); loadFriends(); }));
   else if (r.status === "pending") {
     btns.push(btn("Accept", "", async () => { await sb.from("friendships").update({status: "accepted"}).eq("id", r.id); loadFriends(); }));
@@ -787,7 +788,9 @@ function render() {
     }
   } else if (tab === "notifs") {
     const seenT = +localStorage.getItem("nseen") || 0;
-    const items = [...fr.filter(f => f.status === "accepted" || (f.status === "pending" && f.addressee === me.id)).map(f => ({f, t: Date.parse(f.updated_at || f.created_at || "") || 0})), ...act.map(a => ({a, t: a.t}))].sort((x, y) => y.t - x.t);
+    const items = [...fr.filter(f => f.status === "accepted" || (f.status === "pending" && f.addressee === me.id))
+      .filter(f => f.status === "pending" ? S.n_fr !== false : S.n_friend_accept !== false)
+      .map(f => ({f, t: Date.parse(f.updated_at || f.created_at || "") || 0})), ...act.map(a => ({a, t: a.t}))].sort((x, y) => y.t - x.t);
     if (actErr) box.append(el("div", "hint", "Couldn't load likes/comments: " + actErr + ". Run upgrade8.sql and upgrade9.sql in Supabase."));
     const bl = S.n_bday === false ? [] : bdays;
     bl.forEach(b => { const d = el("div", "item"), mid = el("div", "mid"); mid.append(el("div", "t1", "🎂 " + b.username + "'s birthday is today"), el("div", "t2", "Tap to wish them a happy birthday.")); d.append(avatar(b.id, (b.username || "?")[0].toUpperCase()), mid); d.onclick = () => openDM(b.id); box.append(d); });
@@ -840,7 +843,7 @@ async function loadActivity() {
   const tm = x => Date.parse(x.created_at || "") || 0;
   act = [...L.map(x => ({type: "like", t: tm(x), u: x.user_id, pid: x.post_id, kind: (pm[x.post_id] || {}).kind})),
     ...C.map(x => ({type: "comment", t: tm(x), u: x.user_id, pid: x.post_id, kind: (pm[x.post_id] || {}).kind, txt: x.body})),
-    ...P.map(x => ({type: "post", t: tm(x), u: x.user_id, pid: x.id, kind: x.kind, txt: x.body}))].filter(a => S.n_inapp !== false && !(S.n_comments === false && a.type === "comment") && !(S.n_likes === false && a.type === "like") && !(S.n_clips === false && a.kind === "clip")).sort((a, b) => b.t - a.t).slice(0, 100);
+    ...P.map(x => ({type: "post", t: tm(x), u: x.user_id, pid: x.id, kind: x.kind, txt: x.body}))].filter(a => S.n_inapp !== false && !(S.n_comments === false && a.type === "comment") && !(S.n_likes === false && a.type === "like") && !(S.n_clips === false && a.kind === "clip") && !(S.n_profile === false && a.type === "post")).sort((a, b) => b.t - a.t).slice(0, 100);
   await ensureNames(act.map(a => a.u));
   paintNBadge(); if (tab === "notifs") render();
 }
@@ -1035,9 +1038,9 @@ async function openStory(u) {
     const zl = el("div", "sz l"), zr = el("div", "sz r"); zl.onclick = () => go(-1); zr.onclick = () => go(1);
     box.replaceChildren(); let m;
     if (vid) {
-      m = el("video"); m.src = s.url; m.playsInline = true; m.autoplay = true; m.onended = () => go(1);
+      m = el("video"); m.src = s.url; m.playsInline = true; m.autoplay = S.autoplay_media !== false; m.controls = true; m.onended = () => go(1);
       m.ontimeupdate = () => { if (m.duration) fill.style.width = (m.currentTime / m.duration * 100) + "%"; };
-      m.play().catch(() => { m.muted = true; m.play().catch(() => {}); });
+      if (S.autoplay_media !== false) m.play().catch(() => { m.muted = true; m.play().catch(() => {}); });
     } else { m = el("img"); m.src = s.url; t = setTimeout(() => go(1), 5000); }
     box.append(m, zl, zr);
   }
@@ -1071,7 +1074,7 @@ function postCard(p, inProfile, noRp) {
   const nb = el("b", null, nm); nb.style.cursor = "pointer"; nb.onclick = () => openProfile(u); l1.append(nb);
   if (p.tags && p.tags.length) l1.append(el("span", "mut", " is with " + p.tags.map(t => names[t] || "Someone").join(", ")));
   if (u !== me.id && !r) {
-    const fl = el("span", "fl", "Add friend"); fl.onclick = async () => { const {error} = await sb.from("friendships").insert({addressee: u}); if (error) return alert(error.message); await loadFriends(); fkeep(() => {}); };
+    const fl = el("span", "fl", "Add friend"); fl.onclick = async () => { const {error} = await sb.from("friendships").insert({addressee: u}); if (error) return alert(/CHATTER_FRIEND_REQUESTS_CLOSED/.test(error.message) ? "This person is not accepting friend requests." : error.message); await loadFriends(); fkeep(() => {}); };
     l1.append(el("span", "dot", "·"), fl);
   } else if (r && r.status === "pending") l1.append(el("span", "dot", "·"), el("span", "fl mut", "Pending"));
   const l2 = el("div", "l2"), gl = el("span"); gl.innerHTML = p.visibility === "friends" ? FI.friends : FI.globe; gl.title = p.visibility === "friends" ? "Friends" : "Public"; l2.append(el("span", null, agoS(p.created_at) + " ·"), gl);
@@ -1100,11 +1103,11 @@ function postCard(p, inProfile, noRp) {
 }
 function reel(p) {
   const r = el("div", "rl"), v = el("video"), ov = el("div", "ov"), sd = el("div", "sd");
-  v.src = p.url || ""; v.loop = true; v.muted = clipMuted; v.playsInline = true; v.preload = "metadata";
+  v.src = p.url || ""; v.loop = true; v.muted = clipMuted; v.playsInline = true; v.preload = "metadata"; v.autoplay = S.autoplay_clips !== false;
   const who = el("div", "ovh"); who.append(el("div", "t1", names[p.user_id] || "Someone")); who.onclick = e => { e.stopPropagation(); openProfile(p.user_id); };
   const bub = el("div", "bubs"), rpr = el("div", "rpr"), rpl = el("div", "rpl"); rpr.onclick = e => { e.stopPropagation(); openReposts(p); }; ov.append(bub, rpr, who); if (p.visibility === "friends") { const ft = el("div", "", "👥 Friends only"); ft.style.cssText = "font-size:12px;opacity:.85;margin-bottom:2px"; ov.append(ft); } ov.append(el("div", "", p.body || ""));
   const rav = el("div", "rav"), ra = avatar(p.user_id, (names[p.user_id] || "?")[0].toUpperCase(), "fa"); ra.style.cursor = "pointer"; ra.onclick = () => openProfile(p.user_id); rav.append(ra);
-  if (p.user_id !== me.id && !rel(p.user_id)) { const pl = el("button", "rplus", "+"); pl.type = "button"; pl.onclick = async () => { const {error} = await sb.from("friendships").insert({addressee: p.user_id}); if (error) return alert(error.message); pl.remove(); loadFriends(); }; rav.append(pl); }
+  if (p.user_id !== me.id && !rel(p.user_id)) { const pl = el("button", "rplus", "+"); pl.type = "button"; pl.onclick = async () => { const {error} = await sb.from("friendships").insert({addressee: p.user_id}); if (error) return alert(/CHATTER_FRIEND_REQUESTS_CLOSED/.test(error.message) ? "This person is not accepting friend requests." : error.message); pl.remove(); loadFriends(); }; rav.append(pl); }
   const lk = el("button"), cm = el("button"), sv = el("button"); lk.type = cm.type = sv.type = "button";
   paintLike(p, lk); paintCmt(p, cm); paintSave(p, sv);
   lk.onclick = () => reelLike(p, lk); cm.onclick = () => openCmts(p, () => paintCmt(p, cm)); sv.onclick = () => toggleSave(p, sv);
@@ -1185,7 +1188,7 @@ async function openCmts(p, onChange) {
     const b = inp.value.trim(); if (!b) return; inp.value = ""; snd.disabled = true;
     const rowd = {post_id: p.id, body: b}; if (reply) rowd.parent_id = String(reply.parent_id || reply.id);
     const {data, error} = await sb.from("post_comments").insert(rowd).select().single(); snd.disabled = false;
-    if (error) return alert(/parent_id|column/i.test(error.message) ? "Replies aren't set up yet. Run clips_more.sql in the Supabase SQL Editor." : error.message);
+    if (error) return alert(/CHATTER_COMMENTS_CLOSED/.test(error.message) ? "The owner has turned off comments on this post." : /CHATTER_COMMENTS_FRIENDS_ONLY/.test(error.message) ? "Only the post owner's friends can comment on this post." : /parent_id|column/i.test(error.message) ? "Replies aren't set up yet. Run clips_more.sql in the Supabase SQL Editor." : error.message);
     (fcm[p.id] = fcm[p.id] || []).push(data); if (rowd.parent_id) rpOpen.add(rowd.parent_id); setReply(null); draw(); if (!rowd.parent_id) body.scrollTop = body.scrollHeight; if (onChange) onChange();
   };
   snd.onclick = send; inp.onkeydown = e => { if (e.key === "Enter") send(); };
@@ -1529,7 +1532,7 @@ function heartBurst(r, x, y) {
 let reelObs = null;
 function watchReels() {
   const box = $("#list"); box.style.scrollSnapType = "y mandatory"; if (reelObs) reelObs.disconnect();
-  reelObs = new IntersectionObserver(es => es.forEach(e => { const v = e.target.querySelector("video"); if (!v) return; if (e.isIntersecting) v.play().catch(err => { if (err && err.name === "NotAllowedError") { v.muted = true; v.play().catch(() => {}); } }); else v.pause(); }), {root: box, threshold: 0.7});
+  reelObs = new IntersectionObserver(es => es.forEach(e => { const v = e.target.querySelector("video"); if (!v) return; if (e.isIntersecting && S.autoplay_clips !== false) v.play().catch(err => { if (err && err.name === "NotAllowedError") { v.muted = true; v.play().catch(() => {}); } }); else v.pause(); }), {root: box, threshold: 0.7});
   box.querySelectorAll(".rl").forEach(r => reelObs.observe(r));
 }
 
@@ -1653,7 +1656,7 @@ function drawProfile() {
   } else if (bl) {
     btn("Unblock", "", () => doUnblock(uid));
   } else {
-    if (!rl) btn("➕ Add friend", "", async () => { const {error} = await sb.from("friendships").insert({addressee: uid}); if (error) return alert(error.message); refresh(); });
+    if (!rl) btn("➕ Add friend", "", async () => { const {error} = await sb.from("friendships").insert({addressee: uid}); if (error) return alert(/CHATTER_FRIEND_REQUESTS_CLOSED/.test(error.message) ? "This person is not accepting friend requests." : error.message); refresh(); });
     else if (rl.status === "pending" && !rl.incoming) btn("⏳ Cancel request", "gray", async () => { await sb.from("friendships").delete().eq("id", rl.id); refresh(); });
     else if (rl.status === "pending") {
       btn("✅ Accept", "", async () => { await sb.from("friendships").update({status: "accepted"}).eq("id", rl.id); refresh(); });
@@ -1806,8 +1809,8 @@ function openClip(list, i0) {
     hd.append(avatar(u, nm[0].toUpperCase(), "sm"), mid);
     if (u === me.id) { const d = el("button", "", "🗑"); d.onclick = async () => { if (!confirm("Delete this clip?")) return; sb.storage.from("chat-images").remove([p.media_path]); await sb.from("posts").delete().eq("id", p.id); close(); afterDelete(); }; hd.append(d); }
     const x = el("button", "", "✕"); x.onclick = close; hd.append(x);
-    box.replaceChildren(); const v = el("video"); v.src = p.url || ""; v.controls = true; v.loop = true; v.playsInline = true; v.autoplay = true;
-    v.play().catch(() => { v.muted = true; v.play().catch(() => {}); }); box.append(v);
+    box.replaceChildren(); const v = el("video"); v.src = p.url || ""; v.controls = true; v.loop = true; v.playsInline = true; v.autoplay = S.autoplay_clips !== false;
+    if (S.autoplay_clips !== false) v.play().catch(() => { v.muted = true; v.play().catch(() => {}); }); box.append(v);
     bar.replaceChildren(); if (p.body) bar.append(el("div", "cap", p.body));
     const row = el("div", "cr"), lk = el("button", "", (L.includes(me.id) ? "❤️ " : "🤍 ") + L.length);
     lk.onclick = async () => { await toggleLike(p); draw(); }; row.append(lk);
@@ -1855,37 +1858,9 @@ function drawMenu() {
   chv.innerHTML = MI.right; card.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase()), el("div", "nmv", names[me.id] || "Me"), chv);
   card.onclick = () => { closeMenu(); setTab("menu"); };
   w.append(top, card);
-  const th = getTheme(), ar = el("div", "mrow"), ac = el("span"); ar.innerHTML = th === "dark" ? MI.moon : th === "light" ? MI.sun : MI.phone; ac.innerHTML = mapp ? MI.up : MI.down;
-  ar.append(el("span", "mt", "Appearance"), ac); ar.onclick = () => { mapp = !mapp; drawMenu(); }; w.append(ar);
-  if (mapp) {
-    const sub = el("div", "msub");
-    [["light", "Light mode", MI.sun], ["dark", "Dark mode", MI.moon], ["system", "Use device setting", MI.phone]].forEach(([k, l, ic]) => {
-      const r = el("div", "mrow s"); r.innerHTML = ic; r.append(el("span", "mt", l));
-      if (th === k) { const c = el("span", null, "✓"); c.style.cssText = "color:var(--me);font-weight:700;font-size:22px"; r.append(c); }
-      r.onclick = () => { setTheme(k); drawMenu(); }; sub.append(r);
-    });
-    w.append(sub);
-  }
+  // Appearance and Settings and privacy were removed from the menu as requested.
+  // Keep the dedicated Settings entry as the single route to account settings.
   const ss = el("div", "mrow"); ss.innerHTML = MI.gear; ss.append(el("span", "mt", "Settings")); ss.onclick = () => { closeMenu(); openSettings(); }; w.append(ss);
-  const sr = el("div", "mrow"), sv = el("span"); sr.innerHTML = MI.gear; sv.innerHTML = mset ? MI.up : MI.down;
-  sr.append(el("span", "mt", "Settings and privacy"), sv); sr.onclick = () => { mset = !mset; drawMenu(); }; w.append(sr);
-  if (mset) {
-    const sub = el("div", "msub");
-    sub.append(toggleRow("Read receipts", "Show and send when messages are seen", pref.rcpt !== false, v => { pref.rcpt = v; savePref(); updateSeen(); if (v) markSeen(cur); }));
-    sub.append(toggleRow("Typing indicator", "Show and send when someone is typing", pref.typ !== false, v => { pref.typ = v; savePref(); showTyping(); }));
-    const br = el("div", "mrow s"), bc = el("span"); br.innerHTML = MI.block; bc.innerHTML = mblk ? MI.up : MI.down;
-    br.append(el("span", "mt", "Blocked accounts" + (blocked.size ? " (" + blocked.size + ")" : "")), bc); br.onclick = () => { mblk = !mblk; drawMenu(); }; sub.append(br);
-    if (mblk) {
-      if (!blocked.size) sub.append(el("div", "hint", "No blocked accounts."));
-      [...blocked].forEach(u => {
-        const d = el("div", "irow"), mid = el("div", "mid"), b = el("button", "sm gray", "Unblock"); b.type = "button";
-        b.onclick = async e => { e.stopPropagation(); await doUnblock(u); drawMenu(); };
-        mid.append(el("div", "t1", names[u] || "Someone")); d.append(avatar(u, (names[u] || "?")[0].toUpperCase(), "md"), mid, b); sub.append(d);
-      });
-    }
-    const dr = el("div", "mrow s red"); dr.innerHTML = MI.trash; dr.append(el("span", "mt", "Delete account")); dr.onclick = deleteAccount; sub.append(dr);
-    w.append(sub);
-  }
   const lo = el("button", "mlog", "Log out"); lo.type = "button"; lo.onclick = () => { closeMenu(); sb.auth.signOut(); };
   w.append(el("div", "msp"), lo); o.append(w); o.scrollTop = y;
 }
@@ -1911,10 +1886,10 @@ async function loadBdays() {
 let S = {}, stCat = null, stItem = null;
 const ST = {
   "General Account Settings": ["Name", "Username", "Contact Information", "Password and Security", "Language and Region", "Deactivation and Deletion", "Account ownership and control"],
-  "Privacy Settings": ["Who can see your future posts?", "Review all your posts and things you're tagged in", "Who can send you friend requests?", "Who can see your friends list?", "Who can see your followers and following lists?", "Who can look you up using your email address?", "Who can look you up using your phone number?", "Do you want search engines outside Chatter to link to your profile?", "Who can comment on your public posts?", "Who can see your profile information?"],
+  "Privacy Settings": ["Who can see your future posts?", "Review all your posts and things you're tagged in", "Who can send you friend requests?", "Who can see your friends list?", "Who can look you up using your email address?", "Who can look you up using your phone number?", "Do you want search engines outside Chatter to link to your profile?", "Who can comment on your public posts?", "Who can see your profile information?"],
   "Security and Login": ["Change password", "Where you're logged in", "Log out of devices", "Save your login information", "Two-factor authentication", "Get alerts about unrecognized logins", "Authorized logins", "Recovery email and phone"],
-  "Notifications": ["Comments", "Likes and reactions", "Replies to comments", "Tags", "Mentions", "Messages", "Reminders", "Friend requests", "Friend acceptances", "People you may know", "Birthdays", "New followers", "Group activity", "Profile activity", "Clips", "Push notifications", "Email notifications", "In-app notifications", "Notification sounds"],
-  "Audience and Tagging": ["Who can follow you?", "Who can see posts you're tagged in?", "Review posts you're tagged in before they appear on your profile", "Who can reply to your stories?", "Public post notifications"],
+  "Notifications": ["Comments", "Likes", "Replies to comments", "Tags", "Mentions", "Messages", "Reminders", "Friend requests", "Friend acceptances", "People you may know", "Birthdays", "Group activity", "Profile activity", "Clips", "Push notifications", "Email notifications", "In-app notifications", "Notification sounds"],
+  "Audience and Tagging": ["Who can see posts you're tagged in?", "Review posts you're tagged in before they appear on your profile", "Who can reply to your stories?", "Public post notifications"],
   "Blocking": ["Blocked accounts", "Restricted list", "Block messages from strangers", "Block app invitations", "Block event invitations"],
   "Stories and Clips": ["Who can see your stories?", "Allow story replies", "Save stories to archive", "Autoplay clips"],
   "Your Chatter Information": ["Activity Log", "Download Your Chatter Information", "Account activity and history"],
@@ -1922,13 +1897,12 @@ const ST = {
   "Accessibility and Display": ["Theme", "Text size", "Autoplay media", "Reduce motion"],
   "Help and Support": ["Help Center", "Report a problem", "Community Guidelines"]
 };
-const INFO = {"Who can see your friends list?": "Your friends list is private: friendship records can only be read by you and the other person.", "Who can see your followers and following lists?": "This preference is saved to your account. The current profile UI may still show follower information until visibility checks are enforced throughout the app.", "Who can look you up using your email address?": "People can only search by name or @username, so nobody can look you up by your email.", "Who can look you up using your phone number?": "People can only search by name or @username, so nobody can look you up by your phone number.", "Do you want search engines outside Chatter to link to your profile?": "No. Chatter profiles are only visible to people who are logged in, so search engines can't list them.", "Recovery email and phone": "Your recovery methods are managed by Supabase Authentication. Use Contact Information to update your email or phone number.", "Restricted list": "Restricted-list behavior is not implemented separately yet. Use Blocked accounts to manage accounts you have blocked.", "Connected apps and websites": "Third-party app connections are not currently managed from this Chatter build.", "Active integrations": "No integration management screen is connected in this build.", "Remove app access": "Third-party access revocation is not available in this build.", "Activity Log": "Activity Log currently summarizes only activity supported by the app. A full cross-account Facebook-style log is not available yet.", "Account activity and history": "Recent sign-in time is available under Security and Login. A complete account-wide history is not available yet.", "Help Center": "For help, use the app owner or project support channel configured for this Chatter deployment.", "Report a problem": "Please include the screen, what you were doing, and any error message when reporting a problem.", "Community Guidelines": "Be respectful, protect private information, and do not share harmful or abusive content."};
+const INFO = {"Who can see your friends list?": "Your friends list is private: friendship records can only be read by you and the other person.", "Who can look you up using your email address?": "People can only search by name or @username, so nobody can look you up by your email.", "Who can look you up using your phone number?": "People can only search by name or @username, so nobody can look you up by your phone number.", "Do you want search engines outside Chatter to link to your profile?": "No. Chatter profiles are only visible to people who are logged in, so search engines can't list them.", "Recovery email and phone": "Your recovery methods are managed by Supabase Authentication. Use Contact Information to update your email or phone number.", "Restricted list": "Restricted-list behavior is not implemented separately yet. Use Blocked accounts to manage accounts you have blocked.", "Connected apps and websites": "Third-party app connections are not currently managed from this Chatter build.", "Active integrations": "No integration management screen is connected in this build.", "Remove app access": "Third-party access revocation is not available in this build.", "Activity Log": "Activity Log currently summarizes only activity supported by the app. A full cross-account Facebook-style log is not available yet.", "Account activity and history": "Recent sign-in time is available under Security and Login. A complete account-wide history is not available yet.", "Help Center": "For help, use the app owner or project support channel configured for this Chatter deployment.", "Report a problem": "Please include the screen, what you were doing, and any error message when reporting a problem.", "Community Guidelines": "Be respectful, protect private information, and do not share harmful or abusive content."};
 const OPT = {
   "Who can see your future posts?": ["post_vis", [["public", "🌐 Public"], ["friends", "👥 Friends"]], "public", "Used as the default audience when you create a post."],
-  "Who can send you friend requests?": ["friend_req", [["everyone", "Everyone"], ["nobody", "Nobody"]], "everyone", "The selection is saved. Request enforcement depends on the server-side friend-request policy."],
-  "Who can comment on your public posts?": ["public_comments", [["everyone", "Everyone"], ["friends", "Friends"], ["nobody", "No one"]], "everyone", "Saved as your preference; post-comment permission must also be checked by the posting rules."],
-  "Who can see your profile information?": ["profile_audience", [["public", "Everyone on Chatter"], ["friends", "Friends"], ["private", "Only me"]], "public", "Saved as a profile visibility preference."],
-  "Who can follow you?": ["follow_audience", [["everyone", "Everyone"], ["friends", "Friends only"]], "everyone", "Saved as your follower preference."],
+  "Who can send you friend requests?": ["friend_req", [["everyone", "Everyone"], ["nobody", "Nobody"]], "everyone", "To enforce this setting on the server, run chatter_settings_privacy_upgrade.sql in Supabase."],
+  "Who can comment on your public posts?": ["public_comments", [["everyone", "Everyone"], ["friends", "Friends"], ["nobody", "No one"]], "everyone", "To enforce this setting on the server, run chatter_settings_privacy_upgrade.sql in Supabase."],
+  "Who can see your profile information?": ["profile_audience", [["public", "Everyone on Chatter"], ["friends", "Friends"], ["private", "Only me"]], "public", "Saved preference only; profile fields are not yet consistently hidden by this choice."],
   "Who can see posts you're tagged in?": ["tagged_audience", [["public", "Everyone on Chatter"], ["friends", "Friends"], ["private", "Only me"]], "friends", "Saved as your tagged-post audience preference."],
   "Who can reply to your stories?": ["story_replies", [["everyone", "Everyone"], ["friends", "Friends"], ["off", "No one"]], "friends", "Saved as your story reply preference."],
   "Who can see your stories?": ["story_audience", [["public", "Everyone on Chatter"], ["friends", "Friends"], ["private", "Only me"]], "friends", "Saved as your story audience preference."],
@@ -1938,9 +1912,21 @@ const OPT = {
   "Language and Region": ["language_region", [["en", "English"], ["fil", "Filipino"]], "en", "Saves your preferred language. Some app labels may remain in English until translations are added."]
 };
 const TOG = {"Save your login information": ["save_login", true, "When off, you're signed out when you close the app or tab."], "Get alerts about unrecognized logins": ["alert_login", true, "This preference is saved; security alert emails are not sent by this build."],
-  "Comments": ["n_comments", true, "Hides comment notifications in the activity list."], "Likes and reactions": ["n_likes", true, "Saves your preference for like and reaction notifications."], "Replies to comments": ["n_replies", true, "Saves your preference for reply notifications."], "Tags": ["n_tags", true, "Shows or hides tag notifications."], "Mentions": ["n_mentions", true, "Saves your preference for mention notifications."], "Messages": ["n_messages", true, "Saves your preference for message notifications."], "Reminders": ["n_rem", true, "Shows or hides unread-chat reminders."], "Friend requests": ["n_fr", true, "Shows or hides friend-request notifications."], "Friend acceptances": ["n_friend_accept", true, "Saves your preference for accepted-friend notifications."], "People you may know": ["n_pymk", true, "Turn off to hide People You May Know."], "Birthdays": ["n_bday", true, "Shows or hides birthday notifications."], "New followers": ["n_followers", true, "Saves your preference for new-follower notifications."], "Group activity": ["n_groups", true, "Saves your preference for group notifications."], "Profile activity": ["n_profile", true, "Saves your preference for profile activity notifications."], "Clips": ["n_clips", true, "Hides clip notifications in the activity list."], "Push notifications": ["n_push", true, "Saved preference; browser push delivery must be configured separately."], "Email notifications": ["n_email", true, "Saved preference; notification emails are not sent by this build."], "In-app notifications": ["n_inapp", true, "Saves your in-app notification preference."], "Notification sounds": ["n_sound", true, "Saves your sound preference; notification audio behavior is not wired yet."], "Allow story replies": ["story_reply_enabled", true, "Saves your story reply preference."], "Save stories to archive": ["story_archive", true, "Saves the preference; automatic story archiving is not implemented yet."], "Autoplay clips": ["autoplay_clips", true, "Saves your autoplay preference."], "Block messages from strangers": ["block_strangers", false, "Saves your preference; server-side message delivery must enforce it."], "Block app invitations": ["block_app_invites", true, "Saves your preference; app invitations are not currently supported."], "Block event invitations": ["block_event_invites", true, "Saves your preference; event invitations are not currently supported."], "Autoplay media": ["autoplay_media", true, "Saves your media autoplay preference."], "Reduce motion": ["reduce_motion", false, "Saves your reduced-motion preference; some animations may remain." ]};
-async function loadSettings() { try { const {data, error} = await sb.from("user_settings").select("data").eq("user_id", me.id).maybeSingle(); if (error) throw error; S = (data && data.data) || {}; if (S.post_vis) fdraft.vis = S.post_vis; if (S.display_theme) setTheme(S.display_theme); if (S.text_size) document.documentElement.style.fontSize = ({small:"14px",medium:"15px",large:"17px"})[S.text_size] || "15px"; } catch (e) { console.warn("Could not load saved settings:", e.message || e); } }
-async function saveS(k, v) { S[k] = v; if (k === "post_vis") fdraft.vis = v; const {error} = await sb.from("user_settings").upsert({user_id: me.id, data: S}); if (error) alert("Couldn't save: " + error.message + (/user_settings|relation/i.test(error.message) ? "\n\nRun upgrade9.sql in Supabase first." : "")); }
+  "Comments": ["n_comments", true, "Hides comment notifications in the activity list."], "Likes": ["n_likes", true, "Controls notifications when someone likes your post."], "Replies to comments": ["n_replies", true, "Preference is saved, but this build does not generate separate reply-to-comment notification events yet."], "Tags": ["n_tags", true, "Shows or hides tag notifications."], "Mentions": ["n_mentions", true, "Preference is saved, but mention notifications are not generated separately in this build yet."], "Messages": ["n_messages", true, "Preference is saved, but separate message notifications are not generated; use Reminders for unread-chat reminders."], "Reminders": ["n_rem", true, "Shows or hides unread-chat reminders."], "Friend requests": ["n_fr", true, "Shows or hides friend-request notifications."], "Friend acceptances": ["n_friend_accept", true, "Saves your preference for accepted-friend notifications."], "People you may know": ["n_pymk", true, "Turn off to hide People You May Know."], "Birthdays": ["n_bday", true, "Shows or hides birthday notifications."], "Group activity": ["n_groups", true, "Preference is saved, but a separate group-activity notification feed is not implemented yet."], "Profile activity": ["n_profile", true, "Saves your preference for profile activity notifications."], "Clips": ["n_clips", true, "Hides clip notifications in the activity list."], "Push notifications": ["n_push", true, "Preference is saved only; Web Push subscription and delivery are not implemented in this build."], "Email notifications": ["n_email", true, "Preference is saved only; notification email delivery is not implemented in this build."], "In-app notifications": ["n_inapp", true, "Saves your in-app notification preference."], "Notification sounds": ["n_sound", true, "Preference is saved, but notification sounds are not played by this build yet."], "Allow story replies": ["story_reply_enabled", true, "Saves your story reply preference."], "Save stories to archive": ["story_archive", true, "Saves the preference; automatic story archiving is not implemented yet."], "Autoplay clips": ["autoplay_clips", true, "Saves your autoplay preference."], "Block messages from strangers": ["block_strangers", false, "Saves your preference; server-side message delivery must enforce it."], "Block app invitations": ["block_app_invites", true, "Saves your preference; app invitations are not currently supported."], "Block event invitations": ["block_event_invites", true, "Saves your preference; event invitations are not currently supported."], "Autoplay media": ["autoplay_media", true, "Saves your media autoplay preference."], "Reduce motion": ["reduce_motion", false, "Saves your reduced-motion preference; some animations may remain." ]};
+function applySavedPreferences() {
+  const root = document.documentElement;
+  const sizes = {small:"14px", medium:"15px", large:"17px"};
+  root.style.fontSize = sizes[S.text_size] || "15px";
+  root.classList.toggle("chatter-reduce-motion", S.reduce_motion === true);
+  // Browser media autoplay is controlled per element where possible; this flag is also
+  // read by the app when building media elements.
+  root.dataset.autoplayMedia = S.autoplay_media === false ? "off" : "on";
+  root.dataset.autoplayClips = S.autoplay_clips === false ? "off" : "on";
+  if (S.autoplay_clips === false) document.querySelectorAll(".rl video").forEach(v => v.pause());
+  if (S.autoplay_media === false) document.querySelectorAll(".pc video, .sv video").forEach(v => v.pause());
+}
+async function loadSettings() { try { const {data, error} = await sb.from("user_settings").select("data").eq("user_id", me.id).maybeSingle(); if (error) throw error; S = (data && data.data) || {}; if (S.post_vis) fdraft.vis = S.post_vis; if (S.display_theme) setTheme(S.display_theme); applySavedPreferences(); } catch (e) { console.warn("Could not load saved settings:", e.message || e); } }
+async function saveS(k, v) { const previous = S[k]; S[k] = v; if (k === "post_vis") fdraft.vis = v; applySavedPreferences(); const {error} = await sb.from("user_settings").upsert({user_id: me.id, data: S}); if (error) { S[k] = previous; applySavedPreferences(); alert("Couldn't save: " + error.message + (/user_settings|relation/i.test(error.message) ? "\n\nRun upgrade9.sql in Supabase first." : "")); } }
 addEventListener("pagehide", () => { if (S.save_login === false) Object.keys(localStorage).filter(k => k.startsWith("sb-")).forEach(k => localStorage.removeItem(k)); });
 const openSettings = () => { stCat = stItem = null; $("#st").classList.remove("hide"); drawSet(); };
 const closeSet = () => $("#st").classList.add("hide");
@@ -1968,7 +1954,31 @@ function setDetail(it, row) {
     }, (S[k] !== undefined ? S[k] : def) === v)));
   } else if (TOG[it]) {
     const [k, def, note] = TOG[it]; if (note) cap(note);
-    d.append(toggleRow(it, "", S[k] !== undefined ? S[k] : def, v => saveS(k, v).then(() => { if (/^n_/.test(k)) loadActivity(); })));
+    d.append(toggleRow(it, "", S[k] !== undefined ? S[k] : def, v => saveS(k, v).then(() => { if (/^n_/.test(k)) loadActivity(); drawSet(); })));
+    if (it === "Save stories to archive") {
+      const archive = el("div"), status = el("div", "cap", "Loading your archived stories…"); d.append(status, archive);
+      (async () => {
+        if ((S[k] !== undefined ? S[k] : def) !== true) { status.textContent = "Turn on Save stories to archive to view older stories here."; return; }
+        try {
+          const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+          const {data, error} = await sb.from("posts").select("id,body,media_path,media_type,created_at").eq("user_id", me.id).eq("kind", "story").lt("created_at", cutoff).order("created_at", {ascending: false}).limit(100);
+          if (error) { status.textContent = "Couldn't load archived stories: " + error.message; return; }
+          archive.replaceChildren();
+          if (!data || !data.length) { status.textContent = "No older stories found. Stories older than 24 hours will appear here while their records and media remain available."; return; }
+          status.textContent = "Archived stories (up to 100 most recent):";
+          for (const story of data) {
+            const item = el("div", "mrow"), details = el("div", "mt");
+            details.append(el("div", "mt", (story.body || (story.media_type === "video" ? "Video story" : "Photo story")).slice(0, 90)), el("div", "cap", new Date(story.created_at).toLocaleString()));
+            item.append(details);
+            if (story.media_path) {
+              const open = btn("Open", async b => { b.disabled = true; const url = await imgUrl(story.media_path); b.disabled = false; if (url) window.open(url, "_blank", "noopener"); else alert("The story media is no longer available."); }, "sm gray");
+              item.append(open);
+            }
+            archive.append(item);
+          }
+        } catch (e) { status.textContent = "Couldn't load archived stories: " + (e.message || e); }
+      })();
+    }
   } else if (it === "Name") {
     const i = inp("Name", "text", names[me.id]); i.maxLength = 40; cap("This is the name other people see.");
     d.append(i, msg, btn("Save", async () => { const v = i.value.trim(); if (!v) return; const {error} = await sb.from("profiles").update({username: v}).eq("id", me.id); if (error) return msg.textContent = error.message; await sb.auth.updateUser({data: {username: v}}); names[me.id] = v; render(); msg.textContent = "Saved."; }));
@@ -1981,6 +1991,23 @@ function setDetail(it, row) {
       msg.textContent = !error ? "Saved. You are @" + v : error.code === "23505" ? "That username is taken." : /handle/i.test(error.message) ? "Run upgrade10.sql in Supabase first." : error.message;
     }));
   } else if (it === "Two-factor authentication") { fillMfa(d);
+  } else if (it === "Activity Log" || it === "Account activity and history") {
+    cap("Recent activity Chatter can retrieve for your signed-in account. This is not a complete server audit log and may omit events the app does not store.");
+    const log = el("div"), status = el("div", "cap", "Loading activity…"); d.append(status, log);
+    (async () => {
+      const entries = [], notes = [];
+      const take = async (label, query, describe) => { try { const r = await query; if (r.error) { notes.push(label); return; } (r.data || []).forEach(x => entries.push({t: Date.parse(x.created_at || x.updated_at || "") || 0, label: describe(x)})); } catch (e) { notes.push(label); } };
+      await Promise.all([
+        take("posts", sb.from("posts").select("id,body,kind,created_at").eq("user_id", me.id).order("created_at", {ascending: false}).limit(20), x => "Published a " + (x.kind === "clip" ? "clip" : "post") + ((x.body || "").trim() ? ": " + x.body.trim().slice(0, 100) : "")),
+        take("comments", sb.from("post_comments").select("id,body,created_at").eq("user_id", me.id).order("created_at", {ascending: false}).limit(20), x => "Commented" + ((x.body || "").trim() ? ": " + x.body.trim().slice(0, 100) : "")),
+        take("likes", sb.from("post_likes").select("post_id,created_at").eq("user_id", me.id).order("created_at", {ascending: false}).limit(20), x => "Liked a post"),
+        take("messages", sb.from("messages").select("id,body,created_at").eq("user_id", me.id).order("created_at", {ascending: false}).limit(20), x => "Sent a message" + ((x.body || "").trim() ? ": " + x.body.trim().slice(0, 80) : ""))
+      ]);
+      entries.sort((a,b) => b.t-a.t); log.replaceChildren();
+      if (!entries.length) log.append(mfaCap("No activity records were found in the available tables."));
+      entries.slice(0, 50).forEach(x => { const r = el("div", "mrow"); r.append(el("span", "mt", x.label), el("span", "cap", x.t ? new Date(x.t).toLocaleString() : "Date unavailable")); log.append(r); });
+      status.textContent = notes.length ? "Some activity types could not be loaded: " + notes.join(", ") + "." : "Recent activity";
+    })();
   } else if (INFO[it]) { cap(INFO[it]);
   } else if (it === "Contact Information") {
     const e = inp("Email", "email", me.email || ""), c = inp("Mobile number (09…)", "tel", me.phone ? "+" + me.phone.replace(/^\+/, "") : ""), code = inp("6-digit code", "text"); let ty = null, tg = null;
@@ -2015,17 +2042,33 @@ function setDetail(it, row) {
     if (!blocked.size) d.append(mfaCap("You haven't blocked anyone."));
     [...blocked].forEach(u => { const r = el("div", "mrow"), mid = el("span", "mt", names[u] || "Chatter user"), b = btn("Unblock", async () => { await doUnblock(u); drawSet(); }, "sm gray"); r.append(avatar(u, (names[u] || "?")[0].toUpperCase(), "md"), mid, b); d.append(r); });
   } else if (it === "Download Your Chatter Information") {
-    cap("Download a JSON copy of your basic account details and saved settings. This export does not include all posts, messages, or uploaded media.");
-    d.append(btn("Download JSON", () => { const payload = {exported_at: new Date().toISOString(), account: {id: me.id, email: me.email || null, last_sign_in_at: me.last_sign_in_at || null}, settings: S}; const blob = new Blob([JSON.stringify(payload, null, 2)], {type: "application/json"}); const url = URL.createObjectURL(blob); const a = el("a"); a.href = url; a.download = "chatter-account-settings.json"; document.body.append(a); a.click(); a.remove(); URL.revokeObjectURL(url); msg.textContent = "Export prepared."; }, ""), msg);
+    cap("Downloads a JSON export of account data available to your signed-in account, including profile, posts, friendships, comments, likes, saved posts, accessible chat messages, and settings. Uploaded media files themselves are not embedded; media paths/URLs may be included.");
+    d.append(btn("Download my Chatter data (JSON)", async b => {
+      b.disabled = true; b.textContent = "Preparing export…"; msg.textContent = "Collecting data available to this account…";
+      const payload = {exported_at: new Date().toISOString(), account: {id: me.id, email: me.email || null, phone: me.phone || null, created_at: me.created_at || null, last_sign_in_at: me.last_sign_in_at || null}, profile: null, posts: [], friendships: [], comments: [], likes: [], saved_posts: [], messages: [], settings: S, export_notes: []};
+      const safe = async (label, query, target) => { try { const r = await query; if (r.error) { payload.export_notes.push(label + ": " + r.error.message); return; } payload[target] = r.data || []; } catch (e) { payload.export_notes.push(label + ": " + (e.message || e)); } };
+      await Promise.all([
+        safe("Profile", sb.from("profiles").select("*").eq("id", me.id).maybeSingle().then(r => { if (!r.error) payload.profile = r.data; return {data: [], error: r.error}; }), "_unused"),
+        safe("Your posts", sb.from("posts").select("*").eq("user_id", me.id).order("created_at", {ascending: false}).limit(5000), "posts"),
+        safe("Friendships", sb.from("friendships").select("*").or("requester.eq." + me.id + ",addressee.eq." + me.id).limit(5000), "friendships"),
+        safe("Your comments", sb.from("post_comments").select("*").eq("user_id", me.id).order("created_at", {ascending: false}).limit(5000), "comments"),
+        safe("Your likes", sb.from("post_likes").select("*").eq("user_id", me.id).order("created_at", {ascending: false}).limit(5000), "likes"),
+        safe("Saved posts", sb.from("saved_posts").select("*").eq("user_id", me.id).order("created_at", {ascending: false}).limit(5000), "saved_posts")
+      ]);
+      const roomIds = rooms.map(r => r.id);
+      if (roomIds.length) await safe("Chat messages", sb.from("messages").select("*").in("room_id", roomIds).order("created_at", {ascending: false}).limit(10000), "messages");
+      else payload.export_notes.push("Chat messages: no accessible chat rooms were loaded.");
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type: "application/json"}), url = URL.createObjectURL(blob), a = el("a");
+      a.href = url; a.download = "chatter-data-export.json"; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+      msg.textContent = payload.export_notes.length ? "Export downloaded with notes for data that could not be retrieved. Check export_notes in the JSON file." : "Export downloaded.";
+      b.disabled = false; b.textContent = "Download my Chatter data (JSON)";
+    }, ""), msg);
   } else if (it === "Theme") {
     cap("Choose how Chatter looks on this device.");
     ["system", "light", "dark"].forEach(v => d.append(row(({system:"Use device setting",light:"Light",dark:"Dark"})[v], () => { setTheme(v); saveS("display_theme", v).then(drawSet); }, getTheme() === v)));
   } else if (it === "Language and Region") {
     cap("Choose a preferred language. Some interface text may remain in English until translations are available.");
     [["en","English"],["fil","Filipino"]].forEach(([v,l]) => d.append(row(l, () => { saveS("language_region", v).then(drawSet); }, (S.language_region || "en") === v)));
-  } else if (it === "Deactivation and Deletion") {
-    cap("Deactivate: hides your account if the profile field is supported by your database schema. Delete: permanently removes the account and associated data handled by the delete flow.");
-    d.append(msg, btn("Deactivate account", async () => { if (!confirm("Deactivate your account? You'll be signed out.")) return; const {error} = await sb.from("profiles").update({deactivated: true}).eq("id", me.id); if (error) return msg.textContent = /deactivated/i.test(error.message) ? "Run upgrade11.sql in Supabase first." : error.message; closeSet(); await sb.auth.signOut(); }, "gray"), btn("Delete account…", () => { closeSet(); deleteAccount(); }, "danger"));
   } else cap({"Memorialization Settings": "Memorialization and legacy contacts are not supported by this Chatter build.", "Account ownership and control": "You control your account details and saved preferences here. Use Deactivation and Deletion for account actions."}[it] || INFO[it] || "This setting is listed for reference, but its full behavior is not implemented in this Chatter build yet.");
   return d;
 }
@@ -2563,7 +2606,7 @@ function openMembers(r, mode, tabSel) {
     const btn = (t, cls, fn) => { const x = el("button", "sm " + cls, t); x.type = "button"; x.onclick = e => { e.stopPropagation(); fn(); }; d.append(x); };
     if (u !== me.id) {
       if (mode === "block") { const bl = blocked.has(u); btn(bl ? "Unblock" : "Block", bl ? "gray" : "danger", async () => { await (bl ? doUnblock(u) : doBlock(u)); redraw(); }); }
-      else if (!rl) btn("Add friend", "", async () => { const {error} = await sb.from("friendships").insert({addressee: u}); if (error) return alert(error.message); await loadFriends(); redraw(); });
+      else if (!rl) btn("Add friend", "", async () => { const {error} = await sb.from("friendships").insert({addressee: u}); if (error) return alert(/CHATTER_FRIEND_REQUESTS_CLOSED/.test(error.message) ? "This person is not accepting friend requests." : error.message); await loadFriends(); redraw(); });
       else if (rl.status === "pending" && !rl.incoming) btn("Pending", "gray", () => {});
       else if (rl.status === "pending") btn("Accept", "", async () => { await sb.from("friendships").update({status: "accepted"}).eq("id", rl.id); await loadFriends(); redraw(); });
     }
@@ -2655,7 +2698,7 @@ function pymkSection(box) {
   h.append(el("span", null, "People you may know"), sm); box.append(h);
   (pymkAll ? list : list.slice(0, 3)).forEach(u => {
     const d = el("div", "pcard"), mid = el("div", "mid"), row = el("div", "prow"), add = el("button", null, "Add friend"), rm = el("button", "gray", "Remove");
-    add.onclick = async () => { const {error} = await sb.from("friendships").insert({addressee: u}); if (error) return alert(error.message); await loadFriends(); };
+    add.onclick = async () => { const {error} = await sb.from("friendships").insert({addressee: u}); if (error) return alert(/CHATTER_FRIEND_REQUESTS_CLOSED/.test(error.message) ? "This person is not accepting friend requests." : error.message); await loadFriends(); };
     rm.onclick = () => { pymkHide.add(u); render(); };
     row.append(add, rm); mid.append(el("div", "t1", names[u] || "Someone"), row); d.append(avatar(u, (names[u] || "?")[0].toUpperCase(), "sq"), mid); box.append(d);
   });
