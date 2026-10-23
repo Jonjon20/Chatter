@@ -43,7 +43,7 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .menu .row2{display:flex;gap:8px}.menu .row2 input{flex:1}
 .main{display:flex;flex-direction:column;min-height:0}
 .main{position:relative}
-#ng{position:fixed;inset:0;z-index:60;background:var(--bg);overflow-y:auto;padding-top:env(safe-area-inset-top,0px)}#ng input[type=text],#ng>input{display:block}
+#ng,#ep{position:fixed;inset:0;z-index:60;background:var(--bg);overflow-y:auto;padding-top:env(safe-area-inset-top,0px)}#ng input[type=text],#ng>input{display:block}
 #list[data-t=people] .item .av,#list[data-t=notifs] .item .av{width:76px;height:76px;font-size:28px}
 #list[data-t=people] .t1,#list[data-t=notifs] .t1{font-size:19px;font-weight:500}#list[data-t=notifs] .t1{font-weight:700}#list[data-t=notifs] .t2{white-space:normal;font-size:15px}
 .item .av .odot{width:18px;height:18px;border:3px solid var(--bg)}
@@ -173,6 +173,9 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .pc .ac{display:flex;border-top:1px solid var(--line);margin:6px 14px 0}.pc .ac button{flex:1;background:none;color:var(--mut);border-radius:0;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;padding:10px}.pc .ac button.on{color:#f3425f}
 .cm{padding:8px 14px 10px;display:flex;flex-direction:column;gap:8px}.cm .fci{display:flex;gap:8px;align-items:flex-start}
 .cm .fcb{background:var(--bg2);border-radius:18px;padding:7px 12px;font-size:15px;overflow-wrap:anywhere}.cm .fcb b{display:block;font-size:13px}.cm input{width:100%}
+#ep{z-index:85}
+.eph{display:flex;justify-content:space-between;align-items:center;padding:18px 16px 6px;font-size:18px;cursor:pointer}.mutl{color:var(--mut);font-weight:600}
+.sheet .segs{margin:8px 0}.sheet .segs button{padding:9px 4px;font-size:13px}
 .ftop{position:sticky;top:0;z-index:6;background:var(--bg)}.ftop .fm{position:static}
 .rmute{position:absolute;top:10px;right:10px;background:#0006;color:#fff;border-radius:50%;width:36px;height:36px;padding:0;z-index:3;font-size:16px}
 .hburst{position:absolute;width:96px;height:96px;margin:-48px 0 0 -48px;color:#ff2d55;pointer-events:none;z-index:4;animation:hbst .9s ease-out forwards}.hburst svg{width:100%;height:100%;filter:drop-shadow(0 2px 8px #0008)}
@@ -181,7 +184,7 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .ct{position:relative}.ct img{width:100%;height:100%;object-fit:cover}.ct .tx{padding:8px;font-size:12px;overflow:hidden;height:100%;background:var(--bg2)}.ct .rmv{position:absolute;top:4px;right:4px;background:#0008;color:#fff;border-radius:50%;width:24px;height:24px;padding:0;font-size:13px;line-height:24px}
 .rl .sd{gap:14px;align-items:center}.rl .sd button{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;color:#fff;padding:2px;font-size:13px;font-weight:600;text-shadow:0 1px 3px #000}.rl .sd svg{width:34px;height:34px;filter:drop-shadow(0 1px 3px #0008)}.rl .sd button.on{color:#ff2d55}.rl .sd button.svb.on{color:#ffc928}
 .rav{position:relative;margin-bottom:10px}.rl .sd .rplus{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);width:20px;height:20px;border-radius:50%;background:#fe2c55;color:#fff;padding:0;font-size:15px;line-height:20px;display:block;text-shadow:none}.rl .sd .rav .av{width:46px;height:46px;border:2px solid #fff;font-size:18px}
-.sheetbg{position:fixed;inset:0;z-index:75;background:rgba(0,0,0,.5);display:flex;align-items:flex-end}.sheet{width:100%;max-height:72%;display:flex;flex-direction:column;background:var(--bg2);color:var(--tx);border-radius:16px 16px 0 0}
+.sheetbg{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.5);display:flex;align-items:flex-end}.sheet{width:100%;max-height:72%;display:flex;flex-direction:column;background:var(--bg2);color:var(--tx);border-radius:16px 16px 0 0}
 .sh{display:flex;align-items:center;justify-content:center;padding:14px 16px;font-weight:700;position:relative}.sh button{position:absolute;right:10px;background:none;color:var(--tx);font-size:20px}
 .sbody{overflow-y:auto;flex:1;padding:0 12px 8px;min-height:90px}.fci2{display:flex;gap:10px;padding:8px 0}.fci2 .t2{font-size:12px;white-space:normal}
 .sbar{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}.sbar input{flex:1;border-radius:20px}
@@ -1498,9 +1501,9 @@ const MONTHS = ["January", "February", "March", "April", "May", "June", "July", 
 const fmtDate = v => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v || ""); return m ? MONTHS[+m[2] - 1] + " " + (+m[3]) + ", " + m[1] : (v || ""); };
 const PENCIL = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14.5 6.5l3 3"/></svg>';
 async function pfLoadExtra(uid) {
-  const [i, f] = await Promise.all([sb.from("profiles").select("city,hometown,school,school_date,birthday").eq("id", uid).maybeSingle(), sb.rpc("profile_friends", {target: uid})]);
+  const [i, f, d] = await Promise.all([sb.from("profiles").select("city,hometown,school,school_date,birthday").eq("id", uid).maybeSingle(), sb.rpc("profile_friends", {target: uid}), sb.rpc("get_profile_details", {target: uid})]);
   if (pf.uid !== uid) return;
-  pf.info = i.error ? {} : (i.data || {});
+  pf.info = i.error ? {} : (i.data || {}); pf.det = d.error ? {} : (d.data || {});
   pf.friends = f.error ? (uid === me.id ? fr.filter(x => x.status === "accepted").map(x => ({friend_id: x.requester === me.id ? x.addressee : x.requester, mutual: null, is_mutual: false})) : null) : (f.data || []);
   const ids = (pf.friends || []).map(x => x.friend_id); await ensureNames(ids); loadPhotos(ids.slice(0, 24));
   pfPaint();
@@ -1512,11 +1515,10 @@ function drawAbout(box, mine, uid) {
     if (right) h.append(right); else if (mine) { const e = el("button", "", ""); e.type = "button"; e.innerHTML = PENCIL; e.onclick = editProfile; h.append(e); }
     s.append(h, ...kids); box.append(s);
   };
-  const det = []; if (inf.city) det.push(row("📍", inf.city)); if (inf.hometown) det.push(row("🏠", inf.hometown)); if (inf.birthday) det.push(row("🎂", fmtDate(inf.birthday)));
-  if (det.length || mine) sec("Personal details", det.length ? det : [el("div", "t2", "Add your current city, hometown and birthday.")]);
-  const ed = [];
-  if (inf.school) { const r = el("div", "arow"), m = el("div", "at"); m.append(el("div", "t1", inf.school)); if (inf.school_date) m.append(el("div", "t2", "On " + fmtDate(inf.school_date))); r.append(el("span", "ai sq", "🎓"), m); ed.push(r); }
-  if (ed.length || mine) sec("Education", ed.length ? ed : [el("div", "t2", "Add your school.")]);
+  EP.forEach(([title, fields]) => {
+    const kids = []; fields.forEach(f => { const v = epVal(f); if (v) kids.push(row(f[1], f[3] === "date" ? fmtDate(v) : v)); });
+    if (kids.length) sec(title, kids); else if (mine && title === "Personal details") sec(title, [el("div", "t2", "Add your current city, hometown and birthday.")]);
+  });
   const fl = (pf.friends || []).slice().sort((a, b) => (b.is_mutual - a.is_mutual) || ((b.mutual || 0) - (a.mutual || 0)));
   if (fl.length) {
     const see = el("button", "see", "See all"); see.type = "button"; see.onclick = () => openFriendList(uid);
@@ -1538,23 +1540,66 @@ function openFriendList(uid) {
     d.append(avatar(u, nm[0].toUpperCase(), "md", u), mid); d.onclick = () => { closeSheet(); openProfile(u); }; body.append(d);
   });
 }
-function editProfile() {
-  const inf = pf.info || {}, bg = el("div", "nmbg"), card = el("div", "nmc"), F = {};
-  const field = (k, label, type, val, ph) => { const w = el("div", "ef"), i = el("input"); i.type = type; i.value = val || ""; if (ph) i.placeholder = ph; if (type === "text") i.maxLength = 80; F[k] = i; w.append(el("div", "t2", label), i); card.append(w); };
-  card.append(el("h4", null, "Edit profile"));
-  const ph = el("div", "ph2"), b1 = el("button", "sm gray", "Profile photo"), b2 = el("button", "sm gray", "Cover photo"); b1.type = b2.type = "button";
-  b1.onclick = () => { bg.remove(); pickPhoto("avatar"); }; b2.onclick = () => { bg.remove(); pickPhoto("cover"); }; ph.append(b1, b2); card.append(ph);
-  field("city", "Current city", "text", inf.city, "e.g. Tanay, Rizal"); field("hometown", "Hometown", "text", inf.hometown, "e.g. Paracale, Camarines Norte");
-  field("birthday", "Birthday", "date", inf.birthday); field("school", "School", "text", inf.school); field("school_date", "Graduation date", "date", inf.school_date);
-  const fo = el("div", "nf"), no = el("button", "sm gray", "Cancel"), ok = el("button", "sm", "Save"); no.type = ok.type = "button"; fo.append(no, ok); card.append(fo); bg.append(card);
-  no.onclick = () => bg.remove(); bg.onclick = e => { if (e.target === bg) bg.remove(); };
-  ok.onclick = async () => {
-    const v = k => F[k].value.trim() || null, upd = {city: v("city"), hometown: v("hometown"), birthday: v("birthday"), school: v("school"), school_date: v("school_date")};
-    ok.disabled = true; const {error} = await sb.from("profiles").update(upd).eq("id", me.id); ok.disabled = false;
-    if (error) return alert(/column|schema cache/i.test(error.message) ? "Profile details aren't set up yet. Run profile_info.sql in the Supabase SQL Editor." : error.message);
-    pf.info = {...upd}; bg.remove(); pfPaint(); toast("Profile updated");
+const EPV = {public: "🌐 Public", friends: "👥 Friends", me: "🔒 Only me"};
+const EP = [
+  ["Personal details", [["city", "📍", "Current city", "text", "legacy"], ["hometown", "🏠", "Hometown", "text", "legacy"], ["birthday", "🎂", "Birthday", "date", "legacy"],
+    ["rel", "💞", "Relationship status", "sel:Single|In a relationship|Engaged|Married|It's complicated|Separated|Divorced|Widowed"], ["gender", "⚧", "Gender", "sel:Male|Female|Custom|Prefer not to say"], ["lang", "🗣", "Languages", "text"]]],
+  ["Work", [["work", "💼", "Work experience", "text"]]],
+  ["Education", [["school", "🎓", "School", "text", "legacy"], ["school_date", "📅", "Graduation date", "date", "legacy"], ["hs", "🏫", "High school", "text"]]],
+  ["Hobbies", [["hobbies", "🎨", "Hobbies", "text"]]],
+  ["Interests", [["music", "🎵", "Music", "text"], ["tv", "📺", "TV shows", "text"], ["movies", "🎬", "Movies", "text"], ["games", "🎮", "Games", "text"], ["sports", "⚽", "Sports teams and athletes", "text"]]],
+  ["Travel", [["places", "🧭", "Places", "text"]]],
+  ["Links", [["links", "🔗", "Websites, blogs, portfolios", "text"]]],
+  ["Contact info", [["social", "@", "Social media", "text"], ["phone", "📞", "Phone", "text", "me"], ["email", "✉️", "Email", "text", "me"]]]
+];
+const epVal = f => f[4] === "legacy" ? (pf.info || {})[f[0]] : ((pf.det || {})[f[0]] || {}).v;
+async function editProfile() {
+  const r0 = await sb.rpc("get_profile_details", {target: me.id}); let det = r0.error ? {} : (r0.data || {});
+  if (!pf.info) pf.info = {}; pf.det = det;
+  let o = document.getElementById("ep"); if (!o) { o = el("div"); o.id = "ep"; document.body.append(o); }
+  const closed = new Set(), get = f => f[4] === "legacy" ? pf.info[f[0]] : (det[f[0]] || {}).v, prv = f => f[4] === "legacy" ? "public" : ((det[f[0]] || {}).p || (f[4] === "me" ? "me" : "public"));
+  const save = async (f, v, p) => {
+    if (f[4] === "legacy") {
+      const {error} = await sb.from("profiles").update({[f[0]]: v}).eq("id", me.id);
+      if (error) { alert(/column|schema cache/i.test(error.message) ? "Profile details aren't set up yet. Run profile_info.sql in the Supabase SQL Editor." : error.message); return false; }
+      pf.info[f[0]] = v; return true;
+    }
+    const nd = {...det}; if (v) nd[f[0]] = {v, p}; else delete nd[f[0]];
+    const {error} = await sb.rpc("save_profile_details", {d: nd});
+    if (error) { alert(/function|schema cache|does not exist/i.test(error.message) ? "Profile details aren't set up yet. Run profile_details.sql in the Supabase SQL Editor." : error.message); return false; }
+    det = nd; pf.det = nd; return true;
   };
-  document.body.append(bg);
+  const editField = f => {
+    const {body} = sheet(f[2]), isSel = f[3].startsWith("sel:"); let val = get(f) || "", p = prv(f), inp = null;
+    if (isSel) {
+      const list = el("div"), opts = f[3].slice(4).split("|");
+      const paint = () => { list.replaceChildren(); opts.forEach(op => { const b = el("div", "irow"); b.append(el("div", "mid", op), el("span", null, val === op ? "✓" : "")); b.onclick = () => { val = op; paint(); }; list.append(b); }); }; paint(); body.append(list);
+    } else { inp = el("input"); inp.type = f[3] === "date" ? "date" : "text"; inp.maxLength = 120; inp.value = val; inp.placeholder = f[2]; inp.style.cssText = "width:100%;margin:8px 0"; body.append(inp); }
+    if (f[4] !== "legacy") {
+      const keys = ["public", "friends", "me"], pr = el("div", "segs");
+      keys.forEach(k => { const b = el("button", p === k ? "on" : "", EPV[k]); b.type = "button"; b.onclick = () => { p = k; [...pr.children].forEach((x, i) => x.className = keys[i] === p ? "on" : ""); }; pr.append(b); });
+      body.append(el("div", "t2", "Who can see this"), pr);
+    } else body.append(el("div", "t2", "Shown publicly"));
+    const row = el("div", "nf"), rm = el("button", "sm gray", "Remove"), sv = el("button", "sm", "Save"); rm.type = sv.type = "button"; row.append(rm, sv); body.append(row);
+    sv.onclick = async () => { sv.disabled = true; const nv = isSel ? val : inp.value.trim(); if (await save(f, nv || null, p)) { closeSheet(); draw(); } else sv.disabled = false; };
+    rm.onclick = async () => { if (await save(f, null, p)) { closeSheet(); draw(); } };
+  };
+  const draw = () => {
+    o.replaceChildren();
+    const hd = el("div", "ihead"), bk = el("button", "ghost", "←"), t = el("div", null, "Edit profile"); bk.type = "button"; bk.onclick = () => { o.remove(); pfPaint(); }; t.style.flex = "1"; hd.append(bk, t); o.append(hd);
+    const ph = el("div", "ph2"), b1 = el("button", "sm gray", "Profile photo"), b2 = el("button", "sm gray", "Cover photo"); b1.type = b2.type = "button";
+    b1.onclick = () => pickPhoto("avatar"); b2.onclick = () => pickPhoto("cover"); ph.append(b1, b2); o.append(ph);
+    EP.forEach(([title, fields]) => {
+      const c = closed.has(title), h = el("div", "eph"); h.append(el("b", null, title), el("span", null, c ? "⌄" : "⌃")); h.onclick = () => { c ? closed.delete(title) : closed.add(title); draw(); }; o.append(h);
+      if (c) return;
+      fields.forEach(f => {
+        const v = get(f), row = el("div", "irow"), mid = el("div", "mid");
+        mid.append(el("div", v ? "t1" : "t1 mutl", v ? (f[3] === "date" ? fmtDate(v) : v) : f[2])); if (v) mid.append(el("div", "t2", f[2] + " · " + EPV[prv(f)]));
+        row.append(el("span", "ic", f[1]), mid); row.onclick = () => editField(f); o.append(row);
+      });
+    });
+  };
+  draw();
 }
 function openClip(list, i0) {
   let i = i0; const ov = el("div", "sv"), hd = el("div", "st"), box = el("div", "smd"), bar = el("div", "cbar");
