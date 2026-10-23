@@ -392,6 +392,32 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .compose .att{width:44px;height:44px;padding:0;border-radius:50%;background:var(--cd2);display:flex;align-items:center;justify-content:center}
 #send{background:var(--pgrad);color:#fff;border-radius:22px;height:44px;padding:0 20px;box-shadow:0 4px 12px rgba(80,70,229,.3)}
 #st{position:fixed;inset:0;z-index:70;background:var(--bg);overflow-y:auto}#st .sw2{max-width:640px;margin:0 auto;padding-bottom:40px}#st .stp{padding:14px 18px;display:flex;flex-direction:column;gap:12px}#st .cap{color:var(--mut);font-size:13px;white-space:normal}#st input{width:100%}#st .ok{color:var(--me);font-weight:700;font-size:20px}
+/* Help and Support page: simple mobile layout matching the supplied reference */
+#st .help-support-screen>.mtop,#st .help-support-detail>.mtop{height:64px;padding:0 14px;gap:14px;border-bottom:1px solid var(--line);margin:0 0 8px;background:var(--bg);position:sticky;top:0;z-index:4}
+#st .help-support-screen>.mtop b,#st .help-support-detail>.mtop b{font-size:20px;font-weight:750;letter-spacing:-.25px}
+#st .help-support-screen>.mtop button,#st .help-support-detail>.mtop button{background:none;color:var(--tx);font-size:23px;padding:0 4px;width:30px}
+#st .help-support-screen>.mrow{min-height:98px;padding:22px 8px;margin:0 7px;border-bottom:1px solid var(--line);border-radius:0;background:transparent;font-size:18px;font-weight:550;gap:12px}
+#st .help-support-screen>.mrow:active{background:var(--bg2)}
+#st .help-support-screen>.mrow .mt{font-size:18px;font-weight:550}
+#st .help-support-screen>.mrow>span:last-child{font-size:24px;color:var(--tx);font-weight:400}
+#st .help-support-detail .stp{padding:16px 16px 26px;gap:14px}
+#st .help-support-detail .help-intro{font-size:14px;color:var(--mut);line-height:1.5}
+#st .help-support-detail .help-search{height:46px;border-radius:14px;border:1px solid var(--line);background:var(--bg2);padding:0 14px}
+#st .help-support-detail .help-faq{border-bottom:1px solid var(--line);padding:14px 2px}
+#st .help-support-detail .help-faq summary{font-weight:650;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:12px}
+#st .help-support-detail .help-faq summary::-webkit-details-marker{display:none}
+#st .help-support-detail .help-faq summary:after{content:'+';font-size:20px;font-weight:400;color:var(--mut)}
+#st .help-support-detail .help-faq[open] summary:after{content:'−'}
+#st .help-support-detail .help-faq p{font-size:14px;line-height:1.5;color:var(--mut);margin:12px 0 0;white-space:normal}
+#st .help-section-title{font-size:16px;font-weight:750;margin:8px 0 0}
+#st .help-guideline{padding:12px 0;border-bottom:1px solid var(--line)}
+#st .help-guideline b{display:block;margin-bottom:5px;font-size:15px}
+#st .help-guideline p{margin:0;color:var(--mut);font-size:14px;line-height:1.5}
+#st .help-field{display:flex;flex-direction:column;gap:7px;font-size:14px;font-weight:650}
+#st .help-field select,#st .help-field textarea{width:100%;border:1px solid var(--line);background:var(--bg2);color:var(--tx);border-radius:12px;padding:12px;font:inherit;font-weight:400}
+#st .help-field textarea{min-height:140px;resize:vertical}
+#st .help-status{font-size:13px;color:var(--mut);line-height:1.4}
+
 
 /* Chatter-native block confirmation; avoids the browser's URL-branded confirm dialog */
 .ch-confirm-bg{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;padding:22px;}
@@ -2047,6 +2073,7 @@ const openSettings = () => { stCat = stItem = null; $("#st").classList.remove("h
 const closeSet = () => $("#st").classList.add("hide");
 function drawSet() {
   const o = $("#st"); o.replaceChildren(); const w = el("div", "sw2"), top = el("div", "mtop"), bk = el("button", "", "←");
+  if (stCat === "Help and Support") w.classList.add(stItem ? "help-support-detail" : "help-support-screen");
   bk.type = "button"; bk.onclick = () => { if (stItem) stItem = null; else if (stCat) stCat = null; else return closeSet(); drawSet(); };
   top.append(bk, el("b", null, stItem || stCat || "Settings")); w.append(top);
   const row = (t, fn, tick) => { const r = el("div", "mrow"), x = el("span", tick ? "ok" : "", tick ? "✓" : "›"); r.append(el("span", "mt", t), x); r.onclick = fn; return r; };
@@ -2059,7 +2086,65 @@ function setDetail(it, row) {
   const d = el("div", "stp"), cap = t => d.append(el("div", "cap", t)), msg = el("div", "cap"), inp = (ph, type, v) => { const i = el("input"); i.placeholder = ph; i.type = type || "text"; i.value = v || ""; return i; };
   const btn = (t, fn, cls) => { const b = el("button", cls || "", t); b.onclick = () => fn(b); return b; };
   const phone = x => { const dg = x.replace(/\D/g, ""); return x.trim().startsWith("+") ? "+" + dg : dg.startsWith("09") && dg.length === 11 ? "+63" + dg.slice(1) : dg.startsWith("9") && dg.length === 10 ? "+63" + dg : null; };
-  if (OPT[it]) {
+  if (it === "Help Center") {
+    d.append(el("div", "help-intro", "Find answers to common questions about using Chatter."));
+    const search = inp("Search help articles", "search"); search.className = "help-search"; search.setAttribute("aria-label", "Search help articles");
+    const faqBox = el("div", "help-faq-list");
+    const faqs = [
+      ["How do I update my profile?", "Open your profile from the Menu, then use the profile edit controls to update the information available to you."],
+      ["Why can't I send someone a message?", "Some conversations are limited to friends. If the other person only accepts messages from friends, you may need to become friends before sending a message."],
+      ["How do I manage who can see my posts?", "Open Settings, then Privacy Settings or Audience and Tagging to review the audience choices available in this version of Chatter."],
+      ["How do I block or unblock someone?", "Open Settings, then Blocking. From Blocked accounts, you can review accounts you have blocked and unblock them."],
+      ["How do I change dark mode?", "Open Settings, then Accessibility and Display, then Theme. Choose Light, Dark, or Use device setting."],
+      ["What should I include in a problem report?", "Describe what you were doing, what you expected, what happened instead, and any steps that reliably reproduce the problem. Do not include your password or verification codes."]
+    ];
+    const paintHelpFaqs = () => {
+      faqBox.replaceChildren(); const q = search.value.trim().toLowerCase(); let count = 0;
+      faqs.filter(([question, answer]) => !q || (question + " " + answer).toLowerCase().includes(q)).forEach(([question, answer]) => {
+        const item = el("details", "help-faq"), summary = el("summary", null, question), answerEl = el("p", null, answer);
+        item.append(summary, answerEl); faqBox.append(item); count++;
+      });
+      if (!count) faqBox.append(el("div", "help-intro", "No matching help articles. Try another search or use Report a problem."));
+    };
+    search.addEventListener("input", paintHelpFaqs); paintHelpFaqs(); d.append(search, faqBox);
+  } else if (it === "Report a problem") {
+    d.append(el("div", "help-intro", "Tell us what went wrong. Please do not include passwords, verification codes, or other sensitive information."));
+    const categoryLabel = el("label", "help-field", "What is the problem about?");
+    const category = el("select");
+    [["bug","Something is not working"],["account","Account or login"],["messages","Messages and calls"],["posts","Posts, photos, or clips"],["privacy","Privacy or safety"],["other","Other"]].forEach(([v,label]) => { const opt = el("option", null, label); opt.value = v; category.append(opt); });
+    categoryLabel.append(category);
+    const descLabel = el("label", "help-field", "Describe the problem");
+    const description = el("textarea"); description.placeholder = "What happened? What did you expect to happen?"; description.maxLength = 4000; description.required = true; description.setAttribute("aria-label", "Describe the problem"); descLabel.append(description);
+    const status = el("div", "help-status");
+    const submit = btn("Submit report", async b => {
+      const text = description.value.trim();
+      if (text.length < 10) { status.textContent = "Please describe the problem in at least 10 characters."; description.focus(); return; }
+      b.disabled = true; b.textContent = "Submitting…"; status.textContent = "Sending your report securely…";
+      try {
+        const {error} = await sb.from("support_reports").insert({user_id: me.id, category: category.value, description: text, screen: "Settings > Help and Support > Report a problem", user_agent: navigator.userAgent});
+        if (error) {
+          console.error("Chatter support report submission failed:", error);
+          status.textContent = /support_reports|relation|schema cache|does not exist/i.test(error.message || "") ? "Report submission is not set up yet. Run the supplied chatter_support_reports.sql in Supabase, then try again." : "We couldn't submit the report. Please check your connection and try again.";
+        } else {
+          description.value = ""; status.textContent = "Report submitted. Thank you for helping improve Chatter."; toast("Problem report submitted");
+        }
+      } catch (e) { console.error("Chatter support report failed:", e); status.textContent = "We couldn't submit the report. Please check your connection and try again."; }
+      finally { b.disabled = false; b.textContent = "Submit report"; }
+    });
+    submit.type = "button"; submit.style.cssText = "border-radius:12px;padding:13px 16px";
+    d.append(categoryLabel, descLabel, submit, status);
+  } else if (it === "Community Guidelines") {
+    d.append(el("div", "help-intro", "Help make Chatter a welcoming and safer place for everyone. These guidelines describe the behavior expected from people using the app."));
+    const guidelines = [
+      ["Be respectful", "Treat other people with respect. Do not threaten, bully, harass, or target someone with abusive behavior."],
+      ["Protect privacy", "Do not post another person's private information, private conversations, or images without appropriate permission."],
+      ["Keep accounts safe", "Never share passwords or verification codes. Be careful with suspicious links and requests for personal information."],
+      ["Avoid spam and scams", "Do not send repetitive unwanted messages, impersonate others, or use Chatter to deceive people."],
+      ["Share responsibly", "Do not upload illegal, exploitative, or threatening content. Respect other people's boundaries and applicable laws."],
+      ["Report problems", "Use Report a problem to tell the app team about bugs, abuse, or safety concerns. Include useful details but leave out passwords and security codes."]
+    ];
+    guidelines.forEach(([title, body]) => { const item = el("section", "help-guideline"); item.append(el("b", null, title), el("p", null, body)); d.append(item); });
+  } else if (OPT[it]) {
     const [k, list, def, note] = OPT[it]; d.append(el("div", "cap", note));
     list.forEach(([v, l]) => d.append(row(l, async () => {
       await saveS(k, v);
