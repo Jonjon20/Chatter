@@ -198,7 +198,13 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .pav{position:relative;margin:-62px 0 0 14px;width:124px}.pav .av{width:124px;height:124px;font-size:48px;border:4px solid var(--bg)}.pav .camb{right:0;bottom:8px;background:var(--bg2);color:var(--tx)}
 .pname{font-size:26px;font-weight:700;padding:8px 14px 0;overflow-wrap:anywhere}.psub{color:var(--mut);padding:2px 14px 0}
 .pact{display:flex;gap:8px;padding:12px 14px}.pact button{flex:1;padding:10px 8px;border-radius:10px;font-weight:600}.pact button.sq{flex:none;width:48px}
-.ptabs{display:flex;border-bottom:1px solid var(--line)}.ptabs button{flex:1;background:none;color:var(--mut);border-radius:0;padding:12px 0;font-weight:700;border-bottom:3px solid transparent}.ptabs button.on{color:var(--bl);border-bottom-color:var(--bl)}
+.ptabs{display:flex;gap:6px;padding:8px 14px;overflow-x:auto}.ptabs button{flex:none;background:none;color:var(--mut);border-radius:22px;padding:10px 18px;font-weight:600;font-size:16px}.ptabs button.on{background:rgba(45,136,255,.2);color:var(--bl)}
+.pinfo{padding:6px 14px 0;font-weight:600;overflow-wrap:anywhere}
+.pmut{display:flex;align-items:center;gap:10px;padding:12px 14px 0;color:var(--tx)}.pmut .mav{display:flex}.pmut .mav .av{width:38px;height:38px;font-size:15px;margin-left:-12px;border:2px solid var(--bg)}.pmut .mav .av:first-child{margin-left:0}
+.asec{padding:14px;border-top:8px solid var(--fsep)}.ah{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:21px}.ah button{background:none;color:var(--tx);padding:4px}.ah .see{color:var(--bl);font-weight:600;font-size:17px}
+.arow{display:flex;align-items:center;gap:14px;padding:9px 2px;font-size:17px;overflow-wrap:anywhere}.arow .ai{width:30px;text-align:center;font-size:23px;flex:none}.arow .ai.sq{width:54px;height:54px;display:flex;align-items:center;justify-content:center;background:var(--bg2);border-radius:10px}.arow .at{min-width:0}.arow .at .t1{white-space:normal;font-size:17px}
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 8px;padding-top:6px}.ftile{text-align:center;cursor:pointer;min-width:0}.ftile .fav{width:84px;margin:0 auto}.ftile .fav .av{width:84px;height:84px;font-size:32px}.ftile .nm{font-weight:600;font-size:15px;margin-top:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.ftile .mu{font-size:13px;color:var(--mut)}.ftile.ring .fav .av{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--bl)}
+.nmc{max-height:90vh;overflow-y:auto}.ef{display:flex;flex-direction:column;gap:4px}.ef input{width:100%}.nmc .ph2{display:flex;gap:8px}.nmc .ph2 button{flex:1}.nmc .nf{gap:8px}
 .cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding-top:2px}.cgrid .ct{position:relative;aspect-ratio:9/16;background:#111;cursor:pointer;overflow:hidden}.cgrid .ct video{width:100%;height:100%;object-fit:cover;pointer-events:none}.cgrid .cl{position:absolute;left:6px;bottom:5px;color:#fff;font-size:12px;text-shadow:0 1px 3px #000}
 .cbar{padding:10px 14px calc(14px + env(safe-area-inset-bottom,0px))}.cbar .cap{margin-bottom:8px;white-space:pre-wrap;overflow-wrap:anywhere}.cbar .cr{display:flex;gap:8px;align-items:center}.cbar button{background:#fff2;color:#fff;padding:8px 16px}.cbar button:disabled{opacity:.35}.cbar .cr button:first-child{margin-right:auto}
 .rl .ovh{display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:4px}
@@ -1367,7 +1373,7 @@ function drawSaved(box) {
 }
 
 // ---------- PROFILE PAGE (Facebook style): cover, avatar, Posts + Clips ----------
-const blankPf = () => ({uid: null, tab: "posts", posts: [], clips: [], loaded: false, box: null, ov: false});
+const blankPf = () => ({uid: null, tab: "posts", posts: [], clips: [], loaded: false, box: null, ov: false, info: null, friends: null});
 let pf = blankPf();
 async function pfLoad(uid) {
   const {data} = await sb.from("posts").select("*").eq("user_id", uid).in("kind", ["post", "clip"]).order("created_at", {ascending: false}).limit(80);
@@ -1386,7 +1392,7 @@ async function pfLoad(uid) {
   pfPaint();
 }
 function pfStart(box, uid, ov) {
-  if (pf.uid !== uid || pf.ov !== ov) { pf = {uid, tab: "posts", posts: [], clips: [], loaded: false, box, ov}; pfLoad(uid); }
+  if (pf.uid !== uid || pf.ov !== ov) { pf = {uid, tab: "posts", posts: [], clips: [], loaded: false, box, ov, info: null, friends: null}; pfLoad(uid); pfLoadExtra(uid); }
   pf.box = box; pf.ov = ov; drawProfile();
 }
 function pfPaint() {
@@ -1428,13 +1434,22 @@ function drawProfile() {
     if (online.has(uid)) sub += (sub ? " · " : "") + "Active now";
   }
   box.append(cv, pa, el("div", "pname", nm)); if (sub) box.append(el("div", "psub", sub));
+  if (!bl) {
+    const inf = pf.info || {}, bits = []; if (inf.city) bits.push("📍 " + inf.city); if (inf.school) bits.push("🎓 " + inf.school);
+    if (bits.length) box.append(el("div", "pinfo", bits.join("  ·  ")));
+    const mf = !mine && pf.friends ? pf.friends.filter(x => x.is_mutual) : [];
+    if (mf.length) {
+      const r = el("div", "pmut"), av = el("div", "mav"); mf.slice(0, 3).forEach(x => av.append(avatar(x.friend_id, (names[x.friend_id] || "?")[0].toUpperCase(), "sm")));
+      r.append(av, el("span", null, mf.length + (mf.length === 1 ? " mutual friend" : " mutual friends"))); box.append(r);
+    }
+  }
   // action buttons
   const act = el("div", "pact");
   const btn = (t, cls, fn) => { const b = el("button", cls, t); b.type = "button"; b.onclick = e => { e.stopPropagation(); closePop(); fn(e); }; act.append(b); return b; };
   const refresh = async () => { await loadFriends(); pfPaint(); };
   if (mine) {
     btn("＋ Add to story", "", pickStory);
-    btn("✏️ Edit profile", "gray", e => popMenu(e.currentTarget, [["Change profile photo", () => pickPhoto("avatar")], ["Change cover photo", () => pickPhoto("cover")]]));
+    btn("✏️ Edit profile", "gray", editProfile);
   } else if (bl) {
     btn("Unblock", "", () => doUnblock(uid));
   } else {
@@ -1454,10 +1469,15 @@ function drawProfile() {
   if (bl) return box.append(el("div", "hint", "You blocked this person."));
   // Posts | Clips
   const tb = el("div", "ptabs");
-  [["posts", "Posts"], ["clips", "Clips"], ["reposts", "Reposts"], ...(mine && !pf.ov ? [["saved", "Saved"]] : [])].forEach(([k, t]) => { const b = el("button", pf.tab === k ? "on" : "", t); b.type = "button"; b.onclick = () => { pf.tab = k; if (k === "saved" && !pf.saved) loadSaved(); if (k === "reposts" && !pf.reps) loadRepTab(); pfPaint(); }; tb.append(b); });
+  [["posts", "All"], ["photos", "Photos"], ["clips", "Clips"], ["reposts", "Reposts"], ...(mine && !pf.ov ? [["saved", "Saved"]] : [])].forEach(([k, t]) => { const b = el("button", pf.tab === k ? "on" : "", t); b.type = "button"; b.onclick = () => { pf.tab = k; if (k === "saved" && !pf.saved) loadSaved(); if (k === "reposts" && !pf.reps) loadRepTab(); pfPaint(); }; tb.append(b); });
   box.append(tb);
   if (!pf.loaded) return box.append(el("div", "hint", "Loading…"));
-  if (pf.tab === "posts") {
+  if (pf.tab === "photos") {
+    const L = pf.posts.filter(x => x.url && x.media_type !== "video");
+    if (!L.length) box.append(el("div", "hint", mine ? "You haven't added any photos yet." : "No photos yet."));
+    else { const g = el("div", "cgrid"); L.forEach(x => { const t = el("div", "ct"), im = el("img"); im.src = x.url; t.append(im); t.onclick = () => openPost(x.id); g.append(t); }); box.append(g); }
+  } else if (pf.tab === "posts") {
+    drawAbout(box, mine, uid);
     if (!pf.posts.length) box.append(el("div", "hint", mine ? "You haven't posted anything yet." : "No posts yet."));
     pf.posts.forEach(p => box.append(postCard(p, true)));
   } else if (pf.tab === "saved") { drawSaved(box);
@@ -1471,6 +1491,70 @@ function drawProfile() {
     });
     box.append(g);
   }
+}
+
+// ---------- PROFILE DETAILS: personal details, education, friends, edit form ----------
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const fmtDate = v => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v || ""); return m ? MONTHS[+m[2] - 1] + " " + (+m[3]) + ", " + m[1] : (v || ""); };
+const PENCIL = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14.5 6.5l3 3"/></svg>';
+async function pfLoadExtra(uid) {
+  const [i, f] = await Promise.all([sb.from("profiles").select("city,hometown,school,school_date,birthday").eq("id", uid).maybeSingle(), sb.rpc("profile_friends", {target: uid})]);
+  if (pf.uid !== uid) return;
+  pf.info = i.error ? {} : (i.data || {});
+  pf.friends = f.error ? (uid === me.id ? fr.filter(x => x.status === "accepted").map(x => ({friend_id: x.requester === me.id ? x.addressee : x.requester, mutual: null, is_mutual: false})) : null) : (f.data || []);
+  const ids = (pf.friends || []).map(x => x.friend_id); await ensureNames(ids); loadPhotos(ids.slice(0, 24));
+  pfPaint();
+}
+function drawAbout(box, mine, uid) {
+  const inf = pf.info || {}, row = (ic, t) => { const r = el("div", "arow"); r.append(el("span", "ai", ic), el("span", "at", t)); return r; };
+  const sec = (title, kids, right) => {
+    const s = el("div", "asec"), h = el("div", "ah"); h.append(el("b", null, title));
+    if (right) h.append(right); else if (mine) { const e = el("button", "", ""); e.type = "button"; e.innerHTML = PENCIL; e.onclick = editProfile; h.append(e); }
+    s.append(h, ...kids); box.append(s);
+  };
+  const det = []; if (inf.city) det.push(row("📍", inf.city)); if (inf.hometown) det.push(row("🏠", inf.hometown)); if (inf.birthday) det.push(row("🎂", fmtDate(inf.birthday)));
+  if (det.length || mine) sec("Personal details", det.length ? det : [el("div", "t2", "Add your current city, hometown and birthday.")]);
+  const ed = [];
+  if (inf.school) { const r = el("div", "arow"), m = el("div", "at"); m.append(el("div", "t1", inf.school)); if (inf.school_date) m.append(el("div", "t2", "On " + fmtDate(inf.school_date))); r.append(el("span", "ai sq", "🎓"), m); ed.push(r); }
+  if (ed.length || mine) sec("Education", ed.length ? ed : [el("div", "t2", "Add your school.")]);
+  const fl = (pf.friends || []).slice().sort((a, b) => (b.is_mutual - a.is_mutual) || ((b.mutual || 0) - (a.mutual || 0)));
+  if (fl.length) {
+    const see = el("button", "see", "See all"); see.type = "button"; see.onclick = () => openFriendList(uid);
+    const g = el("div", "fgrid");
+    fl.slice(0, 6).forEach(x => {
+      const u = x.friend_id, nm = names[u] || "Someone", t = el("div", "ftile" + (fstories.some(s => s.user_id === u) ? " ring" : "")), fv = el("div", "fav");
+      fv.append(avatar(u, nm[0].toUpperCase(), "xxl", u)); t.append(fv, el("div", "nm", nm));
+      if (x.mutual) t.append(el("div", "mu", x.mutual + (x.mutual === 1 ? " mutual friend" : " mutual friends")));
+      t.onclick = () => openProfile(u); g.append(t);
+    });
+    sec("Friends", [g], see);
+  }
+}
+function openFriendList(uid) {
+  const {body} = sheet("Friends"), fl = pf.friends || [];
+  body.append(el("div", "t2 rsub", fl.length + (fl.length === 1 ? " friend" : " friends")));
+  fl.forEach(x => {
+    const u = x.friend_id, nm = names[u] || "Someone", d = el("div", "fci2"), mid = el("div", "mid"); mid.append(el("div", "t1", nm)); if (x.mutual) mid.append(el("div", "t2", x.mutual + (x.mutual === 1 ? " mutual friend" : " mutual friends")));
+    d.append(avatar(u, nm[0].toUpperCase(), "md", u), mid); d.onclick = () => { closeSheet(); openProfile(u); }; body.append(d);
+  });
+}
+function editProfile() {
+  const inf = pf.info || {}, bg = el("div", "nmbg"), card = el("div", "nmc"), F = {};
+  const field = (k, label, type, val, ph) => { const w = el("div", "ef"), i = el("input"); i.type = type; i.value = val || ""; if (ph) i.placeholder = ph; if (type === "text") i.maxLength = 80; F[k] = i; w.append(el("div", "t2", label), i); card.append(w); };
+  card.append(el("h4", null, "Edit profile"));
+  const ph = el("div", "ph2"), b1 = el("button", "sm gray", "Profile photo"), b2 = el("button", "sm gray", "Cover photo"); b1.type = b2.type = "button";
+  b1.onclick = () => { bg.remove(); pickPhoto("avatar"); }; b2.onclick = () => { bg.remove(); pickPhoto("cover"); }; ph.append(b1, b2); card.append(ph);
+  field("city", "Current city", "text", inf.city, "e.g. Tanay, Rizal"); field("hometown", "Hometown", "text", inf.hometown, "e.g. Paracale, Camarines Norte");
+  field("birthday", "Birthday", "date", inf.birthday); field("school", "School", "text", inf.school); field("school_date", "Graduation date", "date", inf.school_date);
+  const fo = el("div", "nf"), no = el("button", "sm gray", "Cancel"), ok = el("button", "sm", "Save"); no.type = ok.type = "button"; fo.append(no, ok); card.append(fo); bg.append(card);
+  no.onclick = () => bg.remove(); bg.onclick = e => { if (e.target === bg) bg.remove(); };
+  ok.onclick = async () => {
+    const v = k => F[k].value.trim() || null, upd = {city: v("city"), hometown: v("hometown"), birthday: v("birthday"), school: v("school"), school_date: v("school_date")};
+    ok.disabled = true; const {error} = await sb.from("profiles").update(upd).eq("id", me.id); ok.disabled = false;
+    if (error) return alert(/column|schema cache/i.test(error.message) ? "Profile details aren't set up yet. Run profile_info.sql in the Supabase SQL Editor." : error.message);
+    pf.info = {...upd}; bg.remove(); pfPaint(); toast("Profile updated");
+  };
+  document.body.append(bg);
 }
 function openClip(list, i0) {
   let i = i0; const ov = el("div", "sv"), hd = el("div", "st"), box = el("div", "smd"), bar = el("div", "cbar");
