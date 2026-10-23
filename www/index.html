@@ -496,7 +496,10 @@ function appConfirm(title, message, confirmLabel = "Continue") {
     const overlay = el("div", "confirm-overlay");
     const card = el("div", "confirm-card"); card.setAttribute("role", "dialog"); card.setAttribute("aria-modal", "true");
     const h = el("h3", "", title), p = el("p", "", message), actions = el("div", "confirm-actions");
-    const cancel = btn("Cancel", () => finish(false), "gray"), yes = btn(confirmLabel, () => finish(true));
+    const cancel = el("button", "gray", "Cancel"), yes = el("button", "", confirmLabel);
+    cancel.type = "button"; yes.type = "button";
+    cancel.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); finish(false); });
+    yes.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); finish(true); });
     function finish(value) { overlay.remove(); resolve(value); }
     overlay.addEventListener("click", e => { if (e.target === overlay) finish(false); });
     actions.append(cancel, yes); card.append(h, p, actions); overlay.append(card); document.body.append(overlay);
