@@ -193,8 +193,12 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .stoast{position:fixed;left:12px;right:12px;bottom:84px;z-index:80;background:#2a2a2a;color:#fff;border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}.stoast button{background:none;color:#6bb6ff;padding:0;font-weight:600}
 .rl{position:relative;height:calc(100% - var(--ftop,56px));scroll-margin-top:var(--ftop,56px);scroll-snap-align:start;background:#000;color:#fff}.rl video{width:100%;height:100%;object-fit:contain}.rl .ov{position:absolute;left:12px;right:70px;bottom:16px;text-shadow:0 1px 3px #000}.rl .sd{position:absolute;right:10px;bottom:30px;display:flex;flex-direction:column;gap:14px}.rl .sd button{background:#0008;color:#fff;border-radius:50%;width:48px;height:48px;padding:0;font-size:12px}
 .pov{position:fixed;inset:0;z-index:45;background:var(--bg2);display:flex;flex-direction:column}.pvt{display:flex;align-items:center;gap:10px;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--line);background:var(--bg);font-weight:700}.pvb{flex:1;overflow-y:auto;max-width:640px;width:100%;margin:0 auto}
-#pfv,#mnu{position:fixed;inset:0;z-index:65;overflow-y:auto;padding-top:env(safe-area-inset-top,0px)}
-#pfv{background:var(--bg2)}#mnu{background:var(--bg2);z-index:62}
+#pfv{position:fixed;inset:0;z-index:65;overflow-y:auto;padding-top:env(safe-area-inset-top,0px);background:var(--bg2)}
+/* Menu opens as a left-side drawer, not a full-screen page */
+#mnu{position:fixed;inset:0;z-index:62;display:flex;align-items:stretch;justify-content:flex-start;overflow:hidden;padding-top:env(safe-area-inset-top,0px);background:rgba(0,0,0,.58);overscroll-behavior:contain}
+#mnu.hide{display:none!important}
+#mnu .mw{width:min(88vw,420px);max-width:none;height:100%;min-height:0;margin:0;overflow-y:auto;overscroll-behavior:contain;background:var(--bg2);box-shadow:8px 0 28px rgba(0,0,0,.25);padding:8px 14px calc(18px + env(safe-area-inset-bottom,0px))}
+@media(min-width:701px){#mnu .mw{width:min(420px,42vw)}}
 .pfw{max-width:640px;margin:0 auto;background:var(--bg);min-height:100%}
 .pfb{position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:6px;height:52px;padding:0 8px;background:var(--bg);border-bottom:1px solid var(--line)}
 .pfb button{background:none;color:var(--tx);font-size:24px;padding:4px 10px}.pfb .pt{font-weight:700;font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -2005,6 +2009,7 @@ try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", pain
 paintThemeColor();
 function openMenu() { mset = false; mblk = false; $("#mnu").classList.remove("hide"); drawMenu(); $("#mnu").scrollTop = 0; }
 function closeMenu() { $("#mnu").classList.add("hide"); }
+$("#mnu").addEventListener("click", e => { if (e.target === $("#mnu")) closeMenu(); });
 function drawMenu() {
   const o = $("#mnu"), y = o.scrollTop; o.replaceChildren();
   const w = el("div", "mw"), top = el("div", "mtop"), bk = el("button", "", "←"), card = el("div", "mcard"), chv = el("div", "chv");
