@@ -434,6 +434,25 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 
 
 .confirm-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;background:#0009}.confirm-card{width:min(100%,360px);background:var(--bg2);color:var(--tx);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 12px 40px #0007}.confirm-card h3{margin:0 0 10px;font-size:19px}.confirm-card p{margin:0 0 22px;color:var(--mut);line-height:1.5}.confirm-actions{display:flex;justify-content:flex-end;gap:10px}.confirm-actions button{min-width:78px}
+
+/* Instagram-inspired story viewer controls */
+.sv{background:#000;color:#fff;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);gap:0}
+.sv .sb{order:0;padding:10px 10px 6px;gap:4px;z-index:4}
+.sv .st{order:1;padding:8px 14px 12px;min-height:58px;gap:10px;z-index:4}
+.sv .st .av{width:42px;height:42px;font-size:17px;border:1px solid #ffffff55}
+.sv .st .mid{flex:1;min-width:0}.sv .st .t1{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sv .st .t2{font-size:13px;color:#ddd}
+.sv .story-menu{background:none;color:#fff;padding:0 4px;font-size:30px;line-height:1;border-radius:0}
+.sv .smd{order:2;flex:1;width:100%;min-height:0;overflow:hidden;border-radius:0 0 4px 4px}
+.sv .smd img,.sv .smd video{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;background:#000}
+.sv .smd .sz{z-index:2}.sv .smd .sz.l{width:25%}.sv .smd .sz.r{width:75%}
+.sv .story-foot{order:3;display:flex;align-items:center;gap:12px;padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));min-height:82px;background:#242629;z-index:4}
+.sv .story-reply{flex:1;min-width:0;height:52px;border:1.5px solid #8b8d91;border-radius:28px;background:transparent;color:#fff;padding:0 26px;font-size:16px;outline:none}
+.sv .story-reply::placeholder{color:#f1f1f1;opacity:1}
+.sv .story-action{width:42px;height:48px;flex:none;padding:4px;background:none;color:#fff;border-radius:0;display:flex;align-items:center;justify-content:center}
+.sv .story-action svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.sv .story-heart{font-size:36px;line-height:1}
+@media(max-width:700px){.sv .smd{flex:1}.sv .story-foot{gap:10px;padding-left:14px;padding-right:14px}}
+
 </style><style>.chatter-reduce-motion *, .chatter-reduce-motion *::before, .chatter-reduce-motion *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }</style>
 </head>
 <body>
@@ -1126,16 +1145,45 @@ function storyCard(s) {
   c.onclick = () => openStory(u); return c;
 }
 async function openStory(u) {
-  const L = fstories.filter(s => s.user_id === u).reverse();   // oldest first
+  const L = fstories.filter(s => s.user_id === u).reverse();
   if (!L.length) return;
   await Promise.all(L.map(async s => { if (!s.url) s.url = await imgUrl(s.media_path); }));
   let i = 0, t = null;
-  const ov = el("div", "sv"), bars = el("div", "sb"), hd = el("div", "st"), box = el("div", "smd"), nm = el("div", "t1", u === me.id ? "Your story" : (names[u] || "Someone")), tm = el("div", "t2"), mid = el("div", "mid");
+  const ov = el("div", "sv"), bars = el("div", "sb"), hd = el("div", "st"), box = el("div", "smd"),
+    nm = el("div", "t1", u === me.id ? "Your story" : (names[u] || "Someone")),
+    tm = el("div", "t2"), mid = el("div", "mid"), foot = el("div", "story-foot"),
+    reply = el("input", "story-reply"), heart = el("button", "story-action story-heart", "♡"), share = el("button", "story-action story-share", "▷");
   const close = () => { clearTimeout(t); ov.remove(); };
   const go = d => { i += d; if (i < 0) i = 0; if (i >= L.length) return close(); show(); };
-  mid.append(nm, tm); mid.style.cursor = "pointer"; mid.onclick = () => { close(); openProfile(u); }; hd.append(avatar(u, (names[u] || "?")[0].toUpperCase(), "sm"), mid);
-  if (u === me.id) { const d = el("button", "", "🗑"); d.onclick = async () => { const s = L[i]; if (!confirm("Delete this story?")) return; clearTimeout(t); sb.storage.from("chat-images").remove([s.media_path]); await sb.from("posts").delete().eq("id", s.id); close(); loadStories(); }; hd.append(d); }
-  const x = el("button", "", "✕"); x.onclick = close; hd.append(x);
+  mid.append(nm, tm); mid.style.cursor = "pointer"; mid.onclick = () => { close(); openProfile(u); };
+  const menu = el("button", "story-menu", "⋯"); menu.type = "button";
+  menu.onclick = () => popMenu(menu, u === me.id
+    ? [["Delete this story", async () => { const s = L[i]; if (!confirm("Delete this story?")) return; clearTimeout(t); if (s.media_path) await sb.storage.from("chat-images").remove([s.media_path]); await sb.from("posts").delete().eq("id", s.id); close(); loadStories(); }, "red"]]
+    : [["View profile", () => { close(); openProfile(u); }], ["Report story", () => toast("Use Report a problem to tell us about this story.")]]);
+  hd.append(avatar(u, (names[u] || "?")[0].toUpperCase(), "sm"), mid, menu);
+  reply.type = "text"; reply.placeholder = "Send message"; reply.autocomplete = "off";
+  const sendReply = async text => {
+    if (!text || u === me.id) return;
+    close();
+    await openDM(u);
+    const input = $("#in");
+    if (input) { input.value = text; input.focus(); input.dispatchEvent(new Event("input", {bubbles:true})); }
+  };
+  reply.addEventListener("keydown", e => { if (e.key === "Enter" && reply.value.trim()) { const v = reply.value.trim(); reply.value = ""; sendReply(v); } });
+  heart.type = share.type = "button";
+  heart.setAttribute("aria-label", "Send heart reaction"); share.setAttribute("aria-label", "Share story");
+  heart.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.8a5.4 5.4 0 0 0-7.6 0L12 6l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6l1.2 1.2L12 21l7.6-7.4 1.2-1.2a5.4 5.4 0 0 0 0-7.6Z"/></svg>';
+  share.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>';
+  heart.onclick = () => sendReply("❤️");
+  share.onclick = async () => {
+    const s = L[i];
+    try {
+      if (navigator.share) await navigator.share({title: (names[u] || "Someone") + "’s story", text: "View this story on Chatter", url: location.href});
+      else if (navigator.clipboard) { await navigator.clipboard.writeText(location.href); toast("Link copied"); }
+      else toast("Sharing is not supported on this device.");
+    } catch (e) { if (e && e.name !== "AbortError") toast("Could not share this story."); }
+  };
+  foot.append(reply, heart, share);
   function show() {
     clearTimeout(t); const s = L[i], vid = s.media_type === "video";
     bars.replaceChildren(...L.map((_, k) => { const g = el("div", "sg" + (k < i ? " d" : k === i ? (vid ? " a" : " a im") : "")); g.append(el("i")); return g; }));
@@ -1143,13 +1191,14 @@ async function openStory(u) {
     const zl = el("div", "sz l"), zr = el("div", "sz r"); zl.onclick = () => go(-1); zr.onclick = () => go(1);
     box.replaceChildren(); let m;
     if (vid) {
-      m = el("video"); m.src = s.url; m.playsInline = true; m.autoplay = S.autoplay_media !== false; m.controls = true; m.onended = () => go(1);
+      m = el("video"); m.src = s.url; m.playsInline = true; m.autoplay = S.autoplay_media !== false; m.controls = false; m.onended = () => go(1);
       m.ontimeupdate = () => { if (m.duration) fill.style.width = (m.currentTime / m.duration * 100) + "%"; };
       if (S.autoplay_media !== false) m.play().catch(() => { m.muted = true; m.play().catch(() => {}); });
+      t = setTimeout(() => go(1), 15000);
     } else { m = el("img"); m.src = s.url; t = setTimeout(() => go(1), 5000); }
     box.append(m, zl, zr);
   }
-  ov.append(bars, hd, box); document.body.append(ov); show();
+  ov.append(bars, hd, box, foot); document.body.append(ov); show();
 }
 // ----- posts -----
 async function toggleLike(p) {
