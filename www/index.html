@@ -666,6 +666,8 @@ async function loadFriends() {
 async function start(user) {
   me = user; reads = {}; blocked = new Set(); loadSettings();
   if (!(await mfaGate())) { me = null; return; }
+  if (me.user_metadata && me.user_metadata.birthday) sb.from("profiles").update({birthday: me.user_metadata.birthday}).eq("id", me.id).is("birthday", null).then(() => {}, () => {});
+  sb.from("profiles").update({deactivated: false}).eq("id", me.id).eq("deactivated", true).then(() => {}, () => {});
   $("#auth").classList.add("hide"); $("#app").classList.remove("hide");
   await ensureNames([me.id]);
   await loadBlocks(); touchSeen();
@@ -704,6 +706,7 @@ function setTab(t) {
   document.querySelector(".side .ph").classList.toggle("hide", t === "feed");
   $("#sqw").classList.toggle("hide", t === "notifs" || t === "menu" || t === "feed");
   if (t === "feed") { feedDirty = true; loadFeed(); }
+  if (t === "people") loadPymk(); if (t === "notifs") loadBdays();
   if (t === "menu" || !pf.ov) pf = blankPf();
   if (t === "notifs") loadActivity();
   $("#chips").classList.toggle("hide", t !== "chats");
@@ -722,7 +725,7 @@ $("#sq").oninput = e => {
   if (!q) { results = null; return render(); }
   st = setTimeout(async () => {
     const qq = q.replace(/[(),]/g, "");
-    let {data, error} = await sb.from("profiles").select("id,username").or("username.ilike.%" + qq + "%,handle.ilike.%" + qq + "%").neq("id", me.id).limit(20);
+    let {data, error} = await sb.from("profiles").select("id,username").or("username.ilike.%" + qq + "%,handle.ilike.%" + qq + "%").eq("deactivated", false).neq("id", me.id).limit(20);
     if (error) ({data} = await sb.from("profiles").select("id,username").ilike("username", "%" + q + "%").neq("id", me.id).limit(20));
     results = data || []; results.forEach(p => names[p.id] = p.username); render();
   }, 250);
@@ -780,13 +783,16 @@ function render() {
       box.append(bar);
       if (pfilter === "requests") { if (!req.length) box.append(el("div", "hint", "No friend requests.")); req.forEach(f => userRow(box, f.requester)); }
       else { const L = pfilter === "active" ? act : fs; if (!L.length) box.append(el("div", "hint", pfilter === "active" ? "No friends are active right now." : "No friends yet. Search a username above to add one.")); L.forEach(uid => friendRow(box, uid)); pymkSection(box); }
+      if (pfilter === "all" && S.n_pymk !== false && pymk.length) { box.append(el("div", "sec", "People you may know")); pymk.forEach(p => userRow(box, p.id)); }
     }
   } else if (tab === "notifs") {
     const seenT = +localStorage.getItem("nseen") || 0;
     const items = [...fr.filter(f => f.status === "accepted" || (f.status === "pending" && f.addressee === me.id)).map(f => ({f, t: Date.parse(f.updated_at || f.created_at || "") || 0})), ...act.map(a => ({a, t: a.t}))].sort((x, y) => y.t - x.t);
     if (actErr) box.append(el("div", "hint", "Couldn't load likes/comments: " + actErr + ". Run upgrade8.sql and upgrade9.sql in Supabase."));
-    if (!items.length) box.append(el("div", "hint", "No new notifications."));
-    else box.append(el("div", "sec", "Earlier"));
+    const bl = S.n_bday === false ? [] : bdays;
+    bl.forEach(b => { const d = el("div", "item"), mid = el("div", "mid"); mid.append(el("div", "t1", "🎂 " + b.username + "'s birthday is today"), el("div", "t2", "Tap to wish them a happy birthday.")); d.append(avatar(b.id, (b.username || "?")[0].toUpperCase()), mid); d.onclick = () => openDM(b.id); box.append(d); });
+    if (!items.length && !bl.length) box.append(el("div", "hint", "No new notifications."));
+    else if (items.length) box.append(el("div", "sec", "Earlier"));
     items.forEach(({f, a, t}) => {
       if (a) return notifActRow(box, a, t, seenT);
       const u = f.requester === me.id ? f.addressee : f.requester, inc = f.status === "pending", nm = names[u] || "Someone", d = el("div", "item"), mid = el("div", "mid");
@@ -831,7 +837,7 @@ async function loadActivity() {
   const tm = x => Date.parse(x.created_at || "") || 0;
   act = [...L.map(x => ({type: "like", t: tm(x), u: x.user_id, pid: x.post_id, kind: (pm[x.post_id] || {}).kind})),
     ...C.map(x => ({type: "comment", t: tm(x), u: x.user_id, pid: x.post_id, kind: (pm[x.post_id] || {}).kind, txt: x.body})),
-    ...P.map(x => ({type: "post", t: tm(x), u: x.user_id, pid: x.id, kind: x.kind, txt: x.body}))].sort((a, b) => b.t - a.t).slice(0, 100);
+    ...P.map(x => ({type: "post", t: tm(x), u: x.user_id, pid: x.id, kind: x.kind, txt: x.body}))].filter(a => !(S.n_comments === false && a.type === "comment") && !(S.n_clips === false && a.kind === "clip")).sort((a, b) => b.t - a.t).slice(0, 100);
   await ensureNames(act.map(a => a.u));
   paintNBadge(); if (tab === "notifs") render();
 }
@@ -1877,20 +1883,31 @@ function drawMenu() {
 
 
 // ---------- SETTINGS (General / Privacy / Security and Login / Notifications) ----------
+let pymk = [], bdays = [];
+async function loadPymk() {
+  try { const {data, error} = await sb.rpc("people_you_may_know"); if (error) return; pymk = data || []; pymk.forEach(p => names[p.id] = p.username); if (tab === "people") render(); } catch (e) {}
+}
+async function loadBdays() {
+  try {
+    const ids = fr.filter(f => f.status === "accepted").map(f => f.requester === me.id ? f.addressee : f.requester); if (!ids.length) return;
+    const {data, error} = await sb.from("profiles").select("id,username,birthday").in("id", ids).not("birthday", "is", null); if (error) return;
+    const t = new Date(), md = String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0");
+    bdays = (data || []).filter(p => p.birthday.slice(5) === md); bdays.forEach(p => names[p.id] = p.username); if (tab === "notifs") render();
+  } catch (e) {}
+}
 let S = {}, stCat = null, stItem = null;
 const ST = {
   "General Account Settings": ["Name", "Username", "Contact Information", "Password and Security", "Memorialization Settings", "Deactivation and Deletion", "Account ownership and control"],
   "Privacy Settings": ["Who can see your future posts?", "Review all your posts and things you're tagged in", "Who can send you friend requests?", "Who can see your friends list?", "Who can look you up using your email address?", "Who can look you up using your phone number?", "Do you want search engines outside Chatter to link to your profile?"],
   "Security and Login": ["Change password", "Where you're logged in", "Log out of devices", "Save your login information", "Two-factor authentication", "Get alerts about unrecognized logins", "Authorized logins"],
   "Notifications": ["Comments", "Tags", "Reminders", "Friend requests", "People you may know", "Birthdays", "Clips"]};
+const INFO = {"Who can see your friends list?": "Your friends list is private: friendship records can only be read by you and the other person.", "Who can look you up using your email address?": "People can only search by name or @username, so nobody can look you up by your email.", "Who can look you up using your phone number?": "People can only search by name or @username, so nobody can look you up by your phone number.", "Do you want search engines outside Chatter to link to your profile?": "No. Chatter profiles are only visible to people who are logged in, so search engines can't list them."};
 const OPT = {
   "Who can see your future posts?": ["post_vis", [["public", "🌐 Public"], ["friends", "👥 Friends"]], "public", "Used as the default audience when you create a post."],
   "Who can send you friend requests?": ["friend_req", [["everyone", "Everyone"], ["nobody", "Nobody"]], "everyone", "Applies right away: people can't send you requests when this is Nobody."],
-  "Who can see your friends list?": ["friends_list", [["everyone", "Everyone"], ["friends", "Friends"], ["me", "Only me"]], "everyone", "Saved. Not enforced yet in this school version."],
-  "Who can look you up using your email address?": ["look_email", [["everyone", "Everyone"], ["friends", "Friends"], ["nobody", "Nobody"]], "everyone", "Saved. Not enforced yet (search is by name only)."],
-  "Who can look you up using your phone number?": ["look_phone", [["everyone", "Everyone"], ["friends", "Friends"], ["nobody", "Nobody"]], "everyone", "Saved. Not enforced yet (search is by name only)."]};
-const TOG = {"Do you want search engines outside Chatter to link to your profile?": ["search_eng", false, "Saved. Chatter pages aren't public on the web anyway."], "Save your login information": ["save_login", true, "When off, you're signed out when you close the app or tab."], "Get alerts about unrecognized logins": ["alert_login", true, "Saved. Alert emails aren't sent yet."],
-  "Comments": ["n_comments", true], "Tags": ["n_tags", true], "Reminders": ["n_rem", true], "Friend requests": ["n_fr", true], "People you may know": ["n_pymk", true], "Birthdays": ["n_bday", true], "Clips": ["n_clips", true]};
+};
+const TOG = {"Save your login information": ["save_login", true, "When off, you're signed out when you close the app or tab."], "Get alerts about unrecognized logins": ["alert_login", true, "Saved. Alert emails aren't sent yet."],
+  "Comments": ["n_comments", true, "Applies right away: hides comment notifications."], "Tags": ["n_tags", true, "Chatter doesn't send this kind of notification yet."], "Reminders": ["n_rem", true, "Chatter doesn't send this kind of notification yet."], "Friend requests": ["n_fr", true, "Applies right away: hides the friend request count on the bell."], "People you may know": ["n_pymk", true, "Applies right away: turn off to hide People you may know."], "Birthdays": ["n_bday", true, "Applies right away: shows or hides your friends' birthdays in Notifications."], "Clips": ["n_clips", true, "Applies right away: hides notifications about clips."]};
 async function loadSettings() { try { const {data} = await sb.from("user_settings").select("data").eq("user_id", me.id).maybeSingle(); S = (data && data.data) || {}; if (S.post_vis) fdraft.vis = S.post_vis; } catch (e) {} }
 async function saveS(k, v) { S[k] = v; if (k === "post_vis") fdraft.vis = v; const {error} = await sb.from("user_settings").upsert({user_id: me.id, data: S}); if (error) alert("Couldn't save: " + error.message + (/user_settings|relation/i.test(error.message) ? "\n\nRun upgrade9.sql in Supabase first." : "")); }
 addEventListener("pagehide", () => { if (S.save_login === false) Object.keys(localStorage).filter(k => k.startsWith("sb-")).forEach(k => localStorage.removeItem(k)); });
@@ -1915,7 +1932,7 @@ function setDetail(it, row) {
     list.forEach(([v, l]) => d.append(row(l, async () => { await saveS(k, v); drawSet(); }, (S[k] || def) === v)));
   } else if (TOG[it]) {
     const [k, def, note] = TOG[it]; if (note) cap(note);
-    d.append(toggleRow(it, "", S[k] !== undefined ? S[k] : def, v => saveS(k, v)));
+    d.append(toggleRow(it, "", S[k] !== undefined ? S[k] : def, v => saveS(k, v).then(() => { if (/^n_/.test(k)) loadActivity(); })));
   } else if (it === "Name") {
     const i = inp("Name", "text", names[me.id]); i.maxLength = 40; cap("This is the name other people see.");
     d.append(i, msg, btn("Save", async () => { const v = i.value.trim(); if (!v) return; const {error} = await sb.from("profiles").update({username: v}).eq("id", me.id); if (error) return msg.textContent = error.message; await sb.auth.updateUser({data: {username: v}}); names[me.id] = v; render(); msg.textContent = "Saved."; }));
@@ -1928,6 +1945,7 @@ function setDetail(it, row) {
       msg.textContent = !error ? "Saved. You are @" + v : error.code === "23505" ? "That username is taken." : /handle/i.test(error.message) ? "Run upgrade10.sql in Supabase first." : error.message;
     }));
   } else if (it === "Two-factor authentication") { fillMfa(d);
+  } else if (INFO[it]) { cap(INFO[it]);
   } else if (it === "Contact Information") {
     const e = inp("Email", "email", me.email || ""), c = inp("Mobile number (09…)", "tel", me.phone ? "+" + me.phone.replace(/^\+/, "") : ""), code = inp("6-digit code", "text"); let ty = null, tg = null;
     cap("Changing your email or number sends a confirmation code."); code.className = "hide";
@@ -1946,7 +1964,9 @@ function setDetail(it, row) {
     cap("Signs you out on every other phone or browser. This device stays signed in.");
     d.append(msg, btn("Log out of other devices", async () => { await sb.auth.signOut({scope: "others"}); msg.textContent = "Done."; }));
   } else if (it === "Deactivation and Deletion") {
-    cap("Deleting removes your account, posts, messages and photos permanently. Deactivating (hiding your profile for a while) isn't available yet.");
+    cap("Deactivate: hides you from search and signs you out. Log in again any time to come back.");
+    d.append(msg, btn("Deactivate account", async () => { if (!confirm("Deactivate your account? You'll be signed out.")) return; const {error} = await sb.from("profiles").update({deactivated: true}).eq("id", me.id); if (error) return msg.textContent = /deactivated/i.test(error.message) ? "Run upgrade11.sql in Supabase first." : error.message; closeSet(); await sb.auth.signOut(); }, "gray"));
+    cap("Delete: removes your account, posts, messages and photos permanently.");
     d.append(btn("Delete account…", () => { closeSet(); deleteAccount(); }, "danger"));
   } else if (it.startsWith("Review all")) {
     cap("Your posts are on your profile. Tagging isn't available yet."); d.append(btn("Open my profile", () => { closeSet(); setTab("menu"); }));
