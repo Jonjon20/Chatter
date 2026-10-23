@@ -465,7 +465,8 @@ const SUPABASE_ANON_KEY = "sb_publishable_lzh6KRFUa8tG2ObZcaDK4w_LJ_QUqUO";
 // ==========================================================================
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // Configure this with the VAPID public key used by the deployed chatter-notify Edge Function.
-const CHATTER_VAPID_PUBLIC_KEY = "REPLACE_WITH_VAPID_PUBLIC_KEY";
+const CHATTER_VAPID_PUBLIC_KEY = "RBCrz-U-F0tIb4cBl1OB9MSCCwcY3nYECH3soDIgffE-PpdGZ_bq-GSnV95zHyq6pExdupTS5qkUMLjneVxUAnsQ
+EPLACE_WITH_VAPID_PUBLIC_KEY";
 const $ = s => document.querySelector(s);
 const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
 const fmt = t => { const d = new Date(t), n = new Date(); return d.toDateString() === n.toDateString() ? d.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"}) : d.toLocaleDateString([], {month: "short", day: "numeric"}); };
@@ -667,7 +668,7 @@ async function loadFriends() {
   render(); actSoon(); liveClips();
 }
 async function start(user) {
-  me = user; reads = {}; blocked = new Set(); loadSettings();
+  me = user; reads = {}; blocked = new Set(); await loadSettings();
   if (!(await mfaGate())) { me = null; return; }
   if (me.user_metadata && me.user_metadata.birthday) sb.from("profiles").update({birthday: me.user_metadata.birthday}).eq("id", me.id).is("birthday", null).then(() => {}, () => {});
   sb.from("profiles").update({deactivated: false}).eq("id", me.id).eq("deactivated", true).then(() => {}, () => {});
@@ -851,14 +852,17 @@ async function loadActivity() {
   if (mine.error) actErr = mine.error.message;
   const my = mine.data || [], ids = my.map(x => x.id), pm = {}; my.forEach(x => pm[x.id] = x); actMine = new Set(ids);
   const fids = frIds(), since = new Date(Date.now() - 30 * 864e5).toISOString();
-  const [L, C, P] = await Promise.all([
+  const dmRoomIds = rooms.filter(r => r.is_dm).map(r => r.id);
+  const [L, C, P, M] = await Promise.all([
     ids.length ? run(o => { const b = sb.from("post_likes").select("*").in("post_id", ids).neq("user_id", me.id); return (o ? b.order("created_at", {ascending: false}) : b).limit(60); }) : [],
     ids.length ? run(() => sb.from("post_comments").select("*").in("post_id", ids).neq("user_id", me.id).order("created_at", {ascending: false}).limit(60)) : [],
-    fids.length ? run(() => sb.from("posts").select("id,user_id,kind,body,created_at").in("user_id", fids).in("kind", ["post", "clip"]).gte("created_at", since).order("created_at", {ascending: false}).limit(40)) : []]);
+    fids.length ? run(() => sb.from("posts").select("id,user_id,kind,body,created_at").in("user_id", fids).in("kind", ["post", "clip"]).gte("created_at", since).order("created_at", {ascending: false}).limit(40)) : [],
+    dmRoomIds.length ? run(o => { const b = sb.from("messages").select("id,room_id,user_id,body,created_at").in("room_id", dmRoomIds).neq("user_id", me.id); return (o ? b.order("created_at", {ascending: false}) : b).limit(40); }) : []]);
   const tm = x => Date.parse(x.created_at || "") || 0;
   const nextAct = [...L.map(x => ({type: "like", t: tm(x), u: x.user_id, pid: x.post_id, kind: (pm[x.post_id] || {}).kind, id: "like:" + x.post_id + ":" + x.user_id})),
     ...C.map(x => ({type: "comment", t: tm(x), u: x.user_id, pid: x.post_id, kind: (pm[x.post_id] || {}).kind, txt: x.body, id: "comment:" + x.id})),
-    ...P.map(x => ({type: "post", t: tm(x), u: x.user_id, pid: x.id, kind: x.kind, txt: x.body, id: "post:" + x.id}))].filter(a => S.n_inapp !== false && !(S.n_comments === false && a.type === "comment") && !(S.n_likes === false && a.type === "like") && !(S.n_clips === false && a.kind === "clip") && !(S.n_profile === false && a.type === "post")).sort((a, b) => b.t - a.t).slice(0, 100);
+    ...P.map(x => ({type: "post", t: tm(x), u: x.user_id, pid: x.id, kind: x.kind, txt: x.body, id: "post:" + x.id})),
+    ...M.map(x => ({type: "message", t: tm(x), u: x.user_id, rid: x.room_id, txt: x.body, id: "message:" + x.id}))].filter(a => S.n_inapp !== false && !(S.n_comments === false && a.type === "comment") && !(S.n_likes === false && a.type === "like") && !(S.n_messages === false && a.type === "message") && !(S.n_clips === false && a.kind === "clip") && !(S.n_profile === false && a.type === "post")).sort((a, b) => b.t - a.t).slice(0, 100);
   const nextIds = new Set(nextAct.map(a => a.id));
   if (actSeenIds.size && nextAct.some(a => !actSeenIds.has(a.id) && a.u !== me.id)) playNotificationSound();
   actSeenIds = nextIds; act = nextAct;
@@ -868,10 +872,10 @@ async function loadActivity() {
 function notifActRow(box, a, t, seenT) {
   const nm = names[a.u] || "Someone", d = el("div", "item"), mid = el("div", "mid"), w = a.kind === "clip" ? "clip" : "post";
   const sn = (a.txt || "").trim(), cut = sn.length > 70 ? sn.slice(0, 70) + "…" : sn;
-  const msg = a.type === "like" ? "❤️ Liked your " + w + "." : a.type === "comment" ? "💬 Commented on your " + w + (cut ? ": " + cut : ".") : "📝 Posted a new " + w + (cut ? ": " + cut : ".");
+  const msg = a.type === "message" ? "💬 Sent you a message" + (cut ? ": " + cut : ".") : a.type === "like" ? "❤️ Liked your " + w + "." : a.type === "comment" ? "💬 Commented on your " + w + (cut ? ": " + cut : ".") : "📝 Posted a new " + w + (cut ? ": " + cut : ".");
   mid.append(el("div", "t1", nm), el("div", "t2", msg + (t ? " · " + ago2(t) : "")));
   d.append(avatar(a.u, nm[0].toUpperCase(), "", a.u), mid); if (t > seenT) d.append(el("div", "dot"));
-  d.onclick = () => openPost(a.pid); box.append(d);
+  d.onclick = () => a.type === "message" ? openRoom(a.rid) : openPost(a.pid); box.append(d);
 }
 function povPaint() { if (pov && pov.box.isConnected) pov.box.replaceChildren(postCard(pov.p, true)); }
 function closePov() { if (pov) { pov.ov.remove(); pov = null; } }
@@ -1324,7 +1328,7 @@ function openPeople(p, u) {
   if (u === me.id) return;
   const emr = el("div", "emr"), bar = el("div", "sbar"), inp = el("input"), snd = el("button", "sm", "Send");
   inp.placeholder = "Message " + nm + "…"; inp.maxLength = 300; snd.type = "button";
-  const send = async t => { t = (t || inp.value).trim(); if (!t) return; snd.disabled = true; try { await sendDmTo(u, t); closeSheet(); toast("Sent to " + nm); } catch (e) { snd.disabled = false; alert(e.message || e); } };
+  const send = async t => { t = (t || inp.value).trim(); if (!t) return; snd.disabled = true; try { await sendDmTo(u, t); closeSheet(); toast("Sent to " + nm); } catch (e) { snd.disabled = false; alert(/CHATTER_STRANGERS_BLOCKED/.test(e.message || "") ? "This person only accepts messages from friends." : (e.message || e)); } };
   QUICK_EMOJI.forEach(x => { const b = el("button", "", x); b.type = "button"; b.onclick = () => send(x); emr.append(b); });
   snd.onclick = () => send(); inp.onkeydown = e => { if (e.key === "Enter") send(); };
   bar.append(inp, snd); sh.append(emr, bar);
@@ -1932,7 +1936,7 @@ const OPT = {
   "Language and Region": ["language_region", [["en", "English"], ["fil", "Filipino"]], "en", "Saves your preferred language. Some app labels may remain in English until translations are added."]
 };
 const TOG = {"Save your login information": ["save_login", true, "When off, you're signed out when you close the app or tab."], "Get alerts about unrecognized logins": ["alert_login", true, "This preference is saved; security alert emails are not sent by this build."],
-  "Comments": ["n_comments", true, "Hides comment notifications in the activity list."], "Likes": ["n_likes", true, "Controls notifications when someone likes your post."], "Replies to comments": ["n_replies", true, "Preference is saved, but this build does not generate separate reply-to-comment notification events yet."], "Tags": ["n_tags", true, "Shows or hides tag notifications."], "Mentions": ["n_mentions", true, "Preference is saved, but mention notifications are not generated separately in this build yet."], "Messages": ["n_messages", true, "Preference is saved, but separate message notifications are not generated; use Reminders for unread-chat reminders."], "Reminders": ["n_rem", true, "Shows or hides unread-chat reminders."], "Friend requests": ["n_fr", true, "Shows or hides friend-request notifications."], "Friend acceptances": ["n_friend_accept", true, "Saves your preference for accepted-friend notifications."], "People you may know": ["n_pymk", true, "Turn off to hide People You May Know."], "Birthdays": ["n_bday", true, "Shows or hides birthday notifications."], "Group activity": ["n_groups", true, "Preference is saved, but a separate group-activity notification feed is not implemented yet."], "Profile activity": ["n_profile", true, "Saves your preference for profile activity notifications."], "Clips": ["n_clips", true, "Hides clip notifications in the activity list."], "Push notifications": ["n_push", true, "Enable this and register this browser/device for Web Push. HTTPS, a service worker, and server-side VAPID configuration are required."], "Email notifications": ["n_email", true, "Email delivery requires the deployed chatter-notify Edge Function and a verified Resend sender."], "In-app notifications": ["n_inapp", true, "Saves your in-app notification preference."], "Notification sounds": ["n_sound", true, "Plays a short original tone for newly detected in-app activity after you interact with Chatter. Browser audio rules apply."], "Review posts you're tagged in before they appear on your profile": ["tag_review", false, "When enabled, tagged posts get a pending approval record. Run chatter_settings_remaining_upgrade.sql first."], "Allow story replies": ["story_reply_enabled", true, "Saves your story reply preference."], "Save stories to archive": ["story_archive", true, "Saves the preference; automatic story archiving is not implemented yet."], "Autoplay clips": ["autoplay_clips", true, "Saves your autoplay preference."], "Block messages from strangers": ["block_strangers", false, "Saves your preference; server-side message delivery must enforce it."], "Block app invitations": ["block_app_invites", true, "Saves your preference; app invitations are not currently supported."], "Block event invitations": ["block_event_invites", true, "Saves your preference; event invitations are not currently supported."], "Autoplay media": ["autoplay_media", true, "Saves your media autoplay preference."], "Reduce motion": ["reduce_motion", false, "Saves your reduced-motion preference; some animations may remain." ]};
+  "Comments": ["n_comments", true, "Hides comment notifications in the activity list."], "Likes": ["n_likes", true, "Controls notifications when someone likes your post."], "Replies to comments": ["n_replies", true, "Preference is saved, but this build does not generate separate reply-to-comment notification events yet."], "Tags": ["n_tags", true, "Shows or hides tag notifications."], "Mentions": ["n_mentions", true, "Preference is saved, but mention notifications are not generated separately in this build yet."], "Messages": ["n_messages", true, "Shows or hides recent incoming direct-message notifications in the Notifications tab."], "Reminders": ["n_rem", true, "Shows or hides unread-chat reminders."], "Friend requests": ["n_fr", true, "Shows or hides friend-request notifications."], "Friend acceptances": ["n_friend_accept", true, "Saves your preference for accepted-friend notifications."], "People you may know": ["n_pymk", true, "Turn off to hide People You May Know."], "Birthdays": ["n_bday", true, "Shows or hides birthday notifications."], "Group activity": ["n_groups", true, "Preference is saved, but a separate group-activity notification feed is not implemented yet."], "Profile activity": ["n_profile", true, "Saves your preference for profile activity notifications."], "Clips": ["n_clips", true, "Hides clip notifications in the activity list."], "Push notifications": ["n_push", true, "Enable this and register this browser/device for Web Push. HTTPS, a service worker, and server-side VAPID configuration are required."], "Email notifications": ["n_email", true, "Email delivery requires the deployed chatter-notify Edge Function and a verified Resend sender."], "In-app notifications": ["n_inapp", true, "Saves your in-app notification preference."], "Notification sounds": ["n_sound", true, "Plays a short original tone for newly detected in-app activity after you interact with Chatter. Browser audio rules apply."], "Review posts you're tagged in before they appear on your profile": ["tag_review", false, "When enabled, the app records pending approvals and shows a review queue. Hiding tagged posts across every profile/feed query still requires server-side enforcement."], "Allow story replies": ["story_reply_enabled", true, "Saves your story reply preference."], "Save stories to archive": ["story_archive", true, "Saves the preference; automatic story archiving is not implemented yet."], "Autoplay clips": ["autoplay_clips", true, "Saves your autoplay preference."], "Block messages from strangers": ["block_strangers", false, "When enabled, the companion SQL migration blocks incoming direct messages from people who are not accepted friends. Existing rooms may remain visible."], "Block app invitations": ["block_app_invites", true, "Saves your preference; app invitations are not currently supported."], "Block event invitations": ["block_event_invites", true, "Saves your preference; event invitations are not currently supported."], "Autoplay media": ["autoplay_media", true, "Saves your media autoplay preference."], "Reduce motion": ["reduce_motion", false, "Saves your reduced-motion preference; some animations may remain." ]};
 function chatterBase64UrlBytes(base64url) {
   const pad = "=".repeat((4 - base64url.length % 4) % 4);
   const raw = atob((base64url + pad).replace(/-/g, "+").replace(/_/g, "/"));
@@ -2383,7 +2387,7 @@ $("#f").onsubmit = async e => {
   if (!pend) {
     i.value = "";
     const {error} = await sb.from("messages").insert({room_id: rid, body});
-    if (error) { i.value = body; alert("Couldn't send: " + error.message); }
+    if (error) { i.value = body; alert(/CHATTER_STRANGERS_BLOCKED/.test(error.message) ? "This person only accepts messages from friends." : "Couldn't send: " + error.message); }
     return;
   }
   busy = true; $("#send").disabled = true;
