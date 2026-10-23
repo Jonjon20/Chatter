@@ -1341,7 +1341,7 @@ function openPeople(p, u) {
   if (u === me.id) return;
   const emr = el("div", "emr"), bar = el("div", "sbar"), inp = el("input"), snd = el("button", "sm", "Send");
   inp.placeholder = "Message " + nm + "…"; inp.maxLength = 300; snd.type = "button";
-  const send = async t => { t = (t || inp.value).trim(); if (!t) return; snd.disabled = true; try { await sendDmTo(u, t); closeSheet(); toast("Sent to " + nm); } catch (e) { snd.disabled = false; alert(/CHATTER_STRANGERS_BLOCKED/.test(e.message || "") ? "This person only accepts messages from friends." : (e.message || e)); } };
+  const send = async t => { t = (t || inp.value).trim(); if (!t) return; snd.disabled = true; try { await sendDmTo(u, t); closeSheet(); toast("Sent to " + nm); } catch (e) { snd.disabled = false; if (/CHATTER_STRANGERS_BLOCKED|You can only message friends/i.test(e.message || "")) toast("This person only accepts messages from friends."); else toast("Message could not be sent."); } };
   QUICK_EMOJI.forEach(x => { const b = el("button", "", x); b.type = "button"; b.onclick = () => send(x); emr.append(b); });
   snd.onclick = () => send(); inp.onkeydown = e => { if (e.key === "Enter") send(); };
   bar.append(inp, snd); sh.append(emr, bar);
@@ -2400,7 +2400,7 @@ $("#f").onsubmit = async e => {
   if (!pend) {
     i.value = "";
     const {error} = await sb.from("messages").insert({room_id: rid, body});
-    if (error) { i.value = body; alert(/CHATTER_STRANGERS_BLOCKED/.test(error.message) ? "This person only accepts messages from friends." : "Couldn't send: " + error.message); }
+    if (error) { i.value = body; if (/CHATTER_STRANGERS_BLOCKED|You can only message friends/i.test(error.message || "")) toast("This person only accepts messages from friends."); else toast("Message could not be sent."); }
     return;
   }
   busy = true; $("#send").disabled = true;
