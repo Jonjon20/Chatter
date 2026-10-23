@@ -242,6 +242,53 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .nmbg{position:fixed;inset:0;z-index:85;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px}.nmc{width:100%;max-width:380px;background:var(--bg2);color:var(--tx);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}.nmc h4{margin:0;text-align:center;font-size:15px}.nmc .nr{display:flex;gap:10px;align-items:flex-start}.nmc textarea{flex:1;min-height:70px;resize:none;border-radius:12px}.nmc .nf{display:flex;justify-content:flex-end}
 .sheet.acts{max-height:none;padding-bottom:env(safe-area-inset-bottom,0px)}.acts button{width:100%;padding:16px;background:none;color:var(--tx);font-size:16px;font-weight:600;border-radius:0}.acts button+button{border-top:1px solid var(--line)}
 .sbar .av{flex:none}
+/* ===== PROFILE REDESIGN (looks only) : centered layout, mesh cover, gradient avatar ring, pill tabs, card sections ===== */
+:root{--pg:#eef0f6;--cd:#ffffff;--cd2:#f1f3f8;--pgrad:linear-gradient(135deg,#7c3aed,#2563eb)}
+:root[data-theme="dark"]{--pg:#000;--cd:#131416;--cd2:#1d1f22}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--pg:#000;--cd:#131416;--cd2:#1d1f22}}
+#list[data-t="menu"],#pfv,.pfw{background:var(--pg)}
+.pfb{height:56px;padding:0 12px;gap:10px;background:var(--pg);background:color-mix(in srgb,var(--pg) 82%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:0}
+.pfb button{width:38px;height:38px;padding:0;border-radius:50%;background:var(--cd);color:var(--tx);font-size:19px;box-shadow:0 1px 5px rgba(0,0,0,.2)}
+.pfb .pt{font-weight:800;font-size:18px;letter-spacing:-.2px}
+.pcv{height:230px;background-color:#1e1b4b;background-image:radial-gradient(120% 130% at 0% 0%,#7c3aed 0,transparent 55%),radial-gradient(110% 120% at 100% 10%,#06b6d4 0,transparent 52%),radial-gradient(130% 110% at 50% 110%,#f472b6 0,transparent 58%);background-size:cover;background-position:center;border-radius:0 0 30px 30px;overflow:hidden}
+.pcv::after{content:"";position:absolute;left:0;right:0;bottom:0;height:46%;background:linear-gradient(to bottom,transparent,rgba(0,0,0,.28));pointer-events:none}
+.pcv .camb{z-index:2;right:14px;bottom:14px;background:rgba(0,0,0,.45);color:#fff;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.25)}
+.pav{width:136px;margin:-68px auto 0;position:relative;z-index:2}
+.pav::before{content:"";position:absolute;inset:-5px;border-radius:50%;background:conic-gradient(from 210deg,#7c3aed,#06b6d4,#f472b6,#fbbf24,#7c3aed);box-shadow:0 10px 28px rgba(124,58,237,.35)}
+.pav .av{width:136px;height:136px;font-size:54px;border:5px solid var(--pg);position:relative;z-index:1}
+.pav .odot{width:24px;height:24px;border:4px solid var(--pg);right:6px;bottom:6px}
+.pav .camb{z-index:3;right:-2px;bottom:6px;background:var(--cd);color:var(--tx);box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.pname{text-align:center;font-size:28px;font-weight:800;letter-spacing:-.4px;padding:14px 20px 0}
+.psub{display:table;margin:8px auto 0;padding:5px 14px;border-radius:999px;background:var(--cd);border:1px solid var(--line);color:var(--mut);font-size:13px;font-weight:600}
+.pinfo{text-align:center;padding:10px 20px 0;color:var(--mut);font-weight:600;font-size:14px}
+.pmut{justify-content:center;padding:12px 14px 0;color:var(--mut);font-size:14px;font-weight:600}
+.pmut .mav .av{width:32px;height:32px;font-size:13px;margin-left:-10px;border-color:var(--pg)}
+.pact{justify-content:center;gap:10px;padding:16px 16px 6px;flex-wrap:wrap}
+.pact button{flex:1 1 0;min-width:0;padding:13px 10px;border-radius:16px;font-weight:700;font-size:15px;background:var(--pgrad);color:#fff;box-shadow:0 8px 20px rgba(80,70,229,.32);white-space:nowrap}
+.pact button.gray{background:var(--cd);color:var(--tx);border:1px solid var(--line);box-shadow:none}
+.pact button.sq{flex:none;width:52px;padding:13px 0}
+.ptabs{margin:14px 14px 6px;padding:4px;gap:2px;background:var(--cd);border:1px solid var(--line);border-radius:18px;overflow-x:auto;scrollbar-width:none}
+.ptabs::-webkit-scrollbar{display:none}
+.ptabs button{flex:1 0 auto;padding:9px 14px;border-radius:14px;font-size:14px;font-weight:700;color:var(--mut);background:none}
+.ptabs button.on{background:var(--pgrad);color:#fff;box-shadow:0 4px 12px rgba(80,70,229,.35)}
+:is(.pfw,#list[data-t="menu"]) .asec{margin:12px 14px 0;padding:16px 16px 10px;border:1px solid var(--line);border-radius:24px;background:var(--cd)}
+:is(.pfw,#list[data-t="menu"]) .ah{margin-bottom:6px;font-size:16px}
+:is(.pfw,#list[data-t="menu"]) .ah b{font-weight:800;letter-spacing:-.2px;display:flex;align-items:center;gap:8px}
+:is(.pfw,#list[data-t="menu"]) .ah b::before{content:"";width:4px;height:16px;border-radius:3px;background:var(--pgrad)}
+:is(.pfw,#list[data-t="menu"]) .ah button{background:var(--cd2);width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0}
+:is(.pfw,#list[data-t="menu"]) .ah .see{width:auto;height:auto;border-radius:12px;padding:6px 12px;background:var(--cd2);color:var(--bl);font-size:14px}
+:is(.pfw,#list[data-t="menu"]) .arow{padding:8px 0;font-size:15px;gap:12px}
+:is(.pfw,#list[data-t="menu"]) .arow .ai{width:36px;height:36px;border-radius:12px;background:var(--cd2);display:flex;align-items:center;justify-content:center;font-size:18px}
+:is(.pfw,#list[data-t="menu"]) .arow .at .t1{font-size:15px}
+:is(.pfw,#list[data-t="menu"]) .fgrid{gap:18px 10px;padding-top:8px}
+:is(.pfw,#list[data-t="menu"]) .ftile .fav .av{width:76px;height:76px;font-size:28px}
+:is(.pfw,#list[data-t="menu"]) .ftile .nm{font-size:14px;font-weight:700}
+:is(.pfw,#list[data-t="menu"]) .ftile.ring .fav .av{box-shadow:0 0 0 3px var(--cd),0 0 0 5px #a855f7}
+:is(.pfw,#list[data-t="menu"]) .pc{margin:14px 14px 0;border:1px solid var(--line);border-radius:24px;overflow:hidden;background:var(--cd);padding:14px 0 4px}
+:is(.pfw,#list[data-t="menu"]) .cgrid{gap:8px;padding:10px 14px 0}
+:is(.pfw,#list[data-t="menu"]) .cgrid .ct{border-radius:18px}
+:is(.pfw,#list[data-t="menu"]) .hint{padding:28px 16px}
+:is(.pfw,#list[data-t="menu"]) > :last-child{margin-bottom:28px}
 </style></head>
 <body>
 <div id="auth" class="hide">
