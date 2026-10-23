@@ -488,7 +488,25 @@ const cleanUserMessage = value => String(value == null ? "" : value)
   .replace(/\b[a-z0-9-]+\.vercel\.app\b/gi, "")
   .replace(/\s{2,}/g, " ").trim();
 const nativeAlert = window.alert.bind(window);
-window.alert = message => nativeAlert(cleanUserMessage(message) || "Something went wrong. Please try again.");
+// Friend-message restriction should use the app's own notification, never a browser alert.
+window.alert = message => {
+  const raw = String(message == null ? "" : message);
+  if (/You can only message friends|This person only accepts messages from friends|CHATTER_STRANGERS_BLOCKED|friends only/i.test(raw)) {
+    const showFriendRestriction = () => {
+      const existing = document.querySelector(".toast");
+      if (existing) existing.remove();
+      const d = document.createElement("div");
+      d.className = "toast";
+      d.textContent = "This person only accepts messages from friends.";
+      document.body.append(d);
+      setTimeout(() => d.remove(), 3500);
+    };
+    if (document.body) showFriendRestriction();
+    else document.addEventListener("DOMContentLoaded", showFriendRestriction, {once:true});
+    return;
+  }
+  nativeAlert(cleanUserMessage(raw) || "Something went wrong. Please try again.");
+};
 const $ = s => document.querySelector(s);
 const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
 function appConfirm(title, message, confirmLabel = "Continue") {
