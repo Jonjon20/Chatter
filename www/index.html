@@ -391,6 +391,7 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .compose input{background:var(--cd2);border-radius:22px;height:44px;padding:0 16px}
 .compose .att{width:44px;height:44px;padding:0;border-radius:50%;background:var(--cd2);display:flex;align-items:center;justify-content:center}
 #send{background:var(--pgrad);color:#fff;border-radius:22px;height:44px;padding:0 20px;box-shadow:0 4px 12px rgba(80,70,229,.3)}
+#st{position:fixed;inset:0;z-index:70;background:var(--bg);overflow-y:auto}#st .sw2{max-width:640px;margin:0 auto;padding-bottom:40px}#st .stp{padding:14px 18px;display:flex;flex-direction:column;gap:12px}#st .cap{color:var(--mut);font-size:13px;white-space:normal}#st input{width:100%}#st .ok{color:var(--me);font-weight:700;font-size:20px}
 </style></head>
 <body>
 <div id="auth" class="hide">
@@ -414,6 +415,7 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
  </div>
 </div>
 
+<div id="st" class="hide"></div>
 <div class="app hide" id="app">
  <div id="ng" class="hide"></div>
  <aside class="side">
@@ -662,7 +664,8 @@ async function loadFriends() {
   render(); actSoon(); liveClips();
 }
 async function start(user) {
-  me = user; reads = {}; blocked = new Set();
+  me = user; reads = {}; blocked = new Set(); loadSettings();
+  if (!(await mfaGate())) { me = null; return; }
   $("#auth").classList.add("hide"); $("#app").classList.remove("hide");
   await ensureNames([me.id]);
   await loadBlocks(); touchSeen();
@@ -718,7 +721,9 @@ $("#sq").oninput = e => {
   clearTimeout(st);
   if (!q) { results = null; return render(); }
   st = setTimeout(async () => {
-    const {data} = await sb.from("profiles").select("id,username").ilike("username", "%" + q + "%").neq("id", me.id).limit(20);
+    const qq = q.replace(/[(),]/g, "");
+    let {data, error} = await sb.from("profiles").select("id,username").or("username.ilike.%" + qq + "%,handle.ilike.%" + qq + "%").neq("id", me.id).limit(20);
+    if (error) ({data} = await sb.from("profiles").select("id,username").ilike("username", "%" + q + "%").neq("id", me.id).limit(20));
     results = data || []; results.forEach(p => names[p.id] = p.username); render();
   }, 250);
 };
@@ -808,7 +813,7 @@ let act = [], actMine = new Set(), actT = null, pov = null, actErr = "";
 const actSoon = () => { clearTimeout(actT); actT = setTimeout(loadActivity, 800); };
 const frIds = () => fr.filter(f => f.status === "accepted").map(f => f.requester === me.id ? f.addressee : f.requester);
 const actUnseen = () => { const s = +localStorage.getItem("nseen") || 0; return act.filter(a => a.t > s).length; };
-const nBadge = () => fr.filter(f => f.status === "pending" && f.addressee === me.id).length + (tab === "notifs" ? 0 : actUnseen());
+const nBadge = () => (S.n_fr === false ? 0 : fr.filter(f => f.status === "pending" && f.addressee === me.id).length) + (tab === "notifs" ? 0 : actUnseen());
 function paintNBadge() { const b = $("#b-notifs"), n = nBadge(); b.textContent = n > 99 ? "99+" : n; b.classList.toggle("hide", !n); }
 async function loadActivity() {
   if (!me) return;
@@ -1846,6 +1851,7 @@ function drawMenu() {
     });
     w.append(sub);
   }
+  const ss = el("div", "mrow"); ss.innerHTML = MI.gear; ss.append(el("span", "mt", "Settings")); ss.onclick = () => { closeMenu(); openSettings(); }; w.append(ss);
   const sr = el("div", "mrow"), sv = el("span"); sr.innerHTML = MI.gear; sv.innerHTML = mset ? MI.up : MI.down;
   sr.append(el("span", "mt", "Settings and privacy"), sv); sr.onclick = () => { mset = !mset; drawMenu(); }; w.append(sr);
   if (mset) {
@@ -1867,6 +1873,85 @@ function drawMenu() {
   }
   const lo = el("button", "mlog", "Log out"); lo.type = "button"; lo.onclick = () => { closeMenu(); sb.auth.signOut(); };
   w.append(el("div", "msp"), lo); o.append(w); o.scrollTop = y;
+}
+
+
+// ---------- SETTINGS (General / Privacy / Security and Login / Notifications) ----------
+let S = {}, stCat = null, stItem = null;
+const ST = {
+  "General Account Settings": ["Name", "Username", "Contact Information", "Password and Security", "Memorialization Settings", "Deactivation and Deletion", "Account ownership and control"],
+  "Privacy Settings": ["Who can see your future posts?", "Review all your posts and things you're tagged in", "Who can send you friend requests?", "Who can see your friends list?", "Who can look you up using your email address?", "Who can look you up using your phone number?", "Do you want search engines outside Chatter to link to your profile?"],
+  "Security and Login": ["Change password", "Where you're logged in", "Log out of devices", "Save your login information", "Two-factor authentication", "Get alerts about unrecognized logins", "Authorized logins"],
+  "Notifications": ["Comments", "Tags", "Reminders", "Friend requests", "People you may know", "Birthdays", "Clips"]};
+const OPT = {
+  "Who can see your future posts?": ["post_vis", [["public", "🌐 Public"], ["friends", "👥 Friends"]], "public", "Used as the default audience when you create a post."],
+  "Who can send you friend requests?": ["friend_req", [["everyone", "Everyone"], ["nobody", "Nobody"]], "everyone", "Applies right away: people can't send you requests when this is Nobody."],
+  "Who can see your friends list?": ["friends_list", [["everyone", "Everyone"], ["friends", "Friends"], ["me", "Only me"]], "everyone", "Saved. Not enforced yet in this school version."],
+  "Who can look you up using your email address?": ["look_email", [["everyone", "Everyone"], ["friends", "Friends"], ["nobody", "Nobody"]], "everyone", "Saved. Not enforced yet (search is by name only)."],
+  "Who can look you up using your phone number?": ["look_phone", [["everyone", "Everyone"], ["friends", "Friends"], ["nobody", "Nobody"]], "everyone", "Saved. Not enforced yet (search is by name only)."]};
+const TOG = {"Do you want search engines outside Chatter to link to your profile?": ["search_eng", false, "Saved. Chatter pages aren't public on the web anyway."], "Save your login information": ["save_login", true, "When off, you're signed out when you close the app or tab."], "Get alerts about unrecognized logins": ["alert_login", true, "Saved. Alert emails aren't sent yet."],
+  "Comments": ["n_comments", true], "Tags": ["n_tags", true], "Reminders": ["n_rem", true], "Friend requests": ["n_fr", true], "People you may know": ["n_pymk", true], "Birthdays": ["n_bday", true], "Clips": ["n_clips", true]};
+async function loadSettings() { try { const {data} = await sb.from("user_settings").select("data").eq("user_id", me.id).maybeSingle(); S = (data && data.data) || {}; if (S.post_vis) fdraft.vis = S.post_vis; } catch (e) {} }
+async function saveS(k, v) { S[k] = v; if (k === "post_vis") fdraft.vis = v; const {error} = await sb.from("user_settings").upsert({user_id: me.id, data: S}); if (error) alert("Couldn't save: " + error.message + (/user_settings|relation/i.test(error.message) ? "\n\nRun upgrade9.sql in Supabase first." : "")); }
+addEventListener("pagehide", () => { if (S.save_login === false) Object.keys(localStorage).filter(k => k.startsWith("sb-")).forEach(k => localStorage.removeItem(k)); });
+const openSettings = () => { stCat = stItem = null; $("#st").classList.remove("hide"); drawSet(); };
+const closeSet = () => $("#st").classList.add("hide");
+function drawSet() {
+  const o = $("#st"); o.replaceChildren(); const w = el("div", "sw2"), top = el("div", "mtop"), bk = el("button", "", "←");
+  bk.type = "button"; bk.onclick = () => { if (stItem) stItem = null; else if (stCat) stCat = null; else return closeSet(); drawSet(); };
+  top.append(bk, el("b", null, stItem || stCat || "Settings")); w.append(top);
+  const row = (t, fn, tick) => { const r = el("div", "mrow"), x = el("span", tick ? "ok" : "", tick ? "✓" : "›"); r.append(el("span", "mt", t), x); r.onclick = fn; return r; };
+  if (!stCat) Object.keys(ST).forEach((c, i) => w.append(row((i + 1) + ". " + c, () => { stCat = c; drawSet(); })));
+  else if (!stItem) ST[stCat].forEach(it => w.append(row(it, () => { stItem = it; drawSet(); })));
+  else w.append(setDetail(stItem, row));
+  o.append(w);
+}
+function setDetail(it, row) {
+  const d = el("div", "stp"), cap = t => d.append(el("div", "cap", t)), msg = el("div", "cap"), inp = (ph, type, v) => { const i = el("input"); i.placeholder = ph; i.type = type || "text"; i.value = v || ""; return i; };
+  const btn = (t, fn, cls) => { const b = el("button", cls || "", t); b.onclick = () => fn(b); return b; };
+  const phone = x => { const dg = x.replace(/\D/g, ""); return x.trim().startsWith("+") ? "+" + dg : dg.startsWith("09") && dg.length === 11 ? "+63" + dg.slice(1) : dg.startsWith("9") && dg.length === 10 ? "+63" + dg : null; };
+  if (OPT[it]) {
+    const [k, list, def, note] = OPT[it]; d.append(el("div", "cap", note));
+    list.forEach(([v, l]) => d.append(row(l, async () => { await saveS(k, v); drawSet(); }, (S[k] || def) === v)));
+  } else if (TOG[it]) {
+    const [k, def, note] = TOG[it]; if (note) cap(note);
+    d.append(toggleRow(it, "", S[k] !== undefined ? S[k] : def, v => saveS(k, v)));
+  } else if (it === "Name") {
+    const i = inp("Name", "text", names[me.id]); i.maxLength = 40; cap("This is the name other people see.");
+    d.append(i, msg, btn("Save", async () => { const v = i.value.trim(); if (!v) return; const {error} = await sb.from("profiles").update({username: v}).eq("id", me.id); if (error) return msg.textContent = error.message; await sb.auth.updateUser({data: {username: v}}); names[me.id] = v; render(); msg.textContent = "Saved."; }));
+  } else if (it === "Username") {
+    const i = inp("username", "text", ""); i.maxLength = 24; cap("3–24 characters: lowercase letters, numbers, dots and underscores. People can find you with it.");
+    sb.from("profiles").select("handle").eq("id", me.id).maybeSingle().then(r => { if (r.data && r.data.handle) i.value = r.data.handle; });
+    d.append(i, msg, btn("Save", async () => {
+      const v = i.value.trim().toLowerCase().replace(/^@/, ""); if (!/^[a-z0-9._]{3,24}$/.test(v)) return msg.textContent = "Use 3–24 letters, numbers, dots or underscores.";
+      const {error} = await sb.from("profiles").update({handle: v}).eq("id", me.id);
+      msg.textContent = !error ? "Saved. You are @" + v : error.code === "23505" ? "That username is taken." : /handle/i.test(error.message) ? "Run upgrade10.sql in Supabase first." : error.message;
+    }));
+  } else if (it === "Two-factor authentication") { fillMfa(d);
+  } else if (it === "Contact Information") {
+    const e = inp("Email", "email", me.email || ""), c = inp("Mobile number (09…)", "tel", me.phone ? "+" + me.phone.replace(/^\+/, "") : ""), code = inp("6-digit code", "text"); let ty = null, tg = null;
+    cap("Changing your email or number sends a confirmation code."); code.className = "hide";
+    const ask = async (kind, val) => { const r = await sb.auth.updateUser(kind === "email" ? {email: val} : {phone: val}); if (r.error) return msg.textContent = r.error.message; ty = kind; tg = val; code.classList.remove("hide"); msg.textContent = "We sent a code. Enter it below."; };
+    d.append(e, btn("Change email", () => /^\S+@\S+\.\S+$/.test(e.value.trim()) ? ask("email", e.value.trim()) : msg.textContent = "Enter a valid email."), c,
+      btn("Change mobile number", () => { const p = phone(c.value); p ? ask("phone", p) : msg.textContent = "Enter a valid mobile number."; }), code,
+      btn("Confirm code", async () => { const r = await sb.auth.verifyOtp(ty === "email" ? {email: tg, token: code.value.trim(), type: "email_change"} : {phone: tg, token: code.value.trim(), type: "phone_change"}); msg.textContent = r.error ? r.error.message : "Updated."; }), msg);
+  } else if (it === "Password and Security" || it === "Change password") {
+    const a = inp("New password (min. 6)", "password"), b = inp("Confirm new password", "password");
+    d.append(a, b, msg, btn("Change password", async () => { if (a.value.length < 6) return msg.textContent = "At least 6 characters."; if (a.value !== b.value) return msg.textContent = "Passwords don't match."; const {error} = await sb.auth.updateUser({password: a.value}); msg.textContent = error ? error.message : "Password changed."; if (!error) a.value = b.value = ""; }));
+    if (it === "Password and Security") { cap("Tip: use a password you don't use anywhere else."); d.append(btn("Log out of other devices", async () => { await sb.auth.signOut({scope: "others"}); msg.textContent = "Logged out of your other devices."; }, "gray")); }
+  } else if (it === "Where you're logged in" || it === "Authorized logins") {
+    cap("This device:"); d.append(el("div", "", (navigator.userAgent.match(/\(([^)]+)\)/) || [0, "Unknown device"])[1]), el("div", "cap", "Last sign-in: " + (me.last_sign_in_at ? new Date(me.last_sign_in_at).toLocaleString() : "—")));
+    cap("A full list of every device isn't available yet. Use “Log out of devices” to sign out everywhere else.");
+  } else if (it === "Log out of devices") {
+    cap("Signs you out on every other phone or browser. This device stays signed in.");
+    d.append(msg, btn("Log out of other devices", async () => { await sb.auth.signOut({scope: "others"}); msg.textContent = "Done."; }));
+  } else if (it === "Deactivation and Deletion") {
+    cap("Deleting removes your account, posts, messages and photos permanently. Deactivating (hiding your profile for a while) isn't available yet.");
+    d.append(btn("Delete account…", () => { closeSet(); deleteAccount(); }, "danger"));
+  } else if (it.startsWith("Review all")) {
+    cap("Your posts are on your profile. Tagging isn't available yet."); d.append(btn("Open my profile", () => { closeSet(); setTab("menu"); }));
+  } else cap({"Memorialization Settings": "Memorialization (a legacy contact who can manage the account after you pass away) isn't available in this school version.", "Account ownership and control": "You own your account and data. You can change your details above and delete everything with “Deactivation and Deletion”."}[it] || "Not available yet.");
+  return d;
 }
 
 // ---------- DELETE ACCOUNT ----------
@@ -1896,6 +1981,39 @@ function askPassword() {
     row.append(no, yes); bx.append(t, d, inp, msg, row); ov.append(bx); document.body.append(ov); inp.focus();
   });
 }
+
+// ---------- TWO-FACTOR AUTHENTICATION (authenticator app) ----------
+const mfaCap = t => { const d = el("div", null, t); d.style.cssText = "color:var(--mut);font-size:13px"; return d; };
+async function fillMfa(d) {
+  const msg = mfaCap(""), mk = (t, fn, c) => { const b = el("button", c || "", t); b.onclick = fn; return b; };
+  const {data} = await sb.auth.mfa.listFactors(), on = (data && data.totp) || [];
+  d.replaceChildren();
+  if (on.length) return d.append(el("div", "ok", "✓ Two-factor authentication is ON"), mfaCap("You'll enter a code from your authenticator app each time you log in."), msg,
+    mk("Turn off", async () => { if (!confirm("Turn off two-factor authentication?")) return; const r = await sb.auth.mfa.unenroll({factorId: on[0].id}); if (r.error) msg.textContent = r.error.message; else fillMfa(d); }, "gray"));
+  d.append(mfaCap("Use an authenticator app (Google Authenticator, Authy, Microsoft Authenticator) to get a 6-digit code every time you log in."), msg,
+    mk("Set up", async () => {
+      const r = await sb.auth.mfa.enroll({factorType: "totp", friendlyName: "Chatter " + Date.now()}); if (r.error) return msg.textContent = r.error.message;
+      const f = r.data, img = el("img"), key = mfaCap("Can't scan? Enter this key: " + f.totp.secret), c = el("input");
+      img.src = f.totp.qr_code; img.style.cssText = "width:200px;background:#fff;padding:8px;border-radius:12px;align-self:center"; key.style.userSelect = "all"; c.placeholder = "6-digit code"; c.inputMode = "numeric"; c.maxLength = 6;
+      d.replaceChildren(mfaCap("1. Scan this QR code with your authenticator app."), img, key, mfaCap("2. Enter the 6-digit code it shows."), c, msg,
+        mk("Verify and turn on", async () => { const v = await sb.auth.mfa.challengeAndVerify({factorId: f.id, code: c.value.trim()}); if (v.error) msg.textContent = v.error.message; else fillMfa(d); }));
+    }));
+}
+async function mfaGate() {
+  const {data} = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (!data || data.nextLevel !== "aal2" || data.currentLevel === "aal2") return true;
+  const fs = await sb.auth.mfa.listFactors(), f = fs.data && fs.data.totp[0]; if (!f) return true;
+  return new Promise(res => {
+    const o = el("div"), b = el("div"), i = el("input"), m = mfaCap(""), h = el("h2", null, "Two-factor authentication");
+    o.style.cssText = "position:fixed;inset:0;z-index:90;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px";
+    b.style.cssText = "width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px"; i.placeholder = "6-digit code"; i.inputMode = "numeric"; i.maxLength = 6; i.style.cssText = "text-align:center;font-size:26px";
+    const go = el("button", "", "Confirm"), out = el("button", "gray", "Cancel");
+    go.onclick = async () => { const r = await sb.auth.mfa.challengeAndVerify({factorId: f.id, code: i.value.trim()}); if (r.error) m.textContent = r.error.message; else { o.remove(); res(true); } };
+    out.onclick = async () => { o.remove(); res(false); await sb.auth.signOut(); };
+    b.append(h, mfaCap("Enter the 6-digit code from your authenticator app."), i, m, go, out); o.append(b); document.body.append(o); i.focus();
+  });
+}
+
 async function deleteAccount() {
   if (deleting || !me) return;
   if (!me.email) return alert("This account has no email, so the password can't be verified.");
