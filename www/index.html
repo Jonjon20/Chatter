@@ -2015,6 +2015,12 @@ function drawMenu() {
   // Appearance and Settings and privacy were removed from the menu as requested.
   // Keep the dedicated Settings entry as the single route to account settings.
   const ss = el("div", "mrow"); ss.innerHTML = MI.gear; ss.append(el("span", "mt", "Settings")); ss.onclick = () => { closeMenu(); openSettings(); }; w.append(ss);
+  // Direct Help and Support shortcut immediately below Settings in the Menu.
+  const hs = el("div", "mrow");
+  hs.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9a2.5 2.5 0 1 1 4.2 1.8c-1.2 1-1.8 1.3-1.8 2.7"/><path d="M12 17h.01"/></svg>';
+  hs.append(el("span", "mt", "Help and Support"));
+  hs.onclick = () => { closeMenu(); stCat = "Help and Support"; stItem = null; $("#st").classList.remove("hide"); drawSet(); };
+  w.append(hs);
   const lo = el("button", "mlog", "Log out"); lo.type = "button"; lo.onclick = () => { closeMenu(); sb.auth.signOut(); };
   w.append(el("div", "msp"), lo); o.append(w); o.scrollTop = y;
 }
