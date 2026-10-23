@@ -896,7 +896,7 @@ async function setVis(p) {
   if (error) return alert(error.message); p.visibility = v; fkeep(() => {});
 }
 function hidePost(p) { fhide.add(p.id); try { localStorage.setItem("fhide", JSON.stringify([...fhide].slice(-300))); } catch (e) {} fkeep(() => {}); }
-function postCard(p, inProfile) {
+function postCard(p, inProfile, noRp) {
   const u = p.user_id, nm = names[u] || "Someone", c = el("div", "pc"), h = el("div", "ph1"), n = el("div", "pn"), cm = fcm[p.id] || [], L = flikes[p.id] || [], on = L.includes(me.id);
   const av = avatar(u, nm[0].toUpperCase(), "fa"); av.style.cursor = "pointer"; av.onclick = e => { e.stopPropagation(); openProfile(u); };
   const l1 = el("div", "l1"), r = u === me.id ? null : rel(u);
@@ -926,7 +926,7 @@ function postCard(p, inProfile) {
   sb2.dataset.pc = "1"; paintPR(p, rb); paintSave(p, sb2);
   lb.onclick = () => toggleLike(p); cb.onclick = toggleCm; rb.onclick = () => postRepost(p, rb); sb2.onclick = () => toggleSave(p, sb2); ac.append(lb, cb, rb, sb2); c.append(ac);
   const rps = [...repMap(p.id).keys()].filter(x => x === me.id || isFriend(x));
-  if (rps.length) { const t = el("div", "rpt", "🔁 " + (rps[0] === me.id ? "You" : (names[rps[0]] || "Someone")) + (rps.length > 1 ? " and " + (rps.length - 1) + (rps.length === 2 ? " other" : " others") : "") + " reposted"); c.insertBefore(t, c.firstChild); }
+  if (rps.length && !noRp) { const t = el("div", "rpt", "🔁 " + (rps[0] === me.id ? "You" : (names[rps[0]] || "Someone")) + (rps.length > 1 ? " and " + (rps.length - 1) + (rps.length === 2 ? " other" : " others") : "") + " reposted"); c.insertBefore(t, c.firstChild); }
   return c;
 }
 function reel(p) {
@@ -1315,31 +1315,39 @@ function liveClips() {
 }
 // profile tab: clips this person reposted
 async function loadRepTab() {
-  const uid = pf.uid, S = pf.reps = {loading: true, posts: [], err: false};
+  const uid = pf.uid, S = pf.reps = {loading: true, posts: [], err: false, at: {}};
   const r = await sb.from("post_reposts").select("post_id,created_at").eq("user_id", uid).order("created_at", {ascending: false}).limit(60);
   if (r.error) { S.err = true; S.loading = false; return pf.uid === uid && pfPaint(); }
-  const ids = (r.data || []).map(x => x.post_id);
+  const ids = (r.data || []).map(x => x.post_id); (r.data || []).forEach(x => S.at[x.post_id] = x.created_at);
   if (ids.length) {
-    const [pr, l, rr] = await Promise.all([sb.from("posts").select("*").in("id", ids).eq("kind", "clip"), sb.from("post_likes").select("post_id,user_id").in("post_id", ids), sb.from("post_reposts").select("*").in("post_id", ids)]);
+    const [pr, l, c, rr] = await Promise.all([sb.from("posts").select("*").in("id", ids).in("kind", ["post", "clip"]), sb.from("post_likes").select("post_id,user_id").in("post_id", ids), sb.from("post_comments").select("*").in("post_id", ids).order("created_at").limit(500), sb.from("post_reposts").select("*").in("post_id", ids)]);
     const map = {}; (pr.data || []).forEach(p => map[p.id] = p);
-    ids.forEach(i => flikes[i] = []); (l.data || []).forEach(x => flikes[x.post_id].push(x.user_id));
+    ids.forEach(i => { flikes[i] = []; fcm[i] = []; }); (l.data || []).forEach(x => flikes[x.post_id].push(x.user_id)); (c.data || []).forEach(x => fcm[x.post_id].push(x));
     (rr.data || []).forEach(x => repMap(x.post_id).set(x.user_id, {note: x.note || "", comment: x.comment || "", at: x.created_at}));
     S.posts = ids.map(i => map[i]).filter(Boolean);
-    await ensureNames(S.posts.map(p => p.user_id));
+    await ensureNames([...S.posts.map(p => p.user_id), ...(c.data || []).map(x => x.user_id)]);
     await Promise.all(S.posts.map(async p => { if (p.media_path) p.url = await imgUrl(p.media_path); }));
   }
   S.loading = false; if (pf.uid === uid) pfPaint();
 }
+// everything of a profile in one timeline: posts + clips (+ reposts)
+function profFeed(box, uid, mine, withOwn) {
+  const S = pf.reps, own = new Set([...pf.posts, ...pf.clips].map(x => x.id)), items = [];
+  if (withOwn) [...pf.posts, ...pf.clips].forEach(p => items.push({p, t: p.created_at, rp: false}));
+  if (S && !S.loading && !S.err) S.posts.forEach(p => { if (!withOwn || !own.has(p.id)) items.push({p, t: (S.at || {})[p.id] || p.created_at, rp: true}); });
+  items.sort((a, b) => String(b.t).localeCompare(String(a.t)));
+  if (!items.length) return box.append(el("div", "hint", withOwn ? (mine ? "You haven't posted anything yet." : "No posts yet.") : (mine ? "You haven't reposted anything yet." : "No reposts yet.")));
+  items.forEach(it => {
+    const c = postCard(it.p, true, true);
+    if (it.rp) c.insertBefore(el("div", "rpt", "🔁 " + (uid === me.id ? "You" : (names[uid] || "Someone")) + " reposted"), c.firstChild);
+    else if (it.p.kind === "clip") c.insertBefore(el("div", "rpt", "🎬 Clip"), c.firstChild);
+    box.append(c);
+  });
+}
 function drawRepTab(box) {
   const S = pf.reps; if (!S || S.loading) return box.append(el("div", "hint", "Loading…"));
   if (S.err) return box.append(el("div", "hint", REP_MSG));
-  if (!S.posts.length) return box.append(el("div", "hint", pf.uid === me.id ? "You haven't reposted any clips yet." : "No reposts yet."));
-  const g = el("div", "cgrid");
-  S.posts.forEach((p, i) => {
-    const t = el("div", "ct"), v = el("video"); v.muted = true; v.playsInline = true; v.preload = "metadata"; v.src = (p.url || "") + "#t=0.1";
-    t.append(v, el("div", "cl", "🔁 " + (names[p.user_id] || "Someone"))); t.onclick = () => openClip(S.posts, i); g.append(t);
-  });
-  box.append(g);
+  profFeed(box, pf.uid, pf.uid === me.id, false);
 }
 
 // ---------- CLIPS: sound on by default + double-tap heart ----------
@@ -1412,7 +1420,7 @@ async function pfLoad(uid) {
   await Promise.all(L.map(async p => { if (p.media_path) p.url = await imgUrl(p.media_path); }));
   if (pf.uid !== uid) return;
   pf.posts = L.filter(p => p.kind === "post"); pf.clips = L.filter(p => p.kind === "clip"); pf.loaded = true;
-  pfPaint();
+  pfPaint(); if (!pf.reps) loadRepTab();
 }
 function pfStart(box, uid, ov) {
   if (pf.uid !== uid || pf.ov !== ov) { pf = {uid, tab: "posts", posts: [], clips: [], loaded: false, box, ov, info: null, friends: null}; pfLoad(uid); pfLoadExtra(uid); }
@@ -1501,8 +1509,7 @@ function drawProfile() {
     else { const g = el("div", "cgrid"); L.forEach(x => { const t = el("div", "ct"), im = el("img"); im.src = x.url; t.append(im); t.onclick = () => openPost(x.id); g.append(t); }); box.append(g); }
   } else if (pf.tab === "posts") {
     drawAbout(box, mine, uid);
-    if (!pf.posts.length) box.append(el("div", "hint", mine ? "You haven't posted anything yet." : "No posts yet."));
-    pf.posts.forEach(p => box.append(postCard(p, true)));
+    profFeed(box, uid, mine, true);
   } else if (pf.tab === "saved") { drawSaved(box);
   } else if (pf.tab === "reposts") { drawRepTab(box);
   } else if (!pf.clips.length) box.append(el("div", "hint", mine ? "You haven't added any clips yet." : "No clips yet."));
