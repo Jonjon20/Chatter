@@ -406,6 +406,8 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 @keyframes chConfirmIn{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.ch-confirm{animation:none}}
 
+
+.confirm-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;background:#0009}.confirm-card{width:min(100%,360px);background:var(--bg2);color:var(--tx);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 12px 40px #0007}.confirm-card h3{margin:0 0 10px;font-size:19px}.confirm-card p{margin:0 0 22px;color:var(--mut);line-height:1.5}.confirm-actions{display:flex;justify-content:flex-end;gap:10px}.confirm-actions button{min-width:78px}
 </style><style>.chatter-reduce-motion *, .chatter-reduce-motion *::before, .chatter-reduce-motion *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }</style>
 </head>
 <body>
@@ -489,6 +491,18 @@ const nativeAlert = window.alert.bind(window);
 window.alert = message => nativeAlert(cleanUserMessage(message) || "Something went wrong. Please try again.");
 const $ = s => document.querySelector(s);
 const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+function appConfirm(title, message, confirmLabel = "Continue") {
+  return new Promise(resolve => {
+    const overlay = el("div", "confirm-overlay");
+    const card = el("div", "confirm-card"); card.setAttribute("role", "dialog"); card.setAttribute("aria-modal", "true");
+    const h = el("h3", "", title), p = el("p", "", message), actions = el("div", "confirm-actions");
+    const cancel = btn("Cancel", () => finish(false), "gray"), yes = btn(confirmLabel, () => finish(true));
+    function finish(value) { overlay.remove(); resolve(value); }
+    overlay.addEventListener("click", e => { if (e.target === overlay) finish(false); });
+    actions.append(cancel, yes); card.append(h, p, actions); overlay.append(card); document.body.append(overlay);
+    yes.focus();
+  });
+}
 const fmt = t => { const d = new Date(t), n = new Date(); return d.toDateString() === n.toDateString() ? d.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"}) : d.toLocaleDateString([], {month: "short", day: "numeric"}); };
 const colorFor = id => { let h = 0; for (const c of id || "") h = (h * 31 + c.charCodeAt(0)) % 360; return "hsl(" + h + " 55% 45%)"; };
 const avatar = (id, label, cls, pres) => { const a = el("div", "av " + (cls || ""), label); a.style.background = colorFor(id); if (photoUrl[id]) { a.textContent = ""; a.style.background = 'url("' + photoUrl[id] + '") center/cover'; } if (pres && online.has(pres)) a.append(el("span", "odot")); return a; };
@@ -2133,7 +2147,7 @@ function setDetail(it, row) {
     d.append(msg, btn("Log out of other devices", async () => { await sb.auth.signOut({scope: "others"}); msg.textContent = "Done."; }));
   } else if (it === "Deactivation and Deletion") {
     cap("Deactivate: hides you from search and signs you out. Log in again any time to come back.");
-    d.append(msg, btn("Deactivate account", async () => { if (!confirm("Deactivate your account? You'll be signed out.")) return; const {error} = await sb.from("profiles").update({deactivated: true}).eq("id", me.id); if (error) return msg.textContent = /deactivated/i.test(error.message) ? "Run upgrade11.sql in Supabase first." : error.message; closeSet(); await sb.auth.signOut(); }, "gray"));
+    d.append(msg, btn("Deactivate account", async () => { if (!(await appConfirm("Deactivate account?", "You’ll be signed out. You can log in again any time to reactivate your account.", "Deactivate"))) return; const {error} = await sb.from("profiles").update({deactivated: true}).eq("id", me.id); if (error) return msg.textContent = /deactivated/i.test(error.message) ? "Run upgrade11.sql in Supabase first." : error.message; closeSet(); await sb.auth.signOut(); }, "gray"));
     cap("Delete: removes your account, posts, messages and photos permanently.");
     d.append(btn("Delete account…", () => { closeSet(); deleteAccount(); }, "danger"));
   } else if (it.startsWith("Review all") || it === "Review posts you're tagged in before they appear on your profile") {
