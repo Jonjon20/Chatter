@@ -480,6 +480,13 @@ const SUPABASE_ANON_KEY = "sb_publishable_lzh6KRFUa8tG2ObZcaDK4w_LJ_QUqUO";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // Configure this with the VAPID public key used by the deployed chatter-notify Edge Function.
 const CHATTER_VAPID_PUBLIC_KEY = "BCrz-U-F0tIb4cBl1OB9MSCCwcY3nYECH3soDIgffE-PpdGZ_bq-GSnV95zHyq6pExdupTS5qkUMLjneVxUAnsQ"
+// Keep technical URLs and raw backend details out of user-facing popups.
+const cleanUserMessage = value => String(value == null ? "" : value)
+  .replace(/https?:\/\/[^\s<>"']+/gi, "")
+  .replace(/\b[a-z0-9-]+\.vercel\.app\b/gi, "")
+  .replace(/\s{2,}/g, " ").trim();
+const nativeAlert = window.alert.bind(window);
+window.alert = message => nativeAlert(cleanUserMessage(message) || "Something went wrong. Please try again.");
 const $ = s => document.querySelector(s);
 const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
 const fmt = t => { const d = new Date(t), n = new Date(); return d.toDateString() === n.toDateString() ? d.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"}) : d.toLocaleDateString([], {month: "short", day: "numeric"}); };
@@ -1341,7 +1348,7 @@ function openPeople(p, u) {
   if (u === me.id) return;
   const emr = el("div", "emr"), bar = el("div", "sbar"), inp = el("input"), snd = el("button", "sm", "Send");
   inp.placeholder = "Message " + nm + "…"; inp.maxLength = 300; snd.type = "button";
-  const send = async t => { t = (t || inp.value).trim(); if (!t) return; snd.disabled = true; try { await sendDmTo(u, t); closeSheet(); toast("Sent to " + nm); } catch (e) { snd.disabled = false; if (/CHATTER_STRANGERS_BLOCKED|You can only message friends/i.test(e.message || "")) toast("This person only accepts messages from friends."); else toast("Message could not be sent."); } };
+  const send = async t => { t = (t || inp.value).trim(); if (!t) return; snd.disabled = true; try { await sendDmTo(u, t); closeSheet(); toast("Sent to " + nm); } catch (e) { snd.disabled = false; if (/CHATTER_STRANGERS_BLOCKED|You can only message friends|friends only/i.test(e.message || "")) toast("This person only accepts messages from friends."); else toast("Message could not be sent."); } };
   QUICK_EMOJI.forEach(x => { const b = el("button", "", x); b.type = "button"; b.onclick = () => send(x); emr.append(b); });
   snd.onclick = () => send(); inp.onkeydown = e => { if (e.key === "Enter") send(); };
   bar.append(inp, snd); sh.append(emr, bar);
@@ -2400,7 +2407,7 @@ $("#f").onsubmit = async e => {
   if (!pend) {
     i.value = "";
     const {error} = await sb.from("messages").insert({room_id: rid, body});
-    if (error) { i.value = body; if (/CHATTER_STRANGERS_BLOCKED|You can only message friends/i.test(error.message || "")) toast("This person only accepts messages from friends."); else toast("Message could not be sent."); }
+    if (error) { i.value = body; if (/CHATTER_STRANGERS_BLOCKED|You can only message friends|friends only/i.test(error.message || "")) toast("This person only accepts messages from friends."); else toast("Message could not be sent."); }
     return;
   }
   busy = true; $("#send").disabled = true;
