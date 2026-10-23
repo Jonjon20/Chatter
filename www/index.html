@@ -464,6 +464,8 @@ const SUPABASE_URL = "https://ykyphsopgnhfdnvytswp.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_lzh6KRFUa8tG2ObZcaDK4w_LJ_QUqUO";
 // ==========================================================================
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Configure this with the VAPID public key used by the deployed chatter-notify Edge Function.
+const CHATTER_VAPID_PUBLIC_KEY = "REPLACE_WITH_VAPID_PUBLIC_KEY";
 const $ = s => document.querySelector(s);
 const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
 const fmt = t => { const d = new Date(t), n = new Date(); return d.toDateString() === n.toDateString() ? d.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"}) : d.toLocaleDateString([], {month: "short", day: "numeric"}); };
@@ -821,7 +823,20 @@ function render() {
 
 
 // ---------- ACTIVITY NOTIFICATIONS: likes / comments on my posts, new posts from friends ----------
-let act = [], actMine = new Set(), actT = null, pov = null, actErr = "";
+let act = [], actMine = new Set(), actT = null, pov = null, actErr = "", actSoundPrimed = false, actSeenIds = new Set();
+function primeNotificationSound() { actSoundPrimed = true; }
+function playNotificationSound() {
+  if (S.n_sound === false || !actSoundPrimed) return;
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return;
+    const ctx = new Ctx(), osc = ctx.createOscillator(), gain = ctx.createGain();
+    osc.type = "sine"; osc.frequency.setValueAtTime(880, ctx.currentTime); osc.frequency.setValueAtTime(660, ctx.currentTime + .09);
+    gain.gain.setValueAtTime(.0001, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(.12, ctx.currentTime + .015); gain.gain.exponentialRampToValueAtTime(.0001, ctx.currentTime + .22);
+    osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + .23); osc.onended = () => ctx.close();
+  } catch (e) {}
+}
+document.addEventListener("pointerdown", primeNotificationSound, {once:true});
+document.addEventListener("keydown", primeNotificationSound, {once:true});
 const actSoon = () => { clearTimeout(actT); actT = setTimeout(loadActivity, 800); };
 const frIds = () => fr.filter(f => f.status === "accepted").map(f => f.requester === me.id ? f.addressee : f.requester);
 const actUnseen = () => { const s = +localStorage.getItem("nseen") || 0; return act.filter(a => a.t > s).length; };
@@ -841,9 +856,12 @@ async function loadActivity() {
     ids.length ? run(() => sb.from("post_comments").select("*").in("post_id", ids).neq("user_id", me.id).order("created_at", {ascending: false}).limit(60)) : [],
     fids.length ? run(() => sb.from("posts").select("id,user_id,kind,body,created_at").in("user_id", fids).in("kind", ["post", "clip"]).gte("created_at", since).order("created_at", {ascending: false}).limit(40)) : []]);
   const tm = x => Date.parse(x.created_at || "") || 0;
-  act = [...L.map(x => ({type: "like", t: tm(x), u: x.user_id, pid: x.post_id, kind: (pm[x.post_id] || {}).kind})),
-    ...C.map(x => ({type: "comment", t: tm(x), u: x.user_id, pid: x.post_id, kind: (pm[x.post_id] || {}).kind, txt: x.body})),
-    ...P.map(x => ({type: "post", t: tm(x), u: x.user_id, pid: x.id, kind: x.kind, txt: x.body}))].filter(a => S.n_inapp !== false && !(S.n_comments === false && a.type === "comment") && !(S.n_likes === false && a.type === "like") && !(S.n_clips === false && a.kind === "clip") && !(S.n_profile === false && a.type === "post")).sort((a, b) => b.t - a.t).slice(0, 100);
+  const nextAct = [...L.map(x => ({type: "like", t: tm(x), u: x.user_id, pid: x.post_id, kind: (pm[x.post_id] || {}).kind, id: "like:" + x.post_id + ":" + x.user_id})),
+    ...C.map(x => ({type: "comment", t: tm(x), u: x.user_id, pid: x.post_id, kind: (pm[x.post_id] || {}).kind, txt: x.body, id: "comment:" + x.id})),
+    ...P.map(x => ({type: "post", t: tm(x), u: x.user_id, pid: x.id, kind: x.kind, txt: x.body, id: "post:" + x.id}))].filter(a => S.n_inapp !== false && !(S.n_comments === false && a.type === "comment") && !(S.n_likes === false && a.type === "like") && !(S.n_clips === false && a.kind === "clip") && !(S.n_profile === false && a.type === "post")).sort((a, b) => b.t - a.t).slice(0, 100);
+  const nextIds = new Set(nextAct.map(a => a.id));
+  if (actSeenIds.size && nextAct.some(a => !actSeenIds.has(a.id) && a.u !== me.id)) playNotificationSound();
+  actSeenIds = nextIds; act = nextAct;
   await ensureNames(act.map(a => a.u));
   paintNBadge(); if (tab === "notifs") render();
 }
@@ -890,7 +908,8 @@ const FI = {
 async function loadStories() {
   const {data, error} = await sb.from("posts").select("*").eq("kind", "story").gte("created_at", new Date(Date.now() - 864e5).toISOString()).order("created_at", {ascending: false}).limit(80);
   if (error) { fstories = []; return; }
-  fstories = data || [];
+  const accepted = new Set(fr.filter(f => f.status === "accepted").map(f => f.requester === me.id ? f.addressee : f.requester));
+  fstories = (data || []).filter(s => s.user_id === me.id || s.visibility !== "friends" || accepted.has(s.user_id));
   await ensureNames(fstories.map(s => s.user_id));
   const seenU = new Set();
   await Promise.all(fstories.filter(s => !seenU.has(s.user_id) && seenU.add(s.user_id)).map(async s => { if (s.media_path) s.url = await imgUrl(s.media_path); }));
@@ -998,7 +1017,8 @@ function pickStory() {
   const i = document.createElement("input"); i.type = "file"; i.accept = "image/*,video/*";
   i.onchange = async () => {
     const f = i.files[0]; if (!f) return; if (f.size > 45 * 1048576) return alert("File is too big (max 45 MB).");
-    toast("Posting story…"); if (await postMedia(f, "", "story")) { toast("Story posted"); await loadStories(); }
+    const audience = S.story_audience === "public" ? "public" : "friends";
+    toast("Posting story…"); if (await postMedia(f, "", "story", audience)) { toast("Story posted"); await loadStories(); }
   }; i.click();
 }
 function storiesRow() {
@@ -1905,14 +1925,50 @@ const OPT = {
   "Who can see your profile information?": ["profile_audience", [["public", "Everyone on Chatter"], ["friends", "Friends"], ["private", "Only me"]], "public", "Saved preference only; profile fields are not yet consistently hidden by this choice."],
   "Who can see posts you're tagged in?": ["tagged_audience", [["public", "Everyone on Chatter"], ["friends", "Friends"], ["private", "Only me"]], "friends", "Saved as your tagged-post audience preference."],
   "Who can reply to your stories?": ["story_replies", [["everyone", "Everyone"], ["friends", "Friends"], ["off", "No one"]], "friends", "Saved as your story reply preference."],
-  "Who can see your stories?": ["story_audience", [["public", "Everyone on Chatter"], ["friends", "Friends"], ["private", "Only me"]], "friends", "Saved as your story audience preference."],
+  "Who can see your stories?": ["story_audience", [["public", "Everyone on Chatter"], ["friends", "Friends"]], "friends", "Controls story visibility using the app's supported Public and Friends audiences."],
   "Public post notifications": ["public_post_notifications", [["everyone", "Everyone"], ["friends", "Friends"], ["off", "Off"]], "everyone", "Saved as your public-post notification preference."],
   "Theme": ["display_theme", [["system", "Use device setting"], ["light", "Light"], ["dark", "Dark"]], "system", "Changes the appearance on this device and saves the preference to your account."],
   "Text size": ["text_size", [["small", "Small"], ["medium", "Default"], ["large", "Large"]], "medium", "Changes the base text size in this browser."],
   "Language and Region": ["language_region", [["en", "English"], ["fil", "Filipino"]], "en", "Saves your preferred language. Some app labels may remain in English until translations are added."]
 };
 const TOG = {"Save your login information": ["save_login", true, "When off, you're signed out when you close the app or tab."], "Get alerts about unrecognized logins": ["alert_login", true, "This preference is saved; security alert emails are not sent by this build."],
-  "Comments": ["n_comments", true, "Hides comment notifications in the activity list."], "Likes": ["n_likes", true, "Controls notifications when someone likes your post."], "Replies to comments": ["n_replies", true, "Preference is saved, but this build does not generate separate reply-to-comment notification events yet."], "Tags": ["n_tags", true, "Shows or hides tag notifications."], "Mentions": ["n_mentions", true, "Preference is saved, but mention notifications are not generated separately in this build yet."], "Messages": ["n_messages", true, "Preference is saved, but separate message notifications are not generated; use Reminders for unread-chat reminders."], "Reminders": ["n_rem", true, "Shows or hides unread-chat reminders."], "Friend requests": ["n_fr", true, "Shows or hides friend-request notifications."], "Friend acceptances": ["n_friend_accept", true, "Saves your preference for accepted-friend notifications."], "People you may know": ["n_pymk", true, "Turn off to hide People You May Know."], "Birthdays": ["n_bday", true, "Shows or hides birthday notifications."], "Group activity": ["n_groups", true, "Preference is saved, but a separate group-activity notification feed is not implemented yet."], "Profile activity": ["n_profile", true, "Saves your preference for profile activity notifications."], "Clips": ["n_clips", true, "Hides clip notifications in the activity list."], "Push notifications": ["n_push", true, "Preference is saved only; Web Push subscription and delivery are not implemented in this build."], "Email notifications": ["n_email", true, "Preference is saved only; notification email delivery is not implemented in this build."], "In-app notifications": ["n_inapp", true, "Saves your in-app notification preference."], "Notification sounds": ["n_sound", true, "Preference is saved, but notification sounds are not played by this build yet."], "Allow story replies": ["story_reply_enabled", true, "Saves your story reply preference."], "Save stories to archive": ["story_archive", true, "Saves the preference; automatic story archiving is not implemented yet."], "Autoplay clips": ["autoplay_clips", true, "Saves your autoplay preference."], "Block messages from strangers": ["block_strangers", false, "Saves your preference; server-side message delivery must enforce it."], "Block app invitations": ["block_app_invites", true, "Saves your preference; app invitations are not currently supported."], "Block event invitations": ["block_event_invites", true, "Saves your preference; event invitations are not currently supported."], "Autoplay media": ["autoplay_media", true, "Saves your media autoplay preference."], "Reduce motion": ["reduce_motion", false, "Saves your reduced-motion preference; some animations may remain." ]};
+  "Comments": ["n_comments", true, "Hides comment notifications in the activity list."], "Likes": ["n_likes", true, "Controls notifications when someone likes your post."], "Replies to comments": ["n_replies", true, "Preference is saved, but this build does not generate separate reply-to-comment notification events yet."], "Tags": ["n_tags", true, "Shows or hides tag notifications."], "Mentions": ["n_mentions", true, "Preference is saved, but mention notifications are not generated separately in this build yet."], "Messages": ["n_messages", true, "Preference is saved, but separate message notifications are not generated; use Reminders for unread-chat reminders."], "Reminders": ["n_rem", true, "Shows or hides unread-chat reminders."], "Friend requests": ["n_fr", true, "Shows or hides friend-request notifications."], "Friend acceptances": ["n_friend_accept", true, "Saves your preference for accepted-friend notifications."], "People you may know": ["n_pymk", true, "Turn off to hide People You May Know."], "Birthdays": ["n_bday", true, "Shows or hides birthday notifications."], "Group activity": ["n_groups", true, "Preference is saved, but a separate group-activity notification feed is not implemented yet."], "Profile activity": ["n_profile", true, "Saves your preference for profile activity notifications."], "Clips": ["n_clips", true, "Hides clip notifications in the activity list."], "Push notifications": ["n_push", true, "Enable this and register this browser/device for Web Push. HTTPS, a service worker, and server-side VAPID configuration are required."], "Email notifications": ["n_email", true, "Email delivery requires the deployed chatter-notify Edge Function and a verified Resend sender."], "In-app notifications": ["n_inapp", true, "Saves your in-app notification preference."], "Notification sounds": ["n_sound", true, "Plays a short original tone for newly detected in-app activity after you interact with Chatter. Browser audio rules apply."], "Review posts you're tagged in before they appear on your profile": ["tag_review", false, "When enabled, tagged posts get a pending approval record. Run chatter_settings_remaining_upgrade.sql first."], "Allow story replies": ["story_reply_enabled", true, "Saves your story reply preference."], "Save stories to archive": ["story_archive", true, "Saves the preference; automatic story archiving is not implemented yet."], "Autoplay clips": ["autoplay_clips", true, "Saves your autoplay preference."], "Block messages from strangers": ["block_strangers", false, "Saves your preference; server-side message delivery must enforce it."], "Block app invitations": ["block_app_invites", true, "Saves your preference; app invitations are not currently supported."], "Block event invitations": ["block_event_invites", true, "Saves your preference; event invitations are not currently supported."], "Autoplay media": ["autoplay_media", true, "Saves your media autoplay preference."], "Reduce motion": ["reduce_motion", false, "Saves your reduced-motion preference; some animations may remain." ]};
+function chatterBase64UrlBytes(base64url) {
+  const pad = "=".repeat((4 - base64url.length % 4) % 4);
+  const raw = atob((base64url + pad).replace(/-/g, "+").replace(/_/g, "/"));
+  return Uint8Array.from(raw, c => c.charCodeAt(0));
+}
+async function enableChatterPush() {
+  const say = (msg) => alert(msg);
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return say('Push notifications are not supported by this browser.');
+  if (!/^https:/.test(location.protocol) && location.hostname !== 'localhost') return say('Push notifications require HTTPS.');
+  if (!CHATTER_VAPID_PUBLIC_KEY || CHATTER_VAPID_PUBLIC_KEY.startsWith('REPLACE_')) return say('Configure CHATTER_VAPID_PUBLIC_KEY in index.html with your VAPID public key first. Keep the private key on the server only.');
+  const permission = await Notification.requestPermission();
+  if (permission !== 'granted') return say('Notification permission was not granted.');
+  try {
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: chatterBase64UrlBytes(CHATTER_VAPID_PUBLIC_KEY) });
+    const j = sub.toJSON();
+    const { error } = await sb.from('chatter_push_subscriptions').upsert({ user_id: me.id, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, updated_at: new Date().toISOString() }, { onConflict: 'endpoint' });
+    if (error) throw error;
+    await saveS('n_push', true);
+    say('Push notifications enabled for this browser. Delivery also requires the Supabase Edge Function and webhook setup in SETUP.md.');
+  } catch (e) { say('Could not enable push notifications: ' + (e.message || e) + '\n\nRun the SQL migration and deploy the service worker first.'); }
+}
+async function disableChatterPush() {
+  try {
+    const reg = await navigator.serviceWorker.getRegistration('/');
+    const sub = reg && await reg.pushManager.getSubscription();
+    if (sub) {
+      const endpoint = sub.endpoint;
+      await sub.unsubscribe();
+      await sb.from('chatter_push_subscriptions').delete().eq('user_id', me.id).eq('endpoint', endpoint);
+    }
+    await saveS('n_push', false);
+    alert('Push notifications disabled for this browser.');
+  } catch (e) { alert('Could not disable push notifications: ' + (e.message || e)); }
+}
 function applySavedPreferences() {
   const root = document.documentElement;
   const sizes = {small:"14px", medium:"15px", large:"17px"};
@@ -1955,6 +2011,31 @@ function setDetail(it, row) {
   } else if (TOG[it]) {
     const [k, def, note] = TOG[it]; if (note) cap(note);
     d.append(toggleRow(it, "", S[k] !== undefined ? S[k] : def, v => saveS(k, v).then(() => { if (/^n_/.test(k)) loadActivity(); drawSet(); })));
+    if (it === "Push notifications") {
+      d.append(btn("Enable push on this device", enableChatterPush, "gray"));
+      d.append(btn("Disable push on this device", disableChatterPush, "gray"));
+    }
+    if (it === "Review posts you're tagged in before they appear on your profile") {
+      const status = el("div", "cap", "Loading tag approvals…"), queue = el("div"); d.append(status, queue);
+      (async () => {
+        const {data: approvals, error} = await sb.from("post_tag_approvals").select("post_id,post_owner_id,status,created_at").eq("tagged_user_id", me.id).eq("status", "pending").order("created_at", {ascending: false}).limit(50);
+        if (error) { status.textContent = "Tag approval queue needs chatter_settings_remaining_upgrade.sql: " + error.message; return; }
+        if (!approvals || !approvals.length) { status.textContent = "No posts are waiting for your approval."; return; }
+        status.textContent = "Review pending tagged posts:";
+        const ids = approvals.map(a => a.post_id);
+        const {data: posts, error: postError} = await sb.from("posts").select("id,user_id,body,created_at,kind").in("id", ids);
+        if (postError) { status.textContent = "Couldn't load tagged posts: " + postError.message; return; }
+        await ensureNames((posts || []).map(p => p.user_id));
+        for (const a of approvals) {
+          const post = (posts || []).find(p => p.id === a.post_id); if (!post) continue;
+          const item = el("div", "mrow"), info = el("div", "mt");
+          info.append(el("div", "mt", (names[post.user_id] || "Someone") + ": " + ((post.body || "(photo/video)").slice(0, 80))), el("div", "cap", new Date(post.created_at).toLocaleString()));
+          const approve = btn("Approve", async b => { b.disabled = true; const r = await sb.from("post_tag_approvals").update({status:"approved",updated_at:new Date().toISOString()}).eq("post_id",a.post_id).eq("tagged_user_id",me.id); if (r.error) { b.disabled=false; alert(r.error.message); } else { item.remove(); if (!queue.children.length) status.textContent = "All caught up."; } }, "sm");
+          const reject = btn("Reject", async b => { b.disabled = true; const r = await sb.from("post_tag_approvals").update({status:"rejected",updated_at:new Date().toISOString()}).eq("post_id",a.post_id).eq("tagged_user_id",me.id); if (r.error) { b.disabled=false; alert(r.error.message); } else { item.remove(); if (!queue.children.length) status.textContent = "All caught up."; } }, "sm gray");
+          item.append(info, approve, reject); queue.append(item);
+        }
+      })();
+    }
     if (it === "Save stories to archive") {
       const archive = el("div"), status = el("div", "cap", "Loading your archived stories…"); d.append(status, archive);
       (async () => {
