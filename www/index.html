@@ -465,8 +465,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_lzh6KRFUa8tG2ObZcaDK4w_LJ_QUqUO";
 // ==========================================================================
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // Configure this with the VAPID public key used by the deployed chatter-notify Edge Function.
-const CHATTER_VAPID_PUBLIC_KEY = "RBCrz-U-F0tIb4cBl1OB9MSCCwcY3nYECH3soDIgffE-PpdGZ_bq-GSnV95zHyq6pExdupTS5qkUMLjneVxUAnsQ
-EPLACE_WITH_VAPID_PUBLIC_KEY";
+const CHATTER_VAPID_PUBLIC_KEY = "BCrz-U-F0tIb4cBl1OB9MSCCwcY3nYECH3soDIgffE-PpdGZ_bq-GSnV95zHyq6pExdupTS5qkUMLjneVxUAnsQ"
 const $ = s => document.querySelector(s);
 const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
 const fmt = t => { const d = new Date(t), n = new Date(); return d.toDateString() === n.toDateString() ? d.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"}) : d.toLocaleDateString([], {month: "short", day: "numeric"}); };
