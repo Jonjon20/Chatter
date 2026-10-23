@@ -1,10 +1,13 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>try{var __t=localStorage.getItem("theme");if(__t==="light"||__t==="dark")document.documentElement.setAttribute("data-theme",__t)}catch(e){}</script>
 <title>Chatter</title>
 <style>
 :root{--bg:#fff;--bg2:#f0f2f5;--tx:#050505;--mut:#65676b;--me:#0866ff;--metx:#fff;--oth:#e9ebee;--line:#e2e4e8;--dot:#0866ff}
-@media(prefers-color-scheme:dark){:root{--bg:#000;--bg2:#242526;--tx:#e4e6eb;--mut:#9a9da3;--oth:#303233;--line:#2a2b2c}}
+:root{color-scheme:light}:root[data-theme="light"]{color-scheme:light}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#000;--bg2:#242526;--tx:#e4e6eb;--mut:#9a9da3;--oth:#303233;--line:#2a2b2c}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#000;--bg2:#242526;--tx:#e4e6eb;--mut:#9a9da3;--oth:#303233;--line:#2a2b2c}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--tx);font:15px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 .hide{display:none!important}
@@ -128,7 +131,8 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .clog .t1{font-weight:700}.clog button{width:100%;border-radius:14px}
 @media(max-width:700px){.app{grid-template-columns:minmax(0,1fr)}.main{display:none}.app.open .side{display:none}.app.open .main{display:flex}.back{display:block}}
 :root{--fsep:#f0f2f5;--bl:#2d88ff}
-@media(prefers-color-scheme:dark){:root{--fsep:#18191a}}
+:root[data-theme="dark"]{--fsep:#18191a}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--fsep:#18191a}}
 .fm{display:flex;align-items:center;justify-content:space-between;height:56px;padding:0 14px;position:sticky;top:0;background:var(--bg);z-index:3}
 .fm .hb{background:none;color:var(--bl);padding:4px;line-height:0}.fm .sp{width:46px}
 .fm .tt{display:flex;gap:34px;flex:1;justify-content:center}
@@ -1498,9 +1502,25 @@ const MI = {
   up: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>',
   right: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
   block: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>',
+  sun: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moon: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
+  phone: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>',
   trash: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'
 };
-let mset = false, mblk = false;
+let mset = false, mblk = false, mapp = false;
+// ---------- THEME: light / dark / follow device ----------
+const getTheme = () => { try { const t = localStorage.getItem("theme"); return t === "light" || t === "dark" ? t : "system"; } catch (e) { return "system"; } };
+function paintThemeColor() {
+  let m = document.querySelector('meta[name="theme-color"]'); if (!m) { m = document.createElement("meta"); m.name = "theme-color"; document.head.append(m); }
+  m.content = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim() || "#ffffff";
+}
+function setTheme(t) {
+  try { t === "system" ? localStorage.removeItem("theme") : localStorage.setItem("theme", t); } catch (e) {}
+  if (t === "system") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", t);
+  paintThemeColor();
+}
+try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", paintThemeColor); } catch (e) {}
+paintThemeColor();
 function openMenu() { mset = false; mblk = false; $("#mnu").classList.remove("hide"); drawMenu(); $("#mnu").scrollTop = 0; }
 function closeMenu() { $("#mnu").classList.add("hide"); }
 function drawMenu() {
@@ -1510,6 +1530,17 @@ function drawMenu() {
   chv.innerHTML = MI.right; card.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase()), el("div", "nmv", names[me.id] || "Me"), chv);
   card.onclick = () => { closeMenu(); setTab("menu"); };
   w.append(top, card);
+  const th = getTheme(), ar = el("div", "mrow"), ac = el("span"); ar.innerHTML = th === "dark" ? MI.moon : th === "light" ? MI.sun : MI.phone; ac.innerHTML = mapp ? MI.up : MI.down;
+  ar.append(el("span", "mt", "Appearance"), ac); ar.onclick = () => { mapp = !mapp; drawMenu(); }; w.append(ar);
+  if (mapp) {
+    const sub = el("div", "msub");
+    [["light", "Light mode", MI.sun], ["dark", "Dark mode", MI.moon], ["system", "Use device setting", MI.phone]].forEach(([k, l, ic]) => {
+      const r = el("div", "mrow s"); r.innerHTML = ic; r.append(el("span", "mt", l));
+      if (th === k) { const c = el("span", null, "✓"); c.style.cssText = "color:var(--me);font-weight:700;font-size:22px"; r.append(c); }
+      r.onclick = () => { setTheme(k); drawMenu(); }; sub.append(r);
+    });
+    w.append(sub);
+  }
   const sr = el("div", "mrow"), sv = el("span"); sr.innerHTML = MI.gear; sv.innerHTML = mset ? MI.up : MI.down;
   sr.append(el("span", "mt", "Settings and privacy"), sv); sr.onclick = () => { mset = !mset; drawMenu(); }; w.append(sr);
   if (mset) {
