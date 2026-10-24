@@ -965,8 +965,10 @@ async function loadFriends() {
   render(); actSoon(); liveClips();
 }
 async function start(user) {
+  chatterReady = false;
   me = user; reads = {}; blocked = new Set(); await loadSettings();
   if (!(await mfaGate())) { me = null; return; }
+  initPush();
   if (me.user_metadata && me.user_metadata.birthday) sb.from("profiles").update({birthday: me.user_metadata.birthday}).eq("id", me.id).is("birthday", null).then(() => {}, () => {});
   sb.from("profiles").update({deactivated: false}).eq("id", me.id).eq("deactivated", true).then(() => {}, () => {});
   $("#auth").classList.add("hide"); $("#app").classList.remove("hide");
@@ -987,6 +989,8 @@ async function start(user) {
   setTab("chats");
   const g = rooms.find(r => !r.is_dm);
   if (g && innerWidth > 700) openRoom(g.id);
+  chatterReady = true;
+  if (pendingNativeLink) { const url = pendingNativeLink; pendingNativeLink = null; await handleChatterNativeLink(url); }
 }
 async function onMsg(p) {
   const m = p.new;
@@ -2248,7 +2252,7 @@ function drawMenu() {
   hs.append(el("span", "mt", "Help and Support"));
   hs.onclick = () => { closeMenu(); stCat = "Help and Support"; stItem = null; $("#st").classList.remove("hide"); drawSet(); };
   w.append(hs);
-  const lo = el("button", "mlog", "Log out"); lo.type = "button"; lo.onclick = () => { closeMenu(); sb.auth.signOut(); };
+  const lo = el("button", "mlog", "Log out"); lo.type = "button"; lo.onclick = async () => { closeMenu(); await dropPush(); sb.auth.signOut(); };
   w.append(el("div", "msp"), lo); o.append(w); o.scrollTop = y;
 }
 
@@ -3303,6 +3307,36 @@ function listenInbox() {
     }).subscribe();
 }
 
+// ---------- PUSH NOTIFICATIONS (Android app only; needs Firebase, see PUSH-SETUP.md) ----------
+let pushTok = null;
+let chatterReady = false;
+let pendingNativeLink = null;
+async function initPush() {
+  const C = window.Capacitor; if (!C || !C.isNativePlatform || !C.isNativePlatform()) return;
+  const P = C.Plugins && C.Plugins.PushNotifications; if (!P) return;
+  try {
+    let perm = await P.checkPermissions(); if (perm.receive !== "granted") perm = await P.requestPermissions(); if (perm.receive !== "granted") return;
+    // Use new v2 channel IDs because Android locks a channel's sound after it is first created.
+    // Sound names are raw resource names (no .mp3 suffix) in android/app/src/main/res/raw/.
+    for (const [id, name, snd] of [["messages_v2", "Messages", "new_message"], ["mention_v2", "Mentions", "mention"], ["notif_v2", "Notifications", "notification"], ["like_v2", "Likes", "like_reaction"], ["heart_v2", "Clip likes", "heart_reaction"], ["reply_v2", "Comments", "reply"], ["calls_v2", "Calls", "incoming_call"], ["vcalls_v2", "Video calls", "video_call_incoming"]])
+      await P.createChannel({id, name, importance: 5, sound: snd, vibration: true, visibility: 0});
+    await P.removeAllListeners();
+    P.addListener("registration", t => { pushTok = t.value; sb.rpc("register_device", {tok: t.value}).then(() => {}, () => {}); });
+    P.addListener("registrationError", e => console.warn("push registration failed", e));
+    P.addListener("pushNotificationReceived", n => {
+      const d = (n && n.data) || {}, ch = d.channel || "notif";
+      // Chat/call sounds already come from the live chat/call handlers while the app is open.
+      // Use the push event for social notifications that do not have their own live sound handler.
+      if (d.type === "message" || d.type === "mention" || d.type === "incoming_call") return;
+      const key = ({like: "like", heart: "heart", reply: "reply", mention: "mention", notif: "notif"})[ch] || "notif";
+      sfx(key);
+    });
+    P.addListener("pushNotificationActionPerformed", a => { const d = (a.notification && a.notification.data) || {}; if (d.room) { setTab("chats"); openRoom(d.room); } else if (d.tab) setTab(d.tab); });
+    await P.register();
+  } catch (e) { console.warn("push", e); }
+}
+async function dropPush() { if (pushTok) { try { await sb.rpc("unregister_device", {tok: pushTok}); } catch (e) {} pushTok = null; } }
+
 // ---------- SOUNDS (files in the sounds/ folder) ----------
 const SFX = {msg: "01_New_Message", sent: "02_Message_Sent", recv: "03_Message_Received", notif: "04_Notification", like: "05_Like_Reaction", heart: "06_Heart_Reaction", reply: "07_Reply", mention: "08_Mention", ring: "09_Incoming_Call", vring: "10_Video_Call_Incoming", conn: "11_Call_Connecting", err: "12_Message_Error"}, SND = {};
 let actMax = null;
@@ -3339,6 +3373,7 @@ async function startCall(video) {
   const r = rooms.find(x => x.id === cur);
   if (!callable(r) || call) return;
   if (r.is_dm && blocked.has(other(r))) return toast("Unblock this person first");
+  sb.rpc("ring_push", {rid: r.id, video: !!video}).then(() => {}, () => {});
   beginCall(r, video, true);
 }
 async function joinCall(roomId, video) {
@@ -3494,6 +3529,45 @@ async function createGroup() {
   await loadChats(); setTab("chats"); openRoom(data);
 }
 $("#back").onclick = () => { $("#app").classList.remove("open"); cur = null; leaveTyping(); stopEdit(); updateHead(); render(); };
+// Handle Android CallStyle Answer/Decline button deep-links and ordinary notification taps.
+// The native CallActionReceiver opens these local URLs; no secret is included in the URL.
+async function handleChatterNativeLink(rawUrl) {
+  try {
+    const url = new URL(rawUrl);
+    if (url.protocol !== "chatter:") return;
+    if (!me || !chatterReady) { pendingNativeLink = rawUrl; return; }
+    if (url.hostname === "call") {
+      const action = url.searchParams.get("action"), roomId = url.searchParams.get("room"), from = url.searchParams.get("from"), video = url.searchParams.get("video") === "true";
+      if (!roomId) return;
+      if (action === "decline") {
+        if (from) sendInbox(from, "decline", {room: roomId, from: me.id});
+        return;
+      }
+      if (action === "answer") {
+        await loadChats();
+        const room = rooms.find(r => r.id === roomId);
+        if (!room) { toast("This call is no longer available."); return; }
+        setTab("chats");
+        await openRoom(roomId);
+        await joinCall(roomId, video);
+        return;
+      }
+      setTab("chats"); await openRoom(roomId); return;
+    }
+    if (url.hostname === "push") {
+      const roomId = url.searchParams.get("room"), targetTab = url.searchParams.get("tab");
+      if (roomId) { setTab("chats"); await openRoom(roomId); }
+      else if (targetTab) setTab(targetTab);
+    }
+  } catch (e) { console.warn("native notification link failed", e); }
+}
+(function installChatterNativeLinkHandler() {
+  const C = window.Capacitor, A = C && C.Plugins && C.Plugins.App;
+  if (!A) return;
+  try { A.addListener("appUrlOpen", event => { if (event && event.url) handleChatterNativeLink(event.url); }); } catch (e) {}
+  try { A.getLaunchUrl().then(result => { if (result && result.url) handleChatterNativeLink(result.url); }).catch(() => {}); } catch (e) {}
+})();
+
 sb.auth.getSession().then(({data}) => { if (!data.session) showAuth(); });
 </script>
 </body></html>
