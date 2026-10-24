@@ -965,7 +965,6 @@ async function loadFriends() {
   render(); actSoon(); liveClips();
 }
 async function start(user) {
-  chatterReady = false;
   me = user; reads = {}; blocked = new Set(); await loadSettings();
   if (!(await mfaGate())) { me = null; return; }
   initPush();
@@ -989,16 +988,30 @@ async function start(user) {
   setTab("chats");
   const g = rooms.find(r => !r.is_dm);
   if (g && innerWidth > 700) openRoom(g.id);
-  chatterReady = true;
-  if (pendingNativeLink) { const url = pendingNativeLink; pendingNativeLink = null; await handleChatterNativeLink(url); }
+  if (Notification && Notification.permission === "granted" && "serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+  handleLaunch(launchQ); launchQ = null;
 }
+let launchQ = null;
+const pushCall = b => { try { sb.functions.invoke("chatter-push", {body: b}).then(() => {}, () => {}); } catch (e) {} };
+function handleLaunch(msg) {
+  let q = msg;
+  if (!q) { q = Object.fromEntries(new URLSearchParams(location.search)); if (location.search) history.replaceState(null, "", location.pathname); }
+  if (!q || !(q.call || q.room)) return;
+  if (q.call) {
+    if (Date.now() - (+q.ts || 0) > 50000) return toast("That call has ended");
+    const p = {room: q.call, from: q.from, video: q.video === "1" || q.video === true};
+    if (q.act === "answer") { const r = rooms.find(x => x.id === p.room); if (r && !call && (members[p.room] || []).includes(p.from)) beginCall(r, p.video, false); }
+    else onRing(p);
+  } else { setTab("chats"); openRoom(q.room); }
+}
+if ("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message", ev => { const d = ev.data || {}; if (d.type !== "launch") return; if (me) handleLaunch(d.q); else launchQ = d.q; });
 async function onMsg(p) {
   const m = p.new;
   if (!rooms.find(r => r.id === m.room_id)) return loadChats();
   latest[m.room_id] = m;
+  if (!sysLog(m.body) && m.user_id !== me.id && !blocked.has(m.user_id)) sfx(me && names[me.id] && (m.body || "").toLowerCase().includes("@" + names[me.id].toLowerCase()) ? "mention" : m.room_id === cur && document.visibilityState === "visible" ? "recv" : "msg");
   await ensureNames([m.user_id]);
   if (sysLog(m.body)) await loadChats();
-  else if (m.user_id !== me.id && !blocked.has(m.user_id)) sfx(me && names[me.id] && (m.body || "").toLowerCase().includes("@" + names[me.id].toLowerCase()) ? "mention" : m.room_id === cur && document.visibilityState === "visible" ? "recv" : "msg");
   if (m.room_id === cur) { addMsg(m, cur); markRead(cur, m.created_at); if (m.user_id !== me.id) markSeen(cur); }
   render();
 }
@@ -2317,7 +2330,7 @@ async function enableChatterPush() {
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') return say('Notification permission was not granted.');
   try {
-    const reg = await navigator.serviceWorker.register('/sw.js');
+    const reg = await navigator.serviceWorker.register('sw.js');
     let sub = await reg.pushManager.getSubscription();
     if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: chatterBase64UrlBytes(CHATTER_VAPID_PUBLIC_KEY) });
     const j = sub.toJSON();
@@ -2329,7 +2342,7 @@ async function enableChatterPush() {
 }
 async function disableChatterPush() {
   try {
-    const reg = await navigator.serviceWorker.getRegistration('/');
+    const reg = await navigator.serviceWorker.getRegistration();
     const sub = reg && await reg.pushManager.getSubscription();
     if (sub) {
       const endpoint = sub.endpoint;
@@ -3309,28 +3322,28 @@ function listenInbox() {
 
 // ---------- PUSH NOTIFICATIONS (Android app only; needs Firebase, see PUSH-SETUP.md) ----------
 let pushTok = null;
-let chatterReady = false;
-let pendingNativeLink = null;
 async function initPush() {
   const C = window.Capacitor; if (!C || !C.isNativePlatform || !C.isNativePlatform()) return;
   const P = C.Plugins && C.Plugins.PushNotifications; if (!P) return;
   try {
     let perm = await P.checkPermissions(); if (perm.receive !== "granted") perm = await P.requestPermissions(); if (perm.receive !== "granted") return;
-    // Use new v2 channel IDs because Android locks a channel's sound after it is first created.
-    // Sound names are raw resource names (no .mp3 suffix) in android/app/src/main/res/raw/.
-    for (const [id, name, snd] of [["messages_v2", "Messages", "new_message"], ["mention_v2", "Mentions", "mention"], ["notif_v2", "Notifications", "notification"], ["like_v2", "Likes", "like_reaction"], ["heart_v2", "Clip likes", "heart_reaction"], ["reply_v2", "Comments", "reply"], ["calls_v2", "Calls", "incoming_call"], ["vcalls_v2", "Video calls", "video_call_incoming"]])
-      await P.createChannel({id, name, importance: 5, sound: snd, vibration: true, visibility: 0});
+    for (const [id, name, snd] of [["messages", "Messages", "new_message"], ["mention", "Mentions", "mention"], ["notif", "Notifications", "notification"], ["like", "Likes", "like_reaction"], ["heart", "Clip likes", "heart_reaction"], ["reply", "Comments", "reply"], ["calls", "Calls", "incoming_call"], ["vcalls", "Video calls", "video_call_incoming"]]) {
+      await P.createChannel({id, name, importance: 5, sound: snd + ".mp3", vibration: true, visibility: 0});
+      // quiet twin: vibrates, no sound (sounds are only played inside the app). The server must send "<id>_q" as the channel id.
+      await P.createChannel({id: id + "_q", name: name + " (vibrate only)", importance: 5, sound: "silent.mp3", vibration: true, visibility: 0});
+    }
     await P.removeAllListeners();
-    P.addListener("registration", t => { pushTok = t.value; sb.rpc("register_device", {tok: t.value}).then(() => {}, () => {}); });
-    P.addListener("registrationError", e => console.warn("push registration failed", e));
-    P.addListener("pushNotificationReceived", n => {
-      const d = (n && n.data) || {}, ch = d.channel || "notif";
-      // Chat/call sounds already come from the live chat/call handlers while the app is open.
-      // Use the push event for social notifications that do not have their own live sound handler.
-      if (d.type === "message" || d.type === "mention" || d.type === "incoming_call") return;
-      const key = ({like: "like", heart: "heart", reply: "reply", mention: "mention", notif: "notif"})[ch] || "notif";
-      sfx(key);
+    P.addListener("registration", async (t) => {
+      pushTok = t.value;
+      console.log("FCM registration received.");
+      const { data, error } = await sb.rpc("register_device", { tok: t.value });
+      if (error) {
+        console.error("FCM token save failed:", error.message);
+      } else {
+        console.log("FCM token saved to Supabase.");
+      }
     });
+    P.addListener("registrationError", e => console.warn("push registration failed", e));
     P.addListener("pushNotificationActionPerformed", a => { const d = (a.notification && a.notification.data) || {}; if (d.room) { setTab("chats"); openRoom(d.room); } else if (d.tab) setTab(d.tab); });
     await P.register();
   } catch (e) { console.warn("push", e); }
@@ -3341,9 +3354,32 @@ async function dropPush() { if (pushTok) { try { await sb.rpc("unregister_device
 const SFX = {msg: "01_New_Message", sent: "02_Message_Sent", recv: "03_Message_Received", notif: "04_Notification", like: "05_Like_Reaction", heart: "06_Heart_Reaction", reply: "07_Reply", mention: "08_Mention", ring: "09_Incoming_Call", vring: "10_Video_Call_Incoming", conn: "11_Call_Connecting", err: "12_Message_Error"}, SND = {};
 let actMax = null;
 const sfxGet = k => SND[k] || (SND[k] = Object.assign(new Audio("sounds/" + SFX[k] + ".mp3"), {preload: "auto"}));
-function sfx(k, loop) { if (S.sounds === false) return null; try { const a = sfxGet(k); a.loop = !!loop; a.currentTime = 0; a.play().catch(() => {}); return a; } catch (e) { return null; } }
-function sfxStop(k) { const a = SND[k]; if (a) { a.pause(); a.currentTime = 0; a.loop = false; } }
-document.addEventListener("pointerdown", () => Object.keys(SFX).forEach(sfxGet), {once: true});
+let AC = null; const SBUF = {}, SSRC = {};
+function acx() { if (!AC) { const C = window.AudioContext || window.webkitAudioContext; if (C) { try { AC = new C({latencyHint: "interactive"}); } catch (e) { AC = new C(); } } } return AC; }
+function sfxLoad() {
+  const c = acx(); if (!c) return;
+  Object.keys(SFX).forEach(k => { if (SBUF[k]) return; fetch("sounds/" + SFX[k] + ".mp3").then(r => r.arrayBuffer()).then(b => new Promise((ok, no) => c.decodeAudioData(b, ok, no))).then(buf => { SBUF[k] = buf; }).catch(() => {}); });
+}
+function sfx(k, loop) {
+  if (S.sounds === false) return null;
+  const c = AC, buf = SBUF[k];
+  if (c && buf) {
+    try {
+      if (c.state !== "running") c.resume();
+      sfxStop(k); const src = c.createBufferSource(); src.buffer = buf; src.loop = !!loop; src.connect(c.destination); src.start(0); SSRC[k] = src;
+      return {pause() { try { src.stop(); } catch (e) {} }};
+    } catch (e) {}
+  }
+  try { const a = sfxGet(k); a.loop = !!loop; a.currentTime = 0; a.play().catch(() => {}); return a; } catch (e) { return null; }
+}
+function sfxStop(k) {
+  const x = SSRC[k]; if (x) { try { x.stop(); } catch (e) {} delete SSRC[k]; }
+  const a = SND[k]; if (a) { a.pause(); a.currentTime = 0; a.loop = false; }
+}
+sfxLoad();
+const sfxWake = () => { sfxLoad(); if (AC && AC.state !== "running") AC.resume().catch(() => {}); Object.keys(SFX).forEach(sfxGet); };
+document.addEventListener("pointerdown", sfxWake, {once: true});
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && AC && AC.state !== "running") AC.resume().catch(() => {}); });
 
 // ringtone for incoming calls
 function ringStart() { try { ringTone = {a: sfx(ringIn && ringIn.video ? "vring" : "ring", true)}; } catch (e) {} }
@@ -3356,13 +3392,13 @@ async function onRing(p) {
   if (!callable(r) || !mm.includes(p.from) || !mm.includes(me.id)) return;
   if (call && call.room === p.room) return;
   if (call || ringIn) return sendInbox(p.from, "decline", {room: p.room, from: me.id, busy: true});
-  await ensureNames([p.from]);
   const who = names[p.from] || "Someone", kind = p.video ? "video" : "voice";
   ringIn = {room: p.room, from: p.from, video: !!p.video};
   $("#rtxt").textContent = r.is_dm ? who + " is calling you" : who + " started a group " + kind + " call";
   $("#rsub").textContent = (r.is_dm ? "" : title(r) + " · ") + (p.video ? "Video call" : "Voice call");
   $("#ring").classList.remove("hide"); ringStart();
   ringIn.timer = setTimeout(dismissRing, 45000);
+  if (!names[p.from]) ensureNames([p.from]).then(() => { if (!ringIn || ringIn.room !== p.room || ringIn.from !== p.from) return; const w = names[p.from] || "Someone"; $("#rtxt").textContent = r.is_dm ? w + " is calling you" : w + " started a group " + kind + " call"; });
 }
 $("#ryes").onclick = () => { const p = ringIn; if (!p) return; dismissRing(); joinCall(p.room, p.video); };
 $("#rno").onclick = () => { const p = ringIn; if (!p) return; dismissRing(); sendInbox(p.from, "decline", {room: p.room, from: me.id}); };
@@ -3400,7 +3436,7 @@ async function beginCall(r, video, caller) {
   ch.subscribe(s => {
     if (s !== "SUBSCRIBED" || !call || call.ch !== ch) return;
     sig({t: "join", cam: call.cam});
-    if (caller) (members[r.id] || []).filter(u => u !== me.id).forEach(u => sendInbox(u, "ring", {room: r.id, video, from: me.id}));
+    if (caller) { (members[r.id] || []).filter(u => u !== me.id).forEach(u => sendInbox(u, "ring", {room: r.id, video, from: me.id})); pushCall({action: "call", room: r.id, video}); }
   });
 }
 
@@ -3495,7 +3531,7 @@ function endCall(why) {
   clearInterval(c.timer); clearTimeout(c.wait);
   try { c.ch.send({type: "broadcast", event: "sig", payload: {t: "leave", from: me.id}}); } catch (e) {}
   if (c.caller) logCall(c);
-  if (c.caller && !c.everConnected) (members[c.room] || []).filter(u => u !== me.id).forEach(u => sendInbox(u, "cancel", {room: c.room, from: me.id}));
+  if (c.caller && !c.everConnected) { (members[c.room] || []).filter(u => u !== me.id).forEach(u => sendInbox(u, "cancel", {room: c.room, from: me.id})); pushCall({action: "cancel", room: c.room}); }
   Object.values(c.peers).forEach(P => { try { P.pc.close(); } catch (e) {} });
   c.stream.getTracks().forEach(t => t.stop());
   setTimeout(() => sb.removeChannel(c.ch), 500);
@@ -3529,45 +3565,6 @@ async function createGroup() {
   await loadChats(); setTab("chats"); openRoom(data);
 }
 $("#back").onclick = () => { $("#app").classList.remove("open"); cur = null; leaveTyping(); stopEdit(); updateHead(); render(); };
-// Handle Android CallStyle Answer/Decline button deep-links and ordinary notification taps.
-// The native CallActionReceiver opens these local URLs; no secret is included in the URL.
-async function handleChatterNativeLink(rawUrl) {
-  try {
-    const url = new URL(rawUrl);
-    if (url.protocol !== "chatter:") return;
-    if (!me || !chatterReady) { pendingNativeLink = rawUrl; return; }
-    if (url.hostname === "call") {
-      const action = url.searchParams.get("action"), roomId = url.searchParams.get("room"), from = url.searchParams.get("from"), video = url.searchParams.get("video") === "true";
-      if (!roomId) return;
-      if (action === "decline") {
-        if (from) sendInbox(from, "decline", {room: roomId, from: me.id});
-        return;
-      }
-      if (action === "answer") {
-        await loadChats();
-        const room = rooms.find(r => r.id === roomId);
-        if (!room) { toast("This call is no longer available."); return; }
-        setTab("chats");
-        await openRoom(roomId);
-        await joinCall(roomId, video);
-        return;
-      }
-      setTab("chats"); await openRoom(roomId); return;
-    }
-    if (url.hostname === "push") {
-      const roomId = url.searchParams.get("room"), targetTab = url.searchParams.get("tab");
-      if (roomId) { setTab("chats"); await openRoom(roomId); }
-      else if (targetTab) setTab(targetTab);
-    }
-  } catch (e) { console.warn("native notification link failed", e); }
-}
-(function installChatterNativeLinkHandler() {
-  const C = window.Capacitor, A = C && C.Plugins && C.Plugins.App;
-  if (!A) return;
-  try { A.addListener("appUrlOpen", event => { if (event && event.url) handleChatterNativeLink(event.url); }); } catch (e) {}
-  try { A.getLaunchUrl().then(result => { if (result && result.url) handleChatterNativeLink(result.url); }).catch(() => {}); } catch (e) {}
-})();
-
 sb.auth.getSession().then(({data}) => { if (!data.session) showAuth(); });
 </script>
 </body></html>
