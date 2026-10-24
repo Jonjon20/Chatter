@@ -994,6 +994,7 @@ async function onMsg(p) {
   latest[m.room_id] = m;
   await ensureNames([m.user_id]);
   if (sysLog(m.body)) await loadChats();
+  else if (m.user_id !== me.id && !blocked.has(m.user_id)) sfx(me && names[me.id] && (m.body || "").toLowerCase().includes("@" + names[me.id].toLowerCase()) ? "mention" : m.room_id === cur && document.visibilityState === "visible" ? "recv" : "msg");
   if (m.room_id === cur) { addMsg(m, cur); markRead(cur, m.created_at); if (m.user_id !== me.id) markSeen(cur); }
   render();
 }
@@ -1163,6 +1164,8 @@ async function loadActivity() {
   const nextIds = new Set(nextAct.map(a => a.id));
   if (actSeenIds.size && nextAct.some(a => !actSeenIds.has(a.id) && a.u !== me.id)) playNotificationSound();
   actSeenIds = nextIds; act = nextAct;
+  if (actMax !== null) { const n = act.filter(a => a.t > actMax && a.u !== me.id); if (n.length) sfx(n[0].type === "like" ? "like" : n[0].type === "comment" ? "reply" : "notif"); }
+  actMax = act.reduce((m, a) => Math.max(m, a.t), 0);
   await ensureNames(act.map(a => a.u));
   paintNBadge(); if (tab === "notifs") render();
 }
@@ -1401,7 +1404,7 @@ async function openStory(u) {
 async function toggleLike(p) {
   const L = flikes[p.id] || [], on = L.includes(me.id);
   if (on) { await sb.from("post_likes").delete().eq("post_id", p.id).eq("user_id", me.id); flikes[p.id] = L.filter(x => x !== me.id); }
-  else { await sb.from("post_likes").insert({post_id: p.id}); flikes[p.id] = [...L, me.id]; }
+  else { await sb.from("post_likes").insert({post_id: p.id}); flikes[p.id] = [...L, me.id]; sfx("like"); }
   fkeep(() => {});
 }
 const likeBtn = p => { const L = flikes[p.id] || [], on = L.includes(me.id), b = el("button", on ? "on" : "", (on ? "❤️ " : "🤍 ") + L.length); b.onclick = () => toggleLike(p); return b; };
@@ -1485,7 +1488,7 @@ function paintSave(p, b) { const on = !!(fsaves[p.id] && fsaves[p.id].size); if 
 async function reelLike(p, b) {
   const L = flikes[p.id] || [], on = L.includes(me.id);
   flikes[p.id] = on ? L.filter(x => x !== me.id) : [...L, me.id]; paintLike(p, b); bubPaint(p);
-  const r = on ? await sb.from("post_likes").delete().eq("post_id", p.id).eq("user_id", me.id) : await sb.from("post_likes").insert({post_id: p.id});
+  const r = on ? await sb.from("post_likes").delete().eq("post_id", p.id).eq("user_id", me.id) : await sb.from("post_likes").insert({post_id: p.id}); if (!on) sfx("heart");
   if (r.error) { flikes[p.id] = L; paintLike(p, b); bubPaint(p); }
 }
 const closeSheet = () => { const o = document.getElementById("sheet"); if (o) o.remove(); };
@@ -2272,7 +2275,7 @@ const ST = {
   "General Account Settings": ["Name", "Username", "Contact Information", "Password and Security", "Language and Region", "Deactivation and Deletion", "Account ownership and control"],
   "Privacy Settings": ["Who can see your future posts?", "Review all your posts and things you're tagged in", "Who can send you friend requests?", "Who can see your friends list?", "Who can look you up using your email address?", "Who can look you up using your phone number?", "Do you want search engines outside Chatter to link to your profile?", "Who can comment on your public posts?", "Who can see your profile information?"],
   "Security and Login": ["Change password", "Where you're logged in", "Log out of devices", "Save your login information", "Two-factor authentication", "Get alerts about unrecognized logins", "Authorized logins", "Recovery email and phone"],
-  "Notifications": ["Comments", "Likes", "Replies to comments", "Tags", "Mentions", "Messages", "Reminders", "Friend requests", "Friend acceptances", "People you may know", "Birthdays", "Group activity", "Profile activity", "Clips", "Push notifications", "Email notifications", "In-app notifications", "Notification sounds"],
+  "Notifications": ["Sounds", "Comments", "Likes", "Replies to comments", "Tags", "Mentions", "Messages", "Reminders", "Friend requests", "Friend acceptances", "People you may know", "Birthdays", "Group activity", "Profile activity", "Clips", "Push notifications", "Email notifications", "In-app notifications", "Notification sounds"],
   "Audience and Tagging": ["Who can see posts you're tagged in?", "Review posts you're tagged in before they appear on your profile", "Who can reply to your stories?", "Public post notifications"],
   "Blocking": ["Blocked accounts", "Restricted list", "Block messages from strangers", "Block app invitations", "Block event invitations"],
   "Stories and Clips": ["Who can see your stories?", "Allow story replies", "Save stories to archive", "Autoplay clips"],
@@ -2295,7 +2298,7 @@ const OPT = {
   "Text size": ["text_size", [["small", "Small"], ["medium", "Default"], ["large", "Large"]], "medium", "Changes the base text size in this browser."],
   "Language and Region": ["language_region", [["en", "English"], ["fil", "Filipino"]], "en", "Saves your preferred language. Some app labels may remain in English until translations are added."]
 };
-const TOG = {"Save your login information": ["save_login", true, "When off, you're signed out when you close the app or tab."], "Get alerts about unrecognized logins": ["alert_login", true, "This preference is saved; security alert emails are not sent by this build."],
+const TOG = {"Sounds": ["sounds", true, "Plays sounds for messages, likes, notifications and calls."], "Save your login information": ["save_login", true, "When off, you're signed out when you close the app or tab."], "Get alerts about unrecognized logins": ["alert_login", true, "This preference is saved; security alert emails are not sent by this build."],
   "Comments": ["n_comments", true, "Hides comment notifications in the activity list."], "Likes": ["n_likes", true, "Controls notifications when someone likes your post."], "Replies to comments": ["n_replies", true, "Preference is saved, but this build does not generate separate reply-to-comment notification events yet."], "Tags": ["n_tags", true, "Shows or hides tag notifications."], "Mentions": ["n_mentions", true, "Preference is saved, but mention notifications are not generated separately in this build yet."], "Messages": ["n_messages", true, "Shows or hides recent incoming direct-message notifications in the Notifications tab."], "Reminders": ["n_rem", true, "Shows or hides unread-chat reminders."], "Friend requests": ["n_fr", true, "Shows or hides friend-request notifications."], "Friend acceptances": ["n_friend_accept", true, "Saves your preference for accepted-friend notifications."], "People you may know": ["n_pymk", true, "Turn off to hide People You May Know."], "Birthdays": ["n_bday", true, "Shows or hides birthday notifications."], "Group activity": ["n_groups", true, "Preference is saved, but a separate group-activity notification feed is not implemented yet."], "Profile activity": ["n_profile", true, "Saves your preference for profile activity notifications."], "Clips": ["n_clips", true, "Hides clip notifications in the activity list."], "Push notifications": ["n_push", true, "Enable this and register this browser/device for Web Push. HTTPS, a service worker, and server-side VAPID configuration are required."], "Email notifications": ["n_email", true, "Email delivery requires the deployed chatter-notify Edge Function and a verified Resend sender."], "In-app notifications": ["n_inapp", true, "Saves your in-app notification preference."], "Notification sounds": ["n_sound", true, "Plays a short original tone for newly detected in-app activity after you interact with Chatter. Browser audio rules apply."], "Review posts you're tagged in before they appear on your profile": ["tag_review", false, "When enabled, the app records pending approvals and shows a review queue. Hiding tagged posts across every profile/feed query still requires server-side enforcement."], "Allow story replies": ["story_reply_enabled", true, "Saves your story reply preference."], "Save stories to archive": ["story_archive", true, "Saves the preference; automatic story archiving is not implemented yet."], "Autoplay clips": ["autoplay_clips", true, "Saves your autoplay preference."], "Block messages from strangers": ["block_strangers", false, "When enabled, the companion SQL migration blocks incoming direct messages from people who are not accepted friends. Existing rooms may remain visible."], "Block app invitations": ["block_app_invites", true, "Saves your preference; app invitations are not currently supported."], "Block event invitations": ["block_event_invites", true, "Saves your preference; event invitations are not currently supported."], "Autoplay media": ["autoplay_media", true, "Saves your media autoplay preference."], "Reduce motion": ["reduce_motion", false, "Saves your reduced-motion preference; some animations may remain." ]};
 function chatterBase64UrlBytes(base64url) {
   const pad = "=".repeat((4 - base64url.length % 4) % 4);
@@ -2820,7 +2823,7 @@ $("#f").onsubmit = async e => {
   if ((!body && !pend) || !rid || busy) return;
   if (!pend) {
     i.value = "";
-    const {error} = await sb.from("messages").insert({room_id: rid, body});
+    const {error} = await sb.from("messages").insert({room_id: rid, body}); sfx(error ? "err" : "sent");
     if (error) { i.value = body; if (/CHATTER_STRANGERS_BLOCKED|You can only message friends|friends only/i.test(error.message || "")) toast("This person only accepts messages from friends."); else toast("Message could not be sent."); }
     return;
   }
@@ -2829,7 +2832,7 @@ $("#f").onsubmit = async e => {
     const blob = await shrink(pend.file), path = me.id + "/" + uid() + ".jpg";
     const up = await sb.storage.from("chat-images").upload(path, blob, {contentType: "image/jpeg"});
     if (up.error) throw up.error;
-    const {error} = await sb.from("messages").insert({room_id: rid, body, image_path: path});
+    const {error} = await sb.from("messages").insert({room_id: rid, body, image_path: path}); sfx(error ? "err" : "sent");
     if (error) { sb.storage.from("chat-images").remove([path]); throw error; }
     i.value = ""; setPend(null);
   } catch (err) { alert("Couldn't send: " + (err.message || err)); }
@@ -3300,15 +3303,17 @@ function listenInbox() {
     }).subscribe();
 }
 
+// ---------- SOUNDS (files in the sounds/ folder) ----------
+const SFX = {msg: "01_New_Message", sent: "02_Message_Sent", recv: "03_Message_Received", notif: "04_Notification", like: "05_Like_Reaction", heart: "06_Heart_Reaction", reply: "07_Reply", mention: "08_Mention", ring: "09_Incoming_Call", vring: "10_Video_Call_Incoming", conn: "11_Call_Connecting", err: "12_Message_Error"}, SND = {};
+let actMax = null;
+const sfxGet = k => SND[k] || (SND[k] = Object.assign(new Audio("sounds/" + SFX[k] + ".mp3"), {preload: "auto"}));
+function sfx(k, loop) { if (S.sounds === false) return null; try { const a = sfxGet(k); a.loop = !!loop; a.currentTime = 0; a.play().catch(() => {}); return a; } catch (e) { return null; } }
+function sfxStop(k) { const a = SND[k]; if (a) { a.pause(); a.currentTime = 0; a.loop = false; } }
+document.addEventListener("pointerdown", () => Object.keys(SFX).forEach(sfxGet), {once: true});
+
 // ringtone for incoming calls
-function ringStart() {
-  try {
-    const ac = new (window.AudioContext || window.webkitAudioContext)();
-    const beep = () => { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = 440; g.gain.value = .08; o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + .4); };
-    beep(); ringTone = {ac, t: setInterval(beep, 1500)};
-  } catch (e) {}
-}
-function ringStop() { if (ringTone) { clearInterval(ringTone.t); try { ringTone.ac.close(); } catch (e) {} ringTone = null; } }
+function ringStart() { try { ringTone = {a: sfx(ringIn && ringIn.video ? "vring" : "ring", true)}; } catch (e) {} }
+function ringStop() { if (ringTone) { sfxStop("ring"); sfxStop("vring"); ringTone = null; } }
 function dismissRing() { if (ringIn) clearTimeout(ringIn.timer); ringIn = null; ringStop(); $("#ring").classList.add("hide"); }
 
 async function onRing(p) {
@@ -3330,6 +3335,7 @@ $("#rno").onclick = () => { const p = ringIn; if (!p) return; dismissRing(); sen
 
 // start / join
 async function startCall(video) {
+  sfx("conn");
   const r = rooms.find(x => x.id === cur);
   if (!callable(r) || call) return;
   if (r.is_dm && blocked.has(other(r))) return toast("Unblock this person first");
