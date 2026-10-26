@@ -1,9 +1,10 @@
 {
   "name": "chatter-android",
   "version": "1.0.0",
-  "description": "1. Node.js LTS — https://nodejs.org 2. Android Studio — https://developer.android.com/studio (kasama na ang Java)",
+  "description": "Chatter Android Wrapper",
   "main": "index.js",
   "scripts": {
+    "build": "mkdir -p dist && echo '<h1>Chatter Android - APK Build Only</h1><p>Pang Android Studio lang ito, hindi pang Vercel.</p>' > dist/index.html",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
