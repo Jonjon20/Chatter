@@ -650,7 +650,28 @@ button:not(.danger):not(.gray):not(.ghost):not(.mlog):not(.att):not(.end){--butt
 #list[data-t="feed"] .pc .l1 .dot{display:inline!important}
 #list[data-t="feed"] .pc .hx{color:var(--tx)!important}
 #list[data-t="feed"] .pc .l1 .fl,#list[data-t="feed"] .pc .l1 .fl.mut{margin-left:0!important;padding:0!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;font-size:inherit!important}
-</style><style>.chatter-reduce-motion *, .chatter-reduce-motion *::before, .chatter-reduce-motion *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }</style>
+/* ===== PROFILE: every colour now follows the chosen accent ===== */
+/* the avatar ring (and the stories ring) had a fixed yellow arc -> use a lighter tint of the accent instead */
+#list[data-t="feed"] .sc .sr,
+.pav::before{background:conic-gradient(from 210deg,var(--accent),var(--accent-deep),var(--accent),color-mix(in srgb,var(--accent) 55%,#fff),var(--accent))!important}
+.pav::before{box-shadow:0 10px 28px color-mix(in srgb,var(--accent) 35%,transparent)!important}
+/* posts inside the profile used the old fixed red/neutral colours; the feed already follows the accent */
+:is(.pfw,#list[data-t="menu"]) .pc .ac button.on,
+:is(.pfw,#list[data-t="menu"]) .pc .ac button.on svg,
+:is(.pfw,#list[data-t="menu"]) .pc .hx{color:var(--accent)!important}
+#st .sw2>.mrow>svg{width:44px;height:44px;padding:10px;box-sizing:border-box;border-radius:14px;background:var(--cd2);flex:none}
+</style><style>.chatter-reduce-motion *, .chatter-reduce-motion *::before, .chatter-reduce-motion *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }.pfx{--me:#1fa463;--accent:#1fa463;--accent-deep:#0f7a46;--bl:#1fa463;--pgrad:linear-gradient(135deg,#22b573,#139556)}
+.pfx .phd{display:flex;gap:14px;align-items:flex-start;padding:0 14px}
+.pfx .pav{margin:-52px 0 0;width:112px;flex:none}.pfx .pav::before{inset:-4px;background:#1fa463;box-shadow:none}
+.pfx .pav .av{width:112px;height:112px;font-size:44px;border-width:4px}
+.pfx .phi{flex:1;min-width:0;padding-top:12px}.pfx .pnr{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pfx .pname{padding:0;font-size:22px}.pfx .psub{padding:2px 0 0}.pfx .pinfo2{padding:3px 0 0}.pfx .pbio{padding:6px 0 0}
+.pfx .pen{flex:none;width:40px;height:40px;border-radius:50%;background:var(--bg2);color:var(--tx);padding:0;display:flex;align-items:center;justify-content:center}.pfx .pen svg{width:18px;height:18px}
+.pfx .pstats{display:flex;margin:14px 14px 0}.pfx .pst{flex:1;text-align:center;border-left:1px solid var(--line)}.pfx .pst:first-child{border-left:0}.pfx .pst b{display:block;font-size:22px}.pfx .pst span{color:var(--mut)}
+.pfx .pact button:first-child{background:linear-gradient(135deg,#22b573,#139556);color:#fff}.pfx .pact button.gray{background:transparent;border:1px solid var(--line);color:var(--tx)}
+.pfx .ptabs{margin:6px 14px;padding:6px;border:1px solid var(--line);border-radius:28px;background:var(--bg2);gap:4px;justify-content:space-between}.pfx .ptabs button{flex:1;padding:10px 6px}.pfx .ptabs button.on{background:linear-gradient(135deg,#22b573,#139556);color:#fff}
+.pfx .ah b::before{background:linear-gradient(180deg,#22b573,#139556)}.pfx .abio{padding:6px 0 10px;border-bottom:1px solid var(--line);margin-bottom:6px}
+</style>
 </head>
 <body>
 <div id="auth" class="hide">
@@ -968,6 +989,7 @@ async function start(user) {
   me = user; reads = {}; blocked = new Set(); await loadSettings();
   if (!(await mfaGate())) { me = null; return; }
   initPush();
+  try { Object.keys(SFX).forEach(sfxGet); } catch (e) {}
   if (me.user_metadata && me.user_metadata.birthday) sb.from("profiles").update({birthday: me.user_metadata.birthday}).eq("id", me.id).is("birthday", null).then(() => {}, () => {});
   sb.from("profiles").update({deactivated: false}).eq("id", me.id).eq("deactivated", true).then(() => {}, () => {});
   $("#auth").classList.add("hide"); $("#app").classList.remove("hide");
@@ -980,38 +1002,24 @@ async function start(user) {
   sb.channel("reads").on("postgres_changes", {event: "UPDATE", schema: "public", table: "room_members"}, p => { const x = p.new; if (!x || !x.last_read_at) return; (reads[x.room_id] = reads[x.room_id] || {})[x.user_id] = Date.parse(x.last_read_at); if (x.room_id === cur) updateSeen(); }).subscribe();
   sb.channel("mem").on("postgres_changes", {event: "INSERT", schema: "public", table: "room_members", filter: "user_id=eq." + me.id}, loadChats).subscribe();
   sb.channel("friends").on("postgres_changes", {event: "*", schema: "public", table: "friendships"}, loadFriends).subscribe();
-  const forMe = p => { const x = p.new; if (x && x.user_id !== me.id && actMine.has(x.post_id)) actSoon(); };
+  const forMe = p => { const x = p.new; if (x && x.user_id !== me.id && actMine.has(x.post_id)) { actAlert(p.table === "post_likes" ? "like" : "comment"); actSoon(); } };
   sb.channel("act").on("postgres_changes", {event: "INSERT", schema: "public", table: "post_likes"}, forMe).on("postgres_changes", {event: "INSERT", schema: "public", table: "post_comments"}, forMe)
-    .on("postgres_changes", {event: "INSERT", schema: "public", table: "posts"}, p => { const x = p.new; if (x && x.user_id !== me.id && (x.kind === "post" || x.kind === "clip") && frIds().includes(x.user_id)) actSoon(); }).subscribe();
+    .on("postgres_changes", {event: "INSERT", schema: "public", table: "posts"}, p => { const x = p.new; if (x && x.user_id !== me.id && (x.kind === "post" || x.kind === "clip") && frIds().includes(x.user_id)) { actAlert("post", x.kind); actSoon(); } }).subscribe();
   loadActivity();
   listenInbox();
   setTab("chats");
   const g = rooms.find(r => !r.is_dm);
   if (g && innerWidth > 700) openRoom(g.id);
-  if (Notification && Notification.permission === "granted" && "serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
-  handleLaunch(launchQ); launchQ = null;
 }
-let launchQ = null;
-const pushCall = b => { try { sb.functions.invoke("chatter-push", {body: b}).then(() => {}, () => {}); } catch (e) {} };
-function handleLaunch(msg) {
-  let q = msg;
-  if (!q) { q = Object.fromEntries(new URLSearchParams(location.search)); if (location.search) history.replaceState(null, "", location.pathname); }
-  if (!q || !(q.call || q.room)) return;
-  if (q.call) {
-    if (Date.now() - (+q.ts || 0) > 50000) return toast("That call has ended");
-    const p = {room: q.call, from: q.from, video: q.video === "1" || q.video === true};
-    if (q.act === "answer") { const r = rooms.find(x => x.id === p.room); if (r && !call && (members[p.room] || []).includes(p.from)) beginCall(r, p.video, false); }
-    else onRing(p);
-  } else { setTab("chats"); openRoom(q.room); }
-}
-if ("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message", ev => { const d = ev.data || {}; if (d.type !== "launch") return; if (me) handleLaunch(d.q); else launchQ = d.q; });
 async function onMsg(p) {
-  const m = p.new;
+  const m = p.new, sys = sysLog(m.body);
+  // play the sound first, so nothing (names, network) delays it
+  if (!sys && m.user_id !== me.id && !blocked.has(m.user_id)) sfx(me && names[me.id] && (m.body || "").toLowerCase().includes("@" + names[me.id].toLowerCase()) ? "mention" : m.room_id === cur && document.visibilityState === "visible" ? "recv" : "msg");
   if (!rooms.find(r => r.id === m.room_id)) return loadChats();
   latest[m.room_id] = m;
-  if (!sysLog(m.body) && m.user_id !== me.id && !blocked.has(m.user_id)) sfx(me && names[me.id] && (m.body || "").toLowerCase().includes("@" + names[me.id].toLowerCase()) ? "mention" : m.room_id === cur && document.visibilityState === "visible" ? "recv" : "msg");
   await ensureNames([m.user_id]);
-  if (sysLog(m.body)) await loadChats();
+  if (sys) await loadChats();
+  else { const rr = rooms.find(x => x.id === m.room_id); if (rr && rr.is_dm) actPushMessage(m); }
   if (m.room_id === cur) { addMsg(m, cur); markRead(cur, m.created_at); if (m.user_id !== me.id) markSeen(cur); }
   render();
 }
@@ -1153,7 +1161,21 @@ function playNotificationSound() {
 }
 document.addEventListener("pointerdown", primeNotificationSound, {once:true});
 document.addEventListener("keydown", primeNotificationSound, {once:true});
-const actSoon = () => { clearTimeout(actT); actT = setTimeout(loadActivity, 800); };
+let actBeepAt = 0;
+const actSoon = (ms) => { clearTimeout(actT); actT = setTimeout(loadActivity, ms || 150); };
+// ring the sound the moment the live event arrives; loadActivity then stays quiet for a few seconds
+function actAlert(type, kind) {
+  if (S.n_inapp === false || (S.n_comments === false && type === "comment") || (S.n_likes === false && type === "like") || (S.n_clips === false && kind === "clip") || (S.n_profile === false && type === "post")) return;
+  actBeepAt = Date.now(); sfx(type === "like" ? "like" : type === "comment" ? "reply" : "notif");
+}
+// a new DM shows up in Notifications immediately, without reloading everything
+function actPushMessage(m) {
+  if (S.n_inapp === false || S.n_messages === false || !m || m.user_id === me.id) return;
+  const id = "message:" + m.id; if (act.some(a => a.id === id)) return;
+  const t = Date.parse(m.created_at) || Date.now();
+  act = [{type: "message", t, u: m.user_id, rid: m.room_id, txt: m.body, id}, ...act].slice(0, 100); actSeenIds.add(id); if (actMax !== null) actMax = Math.max(actMax, t);
+  paintNBadge(); if (tab === "notifs") render();
+}
 const frIds = () => fr.filter(f => f.status === "accepted").map(f => f.requester === me.id ? f.addressee : f.requester);
 const actUnseen = () => { const s = +localStorage.getItem("nseen") || 0; return act.filter(a => a.t > s).length; };
 const nBadge = () => (S.n_fr === false ? 0 : fr.filter(f => f.status === "pending" && f.addressee === me.id).length) + (tab === "notifs" ? 0 : actUnseen());
@@ -1179,9 +1201,10 @@ async function loadActivity() {
     ...P.map(x => ({type: "post", t: tm(x), u: x.user_id, pid: x.id, kind: x.kind, txt: x.body, id: "post:" + x.id})),
     ...M.map(x => ({type: "message", t: tm(x), u: x.user_id, rid: x.room_id, txt: x.body, id: "message:" + x.id}))].filter(a => S.n_inapp !== false && !(S.n_comments === false && a.type === "comment") && !(S.n_likes === false && a.type === "like") && !(S.n_messages === false && a.type === "message") && !(S.n_clips === false && a.kind === "clip") && !(S.n_profile === false && a.type === "post")).sort((a, b) => b.t - a.t).slice(0, 100);
   const nextIds = new Set(nextAct.map(a => a.id));
-  if (actSeenIds.size && nextAct.some(a => !actSeenIds.has(a.id) && a.u !== me.id)) playNotificationSound();
+  const quiet = Date.now() - actBeepAt < 6000;
+  if (!quiet && actSeenIds.size && nextAct.some(a => !actSeenIds.has(a.id) && a.u !== me.id)) playNotificationSound();
   actSeenIds = nextIds; act = nextAct;
-  if (actMax !== null) { const n = act.filter(a => a.t > actMax && a.u !== me.id); if (n.length) sfx(n[0].type === "like" ? "like" : n[0].type === "comment" ? "reply" : "notif"); }
+  if (actMax !== null && !quiet) { const n = act.filter(a => a.t > actMax && a.u !== me.id); if (n.length) sfx(n[0].type === "like" ? "like" : n[0].type === "comment" ? "reply" : "notif"); }
   actMax = act.reduce((m, a) => Math.max(m, a.t), 0);
   await ensureNames(act.map(a => a.u));
   paintNBadge(); if (tab === "notifs") render();
@@ -1982,13 +2005,20 @@ async function openProfile(uid) {
   const w = el("div", "pfw"); o.append(w); o.scrollTop = 0;
   pf = blankPf(); pfStart(w, uid, true);
 }
+function openSaved() {
+  if (!me) return; infoProfile = me.id;
+  const o = $("#pfv"); o.classList.remove("hide"); o.replaceChildren();
+  const w = el("div", "pfw"); o.append(w); o.scrollTop = 0;
+  pf = blankPf(); pf.uid = me.id; pf.only = "saved"; pf.box = w; pf.ov = true; pf.loaded = true; loadSaved(); drawProfile();
+}
 function closeProfile() {
   const o = $("#pfv"); o.classList.add("hide"); o.replaceChildren(); infoProfile = null;
   if (pf.ov) pf = blankPf();
 }
 function drawProfile() {
-  const box = pf.box, uid = pf.uid, mine = uid === me.id, nm = names[uid] || "Someone", rl = mine ? null : rel(uid), bl = !mine && blocked.has(uid);
-  box.replaceChildren();
+  const box0 = pf.box, box = el("div", "pfx"), uid = pf.uid, mine = uid === me.id, nm = names[uid] || "Someone", rl = mine ? null : rel(uid), bl = !mine && blocked.has(uid);
+  box0.replaceChildren(); box0.append(box);
+  if (pf.only === "saved") { const b = el("div", "pfb"), bk = el("button", "", "←"); bk.type = "button"; bk.onclick = closeProfile; b.append(bk, el("div", "pt", "Saved")); box.append(b); return drawSaved(box); }
   if (pf.ov) {
     const b = el("div", "pfb"), bk = el("button", "", "←"); bk.type = "button"; bk.onclick = closeProfile;
     b.append(bk, el("div", "pt", nm)); box.append(b);
@@ -2001,21 +2031,29 @@ function drawProfile() {
     c1.onclick = () => pickPhoto("cover"); c2.onclick = () => pickPhoto("avatar"); cv.append(c1); pa.append(c2);
   }
   let sub = "";
-  if (mine) { const nF = fr.filter(f => f.status === "accepted").length; sub = nF + (nF === 1 ? " friend" : " friends"); }
+  if (mine) sub = "";
   else if (bl) sub = "Blocked";
   else {
     sub = rl && rl.status === "accepted" ? "Friends" : rl && rl.status === "pending" ? (rl.incoming ? "Sent you a friend request" : "Friend request sent") : "";
     if (online.has(uid)) sub += (sub ? " · " : "") + "Active now";
   }
-  box.append(cv, pa, el("div", "pname", nm)); if (sub) box.append(el("div", "psub", sub));
+  const hd = el("div", "phd"), col = el("div", "phi"), nr = el("div", "pnr");
+  nr.append(el("div", "pname", nm));
+  if (mine) { const eb = el("button", "pen", ""); eb.type = "button"; eb.innerHTML = PENCIL; eb.onclick = editProfile; nr.append(eb); }
+  col.append(nr); if (sub) col.append(el("div", "psub", sub)); hd.append(pa, col); box.append(cv, hd);
   if (!bl) {
     const inf = pf.info || {}, bits = []; if (inf.city) bits.push("📍 " + inf.city); if (inf.school) bits.push("🎓 " + inf.school);
-    if (bits.length) box.append(el("div", "pinfo", bits.join("  ·  ")));
+    [["📍", inf.city], ["🏠", inf.hometown], ["🎓", inf.school]].forEach(([i, t]) => { if (t) col.append(el("div", "pinfo2", i + "  " + t)); });
+    const bio = ((pf.det || {}).bio || {}).v; if (bio) col.append(el("div", "pbio", bio));
     const mf = !mine && pf.friends ? pf.friends.filter(x => x.is_mutual) : [];
     if (mf.length) {
       const r = el("div", "pmut"), av = el("div", "mav"); mf.slice(0, 3).forEach(x => av.append(avatar(x.friend_id, (names[x.friend_id] || "?")[0].toUpperCase(), "sm")));
-      r.append(av, el("span", null, mf.length + (mf.length === 1 ? " mutual friend" : " mutual friends"))); box.append(r);
+      r.append(av, el("span", null, mf.length + (mf.length === 1 ? " mutual friend" : " mutual friends"))); col.append(r);
     }
+  }
+  if (!bl) {
+    const st = el("div", "pstats"), stat = (n, l) => { const d = el("div", "pst"); d.append(el("b", null, String(n)), el("span", null, l)); return d; };
+    st.append(stat(mine ? fr.filter(f => f.status === "accepted").length : (pf.friends ? pf.friends.length : "–"), "Friends"), stat(pf.loaded ? pf.posts.length : "–", "Posts"), stat(pf.loaded ? pf.clips.length : "–", "Clips")); st.firstChild.style.cursor = "pointer"; st.firstChild.onclick = () => openFriendList(uid); box.append(st);
   }
   // action buttons
   const act = el("div", "pact");
@@ -2043,7 +2081,7 @@ function drawProfile() {
   if (bl) return box.append(el("div", "hint", "You blocked this person."));
   // Posts | Clips
   const tb = el("div", "ptabs");
-  [["posts", "All"], ["photos", "Photos"], ["clips", "Clips"], ["reposts", "Reposts"], ...(mine && !pf.ov ? [["saved", "Saved"]] : [])].forEach(([k, t]) => { const b = el("button", pf.tab === k ? "on" : "", t); b.type = "button"; b.onclick = () => { pf.tab = k; if (k === "saved" && !pf.saved) loadSaved(); if (k === "reposts" && !pf.reps) loadRepTab(); pfPaint(); }; tb.append(b); });
+  [["posts", "All"], ["photos", "Photos"], ["clips", "Clips"], ["reposts", "Reposts"]].forEach(([k, t]) => { const b = el("button", pf.tab === k ? "on" : "", t); b.type = "button"; b.onclick = () => { pf.tab = k; if (k === "saved" && !pf.saved) loadSaved(); if (k === "reposts" && !pf.reps) loadRepTab(); pfPaint(); }; tb.append(b); });
   box.append(tb);
   if (!pf.loaded) return box.append(el("div", "hint", "Loading…"));
   if (pf.tab === "photos") {
@@ -2051,6 +2089,7 @@ function drawProfile() {
     if (!L.length) box.append(el("div", "hint", mine ? "You haven't added any photos yet." : "No photos yet."));
     else { const g = el("div", "cgrid"); L.forEach(x => { const t = el("div", "ct"), im = el("img"); im.src = x.url; t.append(im); t.onclick = () => openPost(x.id); g.append(t); }); box.append(g); }
   } else if (pf.tab === "posts") {
+    aboutMe(box, mine);
     drawAbout(box, mine, uid);
     profFeed(box, uid, mine, true);
   } else if (pf.tab === "saved") { drawSaved(box);
@@ -2078,6 +2117,14 @@ async function pfLoadExtra(uid) {
   const ids = (pf.friends || []).map(x => x.friend_id); await ensureNames(ids); loadPhotos(ids.slice(0, 24));
   pfPaint();
 }
+function aboutMe(box, mine) {
+  const s = el("div", "asec abm"), h = el("div", "ah"); h.append(el("b", null, "About me"));
+  if (mine) { const e = el("button", "", ""); e.type = "button"; e.innerHTML = PENCIL; e.onclick = editProfile; h.append(e); }
+  s.append(h); const bio = ((pf.det || {}).bio || {}).v; if (bio) s.append(el("div", "abio", bio));
+  let n = 0; EP[0][1].forEach(f => { const v = epVal(f); if (v) { const r = el("div", "arow"); r.append(el("span", "ai", f[1]), el("span", "at", f[3] === "date" ? fmtDate(v) : v)); s.append(r); n++; } });
+  if (!n && !bio) { if (!mine) return; s.append(el("div", "t2", "Add your current city, hometown and birthday.")); }
+  box.append(s);
+}
 function drawAbout(box, mine, uid) {
   const inf = pf.info || {}, row = (ic, t) => { const r = el("div", "arow"); r.append(el("span", "ai", ic), el("span", "at", t)); return r; };
   const sec = (title, kids, right) => {
@@ -2086,21 +2133,10 @@ function drawAbout(box, mine, uid) {
     s.append(h, ...kids); box.append(s);
   };
   EP.forEach(([title, fields]) => {
+    if (title === "Personal details") return;
     const kids = []; fields.forEach(f => { const v = epVal(f); if (v) kids.push(row(f[1], f[3] === "date" ? fmtDate(v) : v)); });
     if (kids.length) sec(title, kids); else if (mine && title === "Personal details") sec(title, [el("div", "t2", "Add your current city, hometown and birthday.")]);
   });
-  const fl = (pf.friends || []).slice().sort((a, b) => (b.is_mutual - a.is_mutual) || ((b.mutual || 0) - (a.mutual || 0)));
-  if (fl.length) {
-    const see = el("button", "see", "See all"); see.type = "button"; see.onclick = () => openFriendList(uid);
-    const g = el("div", "fgrid");
-    fl.slice(0, 6).forEach(x => {
-      const u = x.friend_id, nm = names[u] || "Someone", t = el("div", "ftile" + (fstories.some(s => s.user_id === u) ? " ring" : "")), fv = el("div", "fav");
-      fv.append(avatar(u, nm[0].toUpperCase(), "xxl", u)); t.append(fv, el("div", "nm", nm));
-      if (x.mutual) t.append(el("div", "mu", x.mutual + (x.mutual === 1 ? " mutual friend" : " mutual friends")));
-      t.onclick = () => openProfile(u); g.append(t);
-    });
-    sec("Friends", [g], see);
-  }
 }
 function openFriendList(uid) {
   const {body} = sheet("Friends"), fl = pf.friends || [];
@@ -2196,6 +2232,7 @@ function openClip(list, i0) {
 
 // ---------- MENU (Facebook style): Settings and privacy + Log out ----------
 const MI = {
+  access: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.6" r="1.9"/><path d="M5 8.4l7 1.6 7-1.6"/><path d="M12 10v4.4"/><path d="M8.8 20l3.2-5.6 3.2 5.6"/></svg>',
   gear: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
   down: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
   up: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>',
@@ -2258,8 +2295,11 @@ function drawMenu() {
   w.append(top, card);
   // Appearance and Settings and privacy were removed from the menu as requested.
   // Keep the dedicated Settings entry as the single route to account settings.
+  const sv0 = el("div", "mrow"); sv0.innerHTML = bmIcon(false); sv0.append(el("span", "mt", "Saved")); sv0.onclick = () => { closeMenu(); openSaved(); }; w.append(sv0);
   const ss = el("div", "mrow"); ss.innerHTML = MI.gear; ss.append(el("span", "mt", "Settings")); ss.onclick = () => { closeMenu(); openSettings(); }; w.append(ss);
-  // Direct Help and Support shortcut immediately below Settings in the Menu.
+  const ax = el("div", "mrow"); ax.innerHTML = MI.access; ax.append(el("span", "mt", "Accessibility and Display"));
+  ax.onclick = () => { closeMenu(); stCat = "Accessibility and Display"; stItem = null; $("#st").classList.remove("hide"); drawSet(); }; w.append(ax);
+  // Direct Help and Support shortcut below it in the Menu.
   const hs = el("div", "mrow");
   hs.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9a2.5 2.5 0 1 1 4.2 1.8c-1.2 1-1.8 1.3-1.8 2.7"/><path d="M12 17h.01"/></svg>';
   hs.append(el("span", "mt", "Help and Support"));
@@ -2330,7 +2370,7 @@ async function enableChatterPush() {
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') return say('Notification permission was not granted.');
   try {
-    const reg = await navigator.serviceWorker.register('sw.js');
+    const reg = await navigator.serviceWorker.register('/sw.js');
     let sub = await reg.pushManager.getSubscription();
     if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: chatterBase64UrlBytes(CHATTER_VAPID_PUBLIC_KEY) });
     const j = sub.toJSON();
@@ -2342,7 +2382,7 @@ async function enableChatterPush() {
 }
 async function disableChatterPush() {
   try {
-    const reg = await navigator.serviceWorker.getRegistration();
+    const reg = await navigator.serviceWorker.getRegistration('/');
     const sub = reg && await reg.pushManager.getSubscription();
     if (sub) {
       const endpoint = sub.endpoint;
@@ -2369,15 +2409,29 @@ function applySavedPreferences() {
 async function loadSettings() { try { const {data, error} = await sb.from("user_settings").select("data").eq("user_id", me.id).maybeSingle(); if (error) throw error; S = (data && data.data) || {}; if (S.post_vis) fdraft.vis = S.post_vis; if (S.display_theme) setTheme(S.display_theme); applySavedPreferences(); } catch (e) { console.warn("Could not load saved settings:", e.message || e); } }
 async function saveS(k, v) { const previous = S[k]; S[k] = v; if (k === "post_vis") fdraft.vis = v; applySavedPreferences(); const {error} = await sb.from("user_settings").upsert({user_id: me.id, data: S}); if (error) { S[k] = previous; applySavedPreferences(); alert("Couldn't save: " + error.message + (/user_settings|relation/i.test(error.message) ? "\n\nRun upgrade9.sql in Supabase first." : "")); } }
 addEventListener("pagehide", () => { if (S.save_login === false) Object.keys(localStorage).filter(k => k.startsWith("sb-")).forEach(k => localStorage.removeItem(k)); });
+// these two open from the Menu only, so they are not listed inside Settings any more
+const MENU_ONLY = new Set(["Help and Support", "Accessibility and Display"]);
+const ci = d => '<svg class="rico" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>';
+const CATI = {
+  "General Account Settings": ci('<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c0-4 3.4-6.2 7.5-6.2s7.5 2.2 7.5 6.2"/>'),
+  "Privacy Settings": ci('<rect x="5" y="10.5" width="14" height="10" rx="2.6"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/><path d="M12 14.6v2.2"/>'),
+  "Security and Login": ci('<path d="M12 3l7 2.8v5.4c0 4.4-2.9 7.8-7 9.8-4.1-2-7-5.4-7-9.8V5.8z"/><path d="M8.8 12.2l2.3 2.3 4.2-4.6"/>'),
+  "Notifications": ci('<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.7 2.3H4.3z"/><path d="M10 21a2.1 2.1 0 0 0 4 0"/>'),
+  "Audience and Tagging": ci('<path d="M3.5 12.2V4.8a1.3 1.3 0 0 1 1.3-1.3h7.4l8.3 8.3a1.5 1.5 0 0 1 0 2.1l-6.4 6.4a1.5 1.5 0 0 1-2.1 0z"/><circle cx="8.4" cy="8.4" r="1.4"/>'),
+  "Blocking": ci('<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>'),
+  "Stories and Clips": ci('<rect x="3" y="4.5" width="18" height="15" rx="3.2"/><path d="M10.2 9.2l4.6 2.8-4.6 2.8z"/>'),
+  "Your Chatter Information": ci('<path d="M6.5 3h8l4 4v13a1.5 1.5 0 0 1-1.5 1.5H6.5A1.5 1.5 0 0 1 5 20V4.5A1.5 1.5 0 0 1 6.5 3z"/><path d="M14.5 3v4h4"/><path d="M8.5 12h7M8.5 15.5h7"/>'),
+  "Apps and Websites": ci('<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.8 2.9 2.8 15.1 0 18M12 3c-2.8 2.9-2.8 15.1 0 18"/>')
+};
 const openSettings = () => { stCat = stItem = null; $("#st").classList.remove("hide"); drawSet(); };
 const closeSet = () => $("#st").classList.add("hide");
 function drawSet() {
   const o = $("#st"); o.replaceChildren(); const w = el("div", "sw2"), top = el("div", "mtop"), bk = el("button", "", "←");
   if (stCat === "Help and Support") w.classList.add(stItem ? "help-support-detail" : "help-support-screen");
-  bk.type = "button"; bk.onclick = () => { if (stItem) stItem = null; else if (stCat) stCat = null; else return closeSet(); drawSet(); };
+  bk.type = "button"; bk.onclick = () => { if (stItem) stItem = null; else if (stCat && !MENU_ONLY.has(stCat)) stCat = null; else return closeSet(); drawSet(); };
   top.append(bk, el("b", null, stItem || stCat || "Settings")); w.append(top);
   const row = (t, fn, tick) => { const r = el("div", "mrow"), x = el("span", tick ? "ok" : "", tick ? "✓" : "›"); r.append(el("span", "mt", t), x); r.onclick = fn; return r; };
-  if (!stCat) Object.keys(ST).forEach((c, i) => w.append(row((i + 1) + ". " + c, () => { stCat = c; drawSet(); })));
+  if (!stCat) Object.keys(ST).filter(c => !MENU_ONLY.has(c)).forEach(c => { const r = row(c, () => { stCat = c; drawSet(); }); r.insertAdjacentHTML("afterbegin", CATI[c] || MI.gear); w.append(r); });
   else if (!stItem) ST[stCat].forEach(it => w.append(row(it, () => { stItem = it; drawSet(); })));
   else w.append(setDetail(stItem, row));
   o.append(w);
@@ -2713,6 +2767,7 @@ async function openRoom(id) {
   const r = rooms.find(x => x.id === id); if (!r) return;
   $("#title").textContent = title(r); $("#app").classList.add("open");
   rows = {}; stopEdit(); setPend(null); joinTyping(id); updateHead(); if (r.is_dm && other(r)) loadLastSeen(other(r));
+  if (callable(r)) (members[id] || []).filter(u => u !== me.id).slice(0, 8).forEach(u => inboxChan(u));
   if (latest[id]) markRead(id, latest[id].created_at);
   render();
   const box = $("#msgs"); box.replaceChildren();
@@ -2833,6 +2888,7 @@ async function shrink(file) {
   const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(bmp, 0, 0, c.width, c.height);
   return new Promise((ok, no) => c.toBlob(b => b ? ok(b) : no(new Error("Couldn't process the image")), "image/jpeg", 0.82));
 }
+function showSent(m, rid) { latest[rid] = m; if (cur === rid) { addMsg(m, rid); markRead(rid, m.created_at); } render(); }
 $("#f").onsubmit = async e => {
   e.preventDefault();
   const i = $("#in"), body = i.value.trim(), rid = cur;
@@ -2840,7 +2896,8 @@ $("#f").onsubmit = async e => {
   if ((!body && !pend) || !rid || busy) return;
   if (!pend) {
     i.value = "";
-    const {error} = await sb.from("messages").insert({room_id: rid, body}); sfx(error ? "err" : "sent");
+    const {data: sent, error} = await sb.from("messages").insert({room_id: rid, body}).select().single(); sfx(error ? "err" : "sent");
+    if (!error && sent) showSent(sent, rid);
     if (error) { i.value = body; if (/CHATTER_STRANGERS_BLOCKED|You can only message friends|friends only/i.test(error.message || "")) toast("This person only accepts messages from friends."); else toast("Message could not be sent."); }
     return;
   }
@@ -2849,7 +2906,7 @@ $("#f").onsubmit = async e => {
     const blob = await shrink(pend.file), path = me.id + "/" + uid() + ".jpg";
     const up = await sb.storage.from("chat-images").upload(path, blob, {contentType: "image/jpeg"});
     if (up.error) throw up.error;
-    const {error} = await sb.from("messages").insert({room_id: rid, body, image_path: path}); sfx(error ? "err" : "sent");
+    const {data: sent, error} = await sb.from("messages").insert({room_id: rid, body, image_path: path}).select().single(); sfx(error ? "err" : "sent"); if (!error && sent) showSent(sent, rid);
     if (error) { sb.storage.from("chat-images").remove([path]); throw error; }
     i.value = ""; setPend(null);
   } catch (err) { alert("Couldn't send: " + (err.message || err)); }
@@ -2900,7 +2957,12 @@ function markSeen(rid) {
   clearTimeout(msT);
   msT = setTimeout(() => { (reads[rid] = reads[rid] || {})[me.id] = Date.now(); sb.rpc("mark_read", {rid}).then(() => {}); }, 300);
 }
-document.addEventListener("visibilitychange", () => { if (cur && me) markSeen(cur); });
+let hiddenAt = 0;
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") hiddenAt = Date.now();
+  else if (me && hiddenAt && Date.now() - hiddenAt > 3000) { try { if (sb.realtime && !sb.realtime.isConnected()) sb.realtime.connect(); } catch (e) {} loadChats(); }
+  if (cur && me) markSeen(cur);
+});
 function updateSeen() {
   document.querySelectorAll("#msgs .seen").forEach(e => e.remove());
   const r = rooms.find(x => x.id === cur); if (!r || !me || pref.rcpt === false || !(r.is_dm || r.is_group)) return;
@@ -3307,9 +3369,22 @@ const fmtDur = ms => { const s = Math.floor(ms / 1000), m = Math.floor(s / 60); 
 const callable = r => !!r && (r.is_dm || r.is_group);
 
 // one-off message to another user's personal "inbox" channel (ring / cancel / decline)
+const inboxOut = new Map();
+function inboxChan(uid) {
+  let e = inboxOut.get(uid);
+  if (!e) {
+    const ch = sb.channel("inbox:" + uid); e = {ch, ok: false, q: [], t: null}; inboxOut.set(uid, e);
+    ch.subscribe(s => {
+      if (s === "SUBSCRIBED") { e.ok = true; e.q.splice(0).forEach(m => ch.send(m)); }
+      else if (s === "CLOSED" || s === "CHANNEL_ERROR" || s === "TIMED_OUT") { if (inboxOut.get(uid) === e) inboxOut.delete(uid); }
+    });
+  }
+  clearTimeout(e.t); e.t = setTimeout(() => { if (inboxOut.get(uid) === e) inboxOut.delete(uid); sb.removeChannel(e.ch); }, 60000);
+  return e;
+}
 function sendInbox(uid, event, payload) {
-  const ch = sb.channel("inbox:" + uid);
-  ch.subscribe(s => { if (s === "SUBSCRIBED") { ch.send({type: "broadcast", event, payload}); setTimeout(() => sb.removeChannel(ch), 1500); } });
+  const e = inboxChan(uid), m = {type: "broadcast", event, payload};
+  if (e.ok) e.ch.send(m); else e.q.push(m);
 }
 function listenInbox() {
   sb.channel("inbox:" + me.id)
@@ -3327,11 +3402,9 @@ async function initPush() {
   const P = C.Plugins && C.Plugins.PushNotifications; if (!P) return;
   try {
     let perm = await P.checkPermissions(); if (perm.receive !== "granted") perm = await P.requestPermissions(); if (perm.receive !== "granted") return;
-    for (const [id, name, snd] of [["messages", "Messages", "new_message"], ["mention", "Mentions", "mention"], ["notif", "Notifications", "notification"], ["like", "Likes", "like_reaction"], ["heart", "Clip likes", "heart_reaction"], ["reply", "Comments", "reply"], ["calls", "Calls", "incoming_call"], ["vcalls", "Video calls", "video_call_incoming"]]) {
-      await P.createChannel({id, name, importance: 5, sound: snd + ".mp3", vibration: true, visibility: 0});
-      // quiet twin: vibrates, no sound (sounds are only played inside the app). The server must send "<id>_q" as the channel id.
-      await P.createChannel({id: id + "_q", name: name + " (vibrate only)", importance: 5, sound: "silent.mp3", vibration: true, visibility: 0});
-    }
+    for (const [id, name, snd] of [["messages", "Messages", "new_message"], ["mention", "Mentions", "mention"], ["notif", "Notifications", "notification"], ["like", "Likes", "like_reaction"], ["heart", "Clip likes", "heart_reaction"], ["reply", "Comments", "reply"], ["calls", "Calls", "incoming_call"], ["vcalls", "Video calls", "video_call_incoming"]])
+      { try { await P.deleteChannel({id}); } catch (e) {}   // alisin ang lumang channel (walang tunog)
+        await P.createChannel({id: id + "_v2", name, importance: 5, sound: snd + ".mp3", vibration: true, visibility: 0}); }
     await P.removeAllListeners();
     P.addListener("registration", async (t) => {
       pushTok = t.value;
@@ -3344,9 +3417,20 @@ async function initPush() {
       }
     });
     P.addListener("registrationError", e => console.warn("push registration failed", e));
-    P.addListener("pushNotificationActionPerformed", a => { const d = (a.notification && a.notification.data) || {}; if (d.room) { setTab("chats"); openRoom(d.room); } else if (d.tab) setTab(d.tab); });
+    P.addListener("pushNotificationActionPerformed", a => { const d = (a.notification && a.notification.data) || {}; if (d.type === "call" && d.room) return onCallPush(d, d.answer === "1" || a.actionId === "answer"); if (d.room) { setTab("chats"); openRoom(d.room); } else if (d.tab) setTab(d.tab); });
     await P.register();
   } catch (e) { console.warn("push", e); }
+}
+const waitUntil = (fn, ms) => new Promise(res => { const t0 = Date.now(), i = setInterval(() => { let v; try { v = fn(); } catch (e) {} if (v || Date.now() - t0 > ms) { clearInterval(i); res(v); } }, 150); });
+// opened from a call notification: "Answer" joins the call, a plain tap shows the incoming-call screen
+async function onCallPush(d, answer) {
+  const video = d.video === "1" || d.video === "true" || d.video === true, age = d.ts ? Date.now() - Number(d.ts) : 0;
+  const r = await waitUntil(() => me && rooms.find(x => x.id === d.room), 10000);
+  if (!r) return;
+  setTab("chats"); openRoom(d.room);
+  if (age > 45000) return toast("Missed call");
+  if (call || ringIn) return;
+  if (answer) joinCall(d.room, video); else onRing({room: d.room, from: d.from, video});
 }
 async function dropPush() { if (pushTok) { try { await sb.rpc("unregister_device", {tok: pushTok}); } catch (e) {} pushTok = null; } }
 
@@ -3354,32 +3438,9 @@ async function dropPush() { if (pushTok) { try { await sb.rpc("unregister_device
 const SFX = {msg: "01_New_Message", sent: "02_Message_Sent", recv: "03_Message_Received", notif: "04_Notification", like: "05_Like_Reaction", heart: "06_Heart_Reaction", reply: "07_Reply", mention: "08_Mention", ring: "09_Incoming_Call", vring: "10_Video_Call_Incoming", conn: "11_Call_Connecting", err: "12_Message_Error"}, SND = {};
 let actMax = null;
 const sfxGet = k => SND[k] || (SND[k] = Object.assign(new Audio("sounds/" + SFX[k] + ".mp3"), {preload: "auto"}));
-let AC = null; const SBUF = {}, SSRC = {};
-function acx() { if (!AC) { const C = window.AudioContext || window.webkitAudioContext; if (C) { try { AC = new C({latencyHint: "interactive"}); } catch (e) { AC = new C(); } } } return AC; }
-function sfxLoad() {
-  const c = acx(); if (!c) return;
-  Object.keys(SFX).forEach(k => { if (SBUF[k]) return; fetch("sounds/" + SFX[k] + ".mp3").then(r => r.arrayBuffer()).then(b => new Promise((ok, no) => c.decodeAudioData(b, ok, no))).then(buf => { SBUF[k] = buf; }).catch(() => {}); });
-}
-function sfx(k, loop) {
-  if (S.sounds === false) return null;
-  const c = AC, buf = SBUF[k];
-  if (c && buf) {
-    try {
-      if (c.state !== "running") c.resume();
-      sfxStop(k); const src = c.createBufferSource(); src.buffer = buf; src.loop = !!loop; src.connect(c.destination); src.start(0); SSRC[k] = src;
-      return {pause() { try { src.stop(); } catch (e) {} }};
-    } catch (e) {}
-  }
-  try { const a = sfxGet(k); a.loop = !!loop; a.currentTime = 0; a.play().catch(() => {}); return a; } catch (e) { return null; }
-}
-function sfxStop(k) {
-  const x = SSRC[k]; if (x) { try { x.stop(); } catch (e) {} delete SSRC[k]; }
-  const a = SND[k]; if (a) { a.pause(); a.currentTime = 0; a.loop = false; }
-}
-sfxLoad();
-const sfxWake = () => { sfxLoad(); if (AC && AC.state !== "running") AC.resume().catch(() => {}); Object.keys(SFX).forEach(sfxGet); };
-document.addEventListener("pointerdown", sfxWake, {once: true});
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && AC && AC.state !== "running") AC.resume().catch(() => {}); });
+function sfx(k, loop) { if (S.sounds === false) return null; try { const a = sfxGet(k); a.loop = !!loop; a.currentTime = 0; a.play().catch(() => {}); return a; } catch (e) { return null; } }
+function sfxStop(k) { const a = SND[k]; if (a) { a.pause(); a.currentTime = 0; a.loop = false; } }
+document.addEventListener("pointerdown", () => Object.keys(SFX).forEach(sfxGet), {once: true});
 
 // ringtone for incoming calls
 function ringStart() { try { ringTone = {a: sfx(ringIn && ringIn.video ? "vring" : "ring", true)}; } catch (e) {} }
@@ -3392,13 +3453,15 @@ async function onRing(p) {
   if (!callable(r) || !mm.includes(p.from) || !mm.includes(me.id)) return;
   if (call && call.room === p.room) return;
   if (call || ringIn) return sendInbox(p.from, "decline", {room: p.room, from: me.id, busy: true});
-  const who = names[p.from] || "Someone", kind = p.video ? "video" : "voice";
+  const kind = p.video ? "video" : "voice", paint = () => {
+    const who = names[p.from] || "Someone";
+    $("#rtxt").textContent = r.is_dm ? who + " is calling you" : who + " started a group " + kind + " call";
+    $("#rsub").textContent = (r.is_dm ? "" : title(r) + " · ") + (p.video ? "Video call" : "Voice call");
+  };
   ringIn = {room: p.room, from: p.from, video: !!p.video};
-  $("#rtxt").textContent = r.is_dm ? who + " is calling you" : who + " started a group " + kind + " call";
-  $("#rsub").textContent = (r.is_dm ? "" : title(r) + " · ") + (p.video ? "Video call" : "Voice call");
-  $("#ring").classList.remove("hide"); ringStart();
+  paint(); $("#ring").classList.remove("hide"); ringStart();
   ringIn.timer = setTimeout(dismissRing, 45000);
-  if (!names[p.from]) ensureNames([p.from]).then(() => { if (!ringIn || ringIn.room !== p.room || ringIn.from !== p.from) return; const w = names[p.from] || "Someone"; $("#rtxt").textContent = r.is_dm ? w + " is calling you" : w + " started a group " + kind + " call"; });
+  if (!names[p.from]) ensureNames([p.from]).then(() => { if (ringIn && ringIn.from === p.from) paint(); });
 }
 $("#ryes").onclick = () => { const p = ringIn; if (!p) return; dismissRing(); joinCall(p.room, p.video); };
 $("#rno").onclick = () => { const p = ringIn; if (!p) return; dismissRing(); sendInbox(p.from, "decline", {room: p.room, from: me.id}); };
@@ -3410,6 +3473,7 @@ async function startCall(video) {
   if (!callable(r) || call) return;
   if (r.is_dm && blocked.has(other(r))) return toast("Unblock this person first");
   sb.rpc("ring_push", {rid: r.id, video: !!video}).then(() => {}, () => {});
+  (members[r.id] || []).filter(u => u !== me.id).forEach(u => sendInbox(u, "ring", {room: r.id, video: !!video, from: me.id}));
   beginCall(r, video, true);
 }
 async function joinCall(roomId, video) {
@@ -3418,11 +3482,11 @@ async function joinCall(roomId, video) {
   beginCall(r, video, false);
 }
 async function beginCall(r, video, caller) {
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return alert("Calls need a secure (https) connection and a supported browser.");
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { if (caller) (members[r.id] || []).filter(u => u !== me.id).forEach(u => sendInbox(u, "cancel", {room: r.id, from: me.id})); return alert("Calls need a secure (https) connection and a supported browser."); }
   let stream;
   try {
     stream = await navigator.mediaDevices.getUserMedia({audio: true, video: video ? {facingMode: "user", width: {ideal: r.is_dm ? 1280 : 640}, height: {ideal: r.is_dm ? 720 : 480}} : false});
-  } catch (e) { return alert("Couldn't access your " + (video ? "camera and microphone" : "microphone") + ". Check your browser permissions."); }
+  } catch (e) { if (caller) (members[r.id] || []).filter(u => u !== me.id).forEach(u => sendInbox(u, "cancel", {room: r.id, from: me.id})); return alert("Couldn't access your " + (video ? "camera and microphone" : "microphone") + ". Check your browser permissions."); }
   if (call) { stream.getTracks().forEach(t => t.stop()); return; }
   call = {room: r.id, video, caller, dm: !!r.is_dm, stream, peers: {}, mic: true, cam: video, everConnected: false, start: 0, timer: null, ch: null, wait: null};
   $("#ctitle").textContent = title(r);
@@ -3436,7 +3500,6 @@ async function beginCall(r, video, caller) {
   ch.subscribe(s => {
     if (s !== "SUBSCRIBED" || !call || call.ch !== ch) return;
     sig({t: "join", cam: call.cam});
-    if (caller) { (members[r.id] || []).filter(u => u !== me.id).forEach(u => sendInbox(u, "ring", {room: r.id, video, from: me.id})); pushCall({action: "call", room: r.id, video}); }
   });
 }
 
@@ -3531,7 +3594,7 @@ function endCall(why) {
   clearInterval(c.timer); clearTimeout(c.wait);
   try { c.ch.send({type: "broadcast", event: "sig", payload: {t: "leave", from: me.id}}); } catch (e) {}
   if (c.caller) logCall(c);
-  if (c.caller && !c.everConnected) { (members[c.room] || []).filter(u => u !== me.id).forEach(u => sendInbox(u, "cancel", {room: c.room, from: me.id})); pushCall({action: "cancel", room: c.room}); }
+  if (c.caller && !c.everConnected) (members[c.room] || []).filter(u => u !== me.id).forEach(u => sendInbox(u, "cancel", {room: c.room, from: me.id}));
   Object.values(c.peers).forEach(P => { try { P.pc.close(); } catch (e) {} });
   c.stream.getTracks().forEach(t => t.stop());
   setTimeout(() => sb.removeChannel(c.ch), 500);
