@@ -1232,7 +1232,6 @@ function render() {
       box.append(bar);
       if (pfilter === "requests") { if (!req.length) box.append(el("div", "hint", "No friend requests.")); req.forEach(f => userRow(box, f.requester)); }
       else { const L = pfilter === "active" ? act : fs; if (!L.length) box.append(el("div", "hint", pfilter === "active" ? "No friends are active right now." : "No friends yet. Search a username above to add one.")); L.forEach(uid => friendRow(box, uid)); pymkSection(box); }
-      if (pfilter === "all" && S.n_pymk !== false && pymk.length) { box.append(el("div", "sec", "People you may know")); pymk.forEach(p => userRow(box, p.id)); }
     }
   } else if (tab === "notifs") {
     const seenT = +localStorage.getItem("nseen") || 0;
@@ -3592,7 +3591,7 @@ const pymkHide = new Set();
 async function loadPymk() { pymk = []; const {data} = await sb.from("profiles").select("id,username").neq("id", me.id).limit(40); (data || []).forEach(p => names[p.id] = p.username); pymk = (data || []).map(p => p.id); loadPhotos(pymk); render(); }
 function pymkSection(box) {
   if (!pymk) { loadPymk(); return; }
-  const list = pymk.filter(u => !pymkHide.has(u) && !rel(u) && !blocked.has(u)); if (!list.length) return;
+  const list = pymk.filter(u => names[u] && !pymkHide.has(u) && !rel(u) && !blocked.has(u)); if (!list.length) return;
   const h = el("div", "shead"), sm = el("button", "ghost", pymkAll ? "See less" : "See more"); sm.onclick = () => { pymkAll = !pymkAll; render(); };
   h.append(el("span", null, "People you may know"), sm); box.append(h);
   (pymkAll ? list : list.slice(0, 3)).forEach(u => {
