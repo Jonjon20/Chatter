@@ -1670,7 +1670,7 @@ function feedRender() {
   if (fmode === "post") box.append(storiesRow());
   const vis = fposts.filter(p => !fhide.has(p.id));
   if (!vis.length) box.append(floading ? spinEl() : el("div", "hint", fmode === "clip" ? "No clips yet. Add the first one!" : "No posts yet. Add friends or post something."));
-  if (fmode === "clip") { box.style.setProperty("--ftop", top.offsetHeight + "px"); vis.forEach(reel); watchReels(); return; }
+  if (fmode === "clip") { box.style.setProperty("--ftop", top.offsetHeight + "px"); vis.forEach(p => reel(p)); watchReels(); return; }
   vis.forEach(p => box.append(postCard(p)));
 }
 function dropFile() { (fdraft.urls || (fdraft.url ? [fdraft.url] : [])).forEach(u => { try { URL.revokeObjectURL(u); } catch (e) {} }); fdraft.file = null; fdraft.url = null; fdraft.files = []; fdraft.urls = []; }
