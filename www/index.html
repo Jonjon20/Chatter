@@ -477,6 +477,10 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .story-viewer-row{display:flex;align-items:center;gap:12px;padding:9px 0}
 .story-viewer-row .av{width:46px;height:46px;font-size:18px;flex:none}
 .story-activity-empty{padding:28px 12px;text-align:center;color:var(--mut)}
+.stcard{position:relative;width:132px;height:200px;border-radius:16px;overflow:hidden;background:#111;cursor:pointer;margin-bottom:2px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:12px;text-align:center;padding:8px;box-sizing:border-box}
+.stcard img,.stcard video{position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;object-fit:cover;border-radius:0}
+.pav.hasst{cursor:pointer}.pav.hasst .av{box-shadow:0 0 0 3px var(--bg2,#000),0 0 0 6px var(--accent,#7c3aed)}
+.act.hasst .av{box-shadow:0 0 0 2px var(--bg,#000),0 0 0 4px var(--accent,#7c3aed)}.actw{position:relative}.actplus{position:absolute;right:-2px;bottom:-2px;width:20px;height:20px;border-radius:50%;background:var(--accent,#7c3aed);color:#fff;font-size:15px;line-height:19px;text-align:center;border:2px solid var(--bg,#000);box-sizing:content-box}
 .sv .story-heart.on svg{fill:#ff3b5c;stroke:#ff3b5c}
 .sv-sheetbg{position:absolute;inset:0;z-index:30;background:#0006;display:flex;align-items:flex-end;justify-content:center}
 .sv-sheet{width:100%;background:#2b2d30;color:#fff;border-radius:18px 18px 0 0;padding:8px 8px calc(14px + env(safe-area-inset-bottom,0px));animation:svUp .18s ease-out}
@@ -1552,7 +1556,7 @@ async function loadStories() {
   const {data, error} = await sb.from("posts").select("*").eq("kind", "story").gte("created_at", new Date(Date.now() - 864e5).toISOString()).order("created_at", {ascending: false}).limit(80);
   if (error) { fstories = []; return; }
   const accepted = new Set(fr.filter(f => f.status === "accepted").map(f => f.requester === me.id ? f.addressee : f.requester));
-  fstories = (data || []).filter(s => s.user_id === me.id || s.visibility !== "friends" || accepted.has(s.user_id));
+  fstories = (data || []).filter(s => s.user_id === me.id || accepted.has(s.user_id));
   await ensureNames(fstories.map(s => s.user_id));
   const seenU = new Set();
   await Promise.all(fstories.filter(s => !seenU.has(s.user_id) && seenU.add(s.user_id)).map(async s => { if (s.media_path) s.url = await imgUrl(s.media_path); }));
@@ -1786,11 +1790,11 @@ async function openStory(u, custom) {
     if (sent) { if (!rooms.find(r => r.id === dm.data)) await loadChats(); showSent(sent, dm.data); }
     return true;
   };
-  reply.addEventListener("keydown", async e => { if (e.key === "Enter" && reply.value.trim()) { const v = reply.value.trim(); reply.value = ""; if (!(await sendReply(v))) reply.value = v; else reply.blur(); } });
+  reply.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); doSend(); } });
   reply.addEventListener("focus", () => { clearTimeout(t); const m = box.querySelector("video"); if (m) m.pause(); });
   reply.addEventListener("blur", () => { clearTimeout(t); resumeStory(); });
   heart.type = share.type = "button";
-  heart.setAttribute("aria-label", "Send heart reaction"); share.setAttribute("aria-label", "Share story");
+  heart.setAttribute("aria-label", "Send heart reaction"); share.setAttribute("aria-label", "Send message");
   heart.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.8a5.4 5.4 0 0 0-7.6 0L12 6l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6l1.2 1.2L12 21l7.6-7.4 1.2-1.2a5.4 5.4 0 0 0 0-7.6Z"/></svg>';
   share.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>';
   heart.onclick = async () => {
@@ -1799,14 +1803,16 @@ async function openStory(u, custom) {
     const r = on ? await sb.from("post_likes").delete().eq("post_id", st.id).eq("user_id", me.id) : await sb.from("post_likes").insert({post_id: st.id});
     if (r.error) { heart.classList.toggle("on", on); toast("Couldn’t send your reaction."); } else if (!on) { sfx("heart"); toast("Reaction sent"); }
   };
-  share.onclick = async () => {
-    const s = L[i];
-    try {
-      if (navigator.share) await navigator.share({title: (names[u] || "Someone") + "’s story", text: "View this story on Chatter", url: location.href});
-      else if (navigator.clipboard) { await navigator.clipboard.writeText(location.href); toast("Link copied"); }
-      else toast("Sharing is not supported on this device.");
-    } catch (e) { if (e && e.name !== "AbortError") toast("Could not share this story."); }
+  const doSend = async () => {
+    const v = reply.value.trim();
+    if (!v) { reply.focus(); return; }
+    share.disabled = true; reply.value = "";
+    const ok = await sendReply(v);
+    share.disabled = false;
+    if (!ok) reply.value = v; else reply.blur();
   };
+  share.addEventListener("mousedown", e => e.preventDefault()); share.addEventListener("touchstart", e => { if (document.activeElement === reply) e.preventDefault(); }, {passive: false});
+  share.onclick = doSend;
   let ownFoot = null;
   if (isOwnStory) {
     ownFoot = el("div", "story-owner-foot");
@@ -2454,8 +2460,18 @@ async function pfLoad(uid) {
   pf.posts = L.filter(p => p.kind === "post"); pf.clips = L.filter(p => p.kind === "clip"); pf.loaded = true;
   pfPaint(); if (!pf.reps) loadRepTab();
 }
+async function pfLoadStory(uid) {
+  try {
+    const {data, error} = await sb.from("posts").select("*").eq("kind", "story").eq("user_id", uid).gte("created_at", new Date(Date.now() - 864e5).toISOString()).order("created_at", {ascending: true}).limit(30);
+    if (pf.uid !== uid) return;
+    if (error) { pf.stories = []; return; }
+    const r = uid === me.id ? null : rel(uid), friend = uid === me.id || (r && r.status === "accepted");
+    pf.stories = (data || []).filter(x => x.media_path && (friend || x.visibility === "public"));
+    pfPaint();
+  } catch (e) {}
+}
 function pfStart(box, uid, ov) {
-  if (pf.uid !== uid || pf.ov !== ov) { pf = {uid, tab: "posts", posts: [], clips: [], loaded: false, box, ov, info: null, friends: null}; pfLoad(uid); pfLoadExtra(uid); }
+  if (pf.uid !== uid || pf.ov !== ov) { pf = {uid, tab: "posts", posts: [], clips: [], loaded: false, box, ov, info: null, friends: null, stories: null}; pfLoad(uid); pfLoadExtra(uid); pfLoadStory(uid); }
   pf.box = box; pf.ov = ov; drawProfile();
 }
 function pfPaint() {
@@ -2493,6 +2509,13 @@ function drawProfile() {
   const cv = el("div", "pcv"), pa = el("div", "pav");
   if (coverUrl[uid]) cv.style.backgroundImage = 'url("' + coverUrl[uid] + '")';
   pa.append(avatar(uid, nm[0].toUpperCase(), "xxl", bl ? null : uid));
+  if (!bl && pf.stories && pf.stories.length) {
+    pa.classList.add("hasst");
+    pa.addEventListener("click", e => {
+      if (e.target.closest(".camb")) return; e.stopPropagation(); e.preventDefault();
+      openStory(uid, {list: pf.stories.slice(), index: 0, onRemove: g => { pf.stories = (pf.stories || []).filter(x => x.id !== g.id); pfPaint(); }});
+    }, true);
+  }
   if (mine) {
     const c1 = el("button", "camb", "📷"), c2 = el("button", "camb", "📷"); c1.type = c2.type = "button";
     c1.onclick = () => pickPhoto("cover"); c2.onclick = () => pickPhoto("avatar"); cv.append(c1); pa.append(c2);
@@ -3369,7 +3392,7 @@ function addMsg(m, forRoom) {
   const pic = el("div", "pic hide"), bub = el("div", "bub"), tm = el("div", "tm"), acts = el("div", "acts"), rq = el("div", "rpq hide"), rx = el("div", "rxs hide");
   // one tap on a message: reactions + Reply / Edit / Unsend
   col.onclick = e => {
-    if (e.target.closest("img,video,button,a,.rxs,.rpq,.mtile")) return;
+    if (e.target.closest("img,video,button,a,.rxs,.rpq,.mtile,.stcard")) return;
     const o = rows[m.id]; if (!o || o.m.deleted_at || callLog(o.m.body)) return;
     if (String(getSelection()).trim()) return;
     e.stopPropagation(); openMpop(o.m, o.bub.classList.contains("hide") ? o.pic : o.bub);
@@ -3380,6 +3403,34 @@ function addMsg(m, forRoom) {
   if (!mine) { delete typers[m.user_id]; showTyping(); }
   if (near || mine) box.scrollTop = box.scrollHeight;
   updateSeen(); if (!$("#sbar").classList.contains("hide")) runSearch();
+}
+const scache = {};
+function getStoryPost(id) {
+  if (!(id in scache)) scache[id] = sb.from("posts").select("id,user_id,body,media_path,media_type,created_at").eq("id", id).maybeSingle()
+    .then(async ({data}) => { if (data && data.media_path) data.url = await imgUrl(data.media_path); return data || null; }, () => null);
+  return scache[id];
+}
+function drawStoryMsg(o, m, g) {
+  const first = t => String(t || "").split(/\s+/)[0], mineMsg = m.user_id === me.id;
+  const label = owner => {
+    const who = owner === me.id ? "your" : (owner && names[owner] ? first(names[owner]) + "’s" : "their");
+    return "↩ " + (mineMsg ? "You replied to " + who + " story" : first(names[m.user_id] || "Someone") + " replied to " + who + " story");
+  };
+  o.rq.classList.remove("hide"); o.rq.style.marginBottom = "4px"; o.rq.style.cursor = "default";
+  o.rq.replaceChildren(el("div", "rqh", label(mineMsg ? null : me.id)));
+  const card = el("div", "stcard", "Loading…"); o.pic.classList.remove("hide"); o.pic.append(card);
+  getStoryPost(g.id).then(async st => {
+    if (!rows[m.id] || rows[m.id].m !== o.m) return;
+    if (!st) { card.textContent = "Story unavailable"; return; }
+    await ensureNames([st.user_id]);
+    o.rq.replaceChildren(el("div", "rqh", label(st.user_id)));
+    const exp = Date.now() - Date.parse(st.created_at) > 864e5, gone = exp && st.user_id !== me.id;
+    card.replaceChildren();
+    if (gone || !st.url) { card.textContent = gone ? "Story is no longer available" : "Story unavailable"; return; }
+    if (st.media_type === "video") { const v = el("video"); v.muted = true; v.playsInline = true; v.preload = "metadata"; v.src = st.url + "#t=0.1"; card.append(v, playBadge()); }
+    else { const im = el("img"); im.src = st.url; im.alt = "Story"; card.append(im); }
+    card.onclick = e => { e.stopPropagation(); openStory(st.user_id, {list: [st], index: 0, archived: exp}); };
+  });
 }
 function fill(m) {
   const o = rows[m.id]; if (!o) return; o.m = m;
@@ -3406,7 +3457,7 @@ function fill(m) {
   }
   o.tm.textContent = fmt(m.created_at) + (m.edited_at && !gone ? " · edited" : ""); o.tm.classList.toggle("hide", !!cl);
   if (o.rq) { if (m.reply_to != null && !gone) { o.rq.classList.remove("hide"); drawRq(o, m); } else { o.rq.classList.add("hide"); o.rq.replaceChildren(); } }
-  if (o.rq && !gone && m.reply_to == null && storyTag(m.body)) { o.rq.classList.remove("hide"); o.rq.replaceChildren(el("div", "rqh", "↩ " + (m.user_id === me.id ? "You replied to their story" : "Replied to your story"))); }
+  if (o.rq && !gone && m.reply_to == null && storyTag(m.body)) drawStoryMsg(o, m, storyTag(m.body));
   const mb = o.row.querySelector(".more");
   if (mb) { mb.classList.toggle("hide", gone || !!cl); if (gone) o.row.classList.remove("sel"); }
 }
@@ -4097,15 +4148,23 @@ function firstName(full) {
   while (w.length > 1 && (part.has(w[w.length - 1].toLowerCase().replace(/\./g, "")) || /^[A-Za-z]\.?$/.test(w[w.length - 1]))) w.pop();
   return w.join(" ");
 }
+let storiesAt = 0;
 function activeRow(box) {
   if (query || filter !== "all") return;
+  // My Day: friends' stories (own + accepted friends only) are loaded for this strip too
+  if (Date.now() - storiesAt > 60000) { storiesAt = Date.now(); loadStories().then(() => { if (tab === "chats") render(); }); }
   const fs = fr.filter(f => f.status === "accepted").map(f => f.requester === me.id ? f.addressee : f.requester).filter(u => !blocked.has(u));
-  if (!fs.length) return;
-  fs.sort((x, y) => (online.has(y) ? 1 : 0) - (online.has(x) ? 1 : 0) || String(names[x] || "").localeCompare(String(names[y] || "")));
+  const hasSt = u => fstories.some(x => x.user_id === u);
+  fs.sort((x, y) => (hasSt(y) ? 1 : 0) - (hasSt(x) ? 1 : 0) || (online.has(y) ? 1 : 0) - (online.has(x) ? 1 : 0) || String(names[x] || "").localeCompare(String(names[y] || "")));
   const fn = u => firstName(names[u] || "Someone"), cnt = {}; fs.forEach(u => cnt[fn(u)] = (cnt[fn(u)] || 0) + 1);
   const lab = u => { const f = fn(u); if (cnt[f] < 2) return f; const rest = String(names[u] || "").slice(f.length).trim(); return rest ? f + " " + rest[0].toUpperCase() + "." : f; };   // two "Jon Jon"s -> "Jon Jon S." / "Jon Jon G."
   const row = el("div", "actrow");
-  fs.forEach(u => { const c = el("div", "act"); c.append(avatar(u, (names[u] || "?")[0].toUpperCase(), "lg", u), el("div", "t2", lab(u))); c.onclick = () => openDM(u); row.append(c); });
+  // your own story first: tap to view it, or the + to add one
+  const mine = hasSt(me.id), mc = el("div", "act" + (mine ? " hasst" : "")), mw = el("div", "actw");
+  mw.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase(), "lg"));
+  if (!mine) mw.append(el("div", "actplus", "+"));
+  mc.append(mw, el("div", "t2", "Your story")); mc.onclick = () => mine ? openStory(me.id) : pickStory(); row.append(mc);
+  fs.forEach(u => { const st = hasSt(u), c = el("div", "act" + (st ? " hasst" : "")); c.append(avatar(u, (names[u] || "?")[0].toUpperCase(), "lg", st ? null : u), el("div", "t2", lab(u))); c.onclick = () => st ? openStory(u) : openDM(u); row.append(c); });
   row.addEventListener("wheel", e => { if (row.scrollWidth > row.clientWidth && Math.abs(e.deltaY) > Math.abs(e.deltaX)) { row.scrollLeft += e.deltaY; e.preventDefault(); } }, {passive: false});   // mouse wheel scrolls it sideways on desktop
   box.append(row);
 }
