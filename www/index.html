@@ -2,7 +2,23 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script>try{var __t=localStorage.getItem("theme");if(__t==="light"||__t==="dark")document.documentElement.setAttribute("data-theme",__t)}catch(e){}</script>
-<script>try{var __q=matchMedia("(min-width:1000px) and (hover:hover) and (pointer:fine)");var __s=function(){document.documentElement.classList.toggle("dt",__q.matches)};__s();__q.addEventListener("change",__s)}catch(e){}</script>
+<script>(function(){
+  // Desktop view = a computer (not a phone/tablet) with a window at least ~900px wide. Browser zoom
+  // (e.g. 125-150% on Windows) shrinks the CSS width, so we no longer require 1000px + hover + fine pointer.
+  var ua = navigator.userAgent || "", uad = navigator.userAgentData;
+  var mobileDev = (uad && uad.mobile === true) || /Android|iPhone|iPad|iPod|Mobile|Windows Phone/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  function mm(q) { try { return matchMedia(q).matches; } catch (e) { return false; } }
+  var cur = null;
+  function apply() {
+    var w = Math.max(window.innerWidth || 0, document.documentElement.clientWidth || 0);
+    var touchOnly = mm("(pointer:coarse)") && !mm("(any-pointer:fine)");
+    var v = !mobileDev && !touchOnly && w >= 900;
+    document.documentElement.classList.toggle("dt", v);
+    if (cur !== null && v !== cur) window.dispatchEvent(new Event("dtchange"));
+    cur = v;
+  }
+  try { apply(); window.addEventListener("resize", apply); } catch (e) {}
+})();</script>
 <title>Chatter</title>
 <style>
 :root{--bg:#fff;--bg2:#f0f2f5;--tx:#050505;--mut:#65676b;--me:var(--accent,#7c3aed);--metx:#fff;--oth:#e9ebee;--line:#e2e4e8;--dot:var(--accent,#7c3aed)}
@@ -1006,13 +1022,40 @@ function showAuth() {
   $("#app").classList.add("hide"); $("#auth").classList.remove("hide");
   $("#af").classList.remove("hide"); $("#wiz").classList.add("hide");
 }
+let loggingIn = false;
+const isRateLimit = er => !!er && (er.status === 429 || /rate limit/i.test(er.message || "") || /rate_limit/i.test(er.code || ""));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+// worth trying again by itself: rate limit, no connection, server hiccups. NOT worth it: wrong password, unconfirmed email, etc.
+const isRetryable = er => !!er && (isRateLimit(er) || !er.status || er.status >= 500 || /failed to fetch|network|timeout|AuthRetryableFetchError/i.test((er.name || "") + " " + (er.message || "")));
 $("#af").onsubmit = async e => {
   e.preventDefault();
-  const msg = $("#amsg"); msg.textContent = "One moment…";
-  const id = $("#em").value.trim();
+  if (loggingIn) return;
+  const msg = $("#amsg"), btn = $("#ab");
+  const id = $("#em").value.trim(), pw = $("#pw").value;
   if (!/^\S+@\S+\.\S+$/.test(id)) return msg.textContent = "Enter a valid email address.";
-  const {error} = await sb.auth.signInWithPassword({email: id, password: $("#pw").value});
-  msg.textContent = error ? error.message : "";
+  loggingIn = true; btn.disabled = true; btn.textContent = "Logging in…"; msg.textContent = "Logging in…";
+  let cancelled = false, cx = null; const authOpen = () => !$("#auth").classList.contains("hide") && !$("#af").classList.contains("hide");
+  const showCancel = setTimeout(() => { if (!loggingIn) return; cx = el("button", "gray sm", "Cancel"); cx.type = "button"; cx.onclick = () => { cancelled = true; }; msg.after(cx); }, 10000);
+  try {
+    // ONE press is enough: rate limit / no signal / server busy -> keep trying by itself (slowly, so we don't make the limit worse) until it goes through
+    let wait = 2500, ok = false;
+    for (;;) {
+      let error = null;
+      try { ({error} = await sb.auth.signInWithPassword({email: id, password: pw})); } catch (er) { error = er || new Error("Couldn't log in."); }
+      if (!error) { ok = true; break; }
+      if (cancelled) { msg.textContent = "Login cancelled."; break; }
+      if (!isRetryable(error)) { msg.textContent = error.message; break; }
+      msg.textContent = "Logging in…";
+      if (navigator.onLine === false) await Promise.race([new Promise(r => addEventListener("online", r, {once: true})), sleep(4000)]);
+      else await sleep(wait + Math.random() * 600);
+      wait = Math.min(Math.round(wait * 1.6), 15000);
+      if (cancelled) { msg.textContent = "Login cancelled."; break; }
+      if (!authOpen()) break; // already logged in somewhere else, or the user left this screen
+    }
+    // logged in: keep saying "Logging in…" until the app is really on screen (so nobody presses the button again)
+    if (ok) { const t0 = Date.now(); while (authOpen() && Date.now() - t0 < 30000) await sleep(150); if (!authOpen()) msg.textContent = ""; }
+  } catch (err) { msg.textContent = (err && err.message) || "Couldn't log in. Please try again."; }
+  finally { clearTimeout(showCancel); if (cx) cx.remove(); loggingIn = false; btn.disabled = false; btn.textContent = "Log in"; }
 };
 
 // ---------- SIGN UP WIZARD (name > birthday > gender > email > password > 6-digit code) ----------
@@ -2823,7 +2866,7 @@ function dtSync() {
 try {
   addEventListener("resize", dtSync);
   new MutationObserver(dtSync).observe($("#app"), {attributes: true, attributeFilter: ["class"]});
-  matchMedia("(min-width:1000px) and (hover:hover) and (pointer:fine)").addEventListener("change", () => { if (!me) return; feedDirty = true; if (DT()) loadFeed(); render(); dtSync(); });
+  window.addEventListener("dtchange", () => { if (!me) return; feedDirty = true; if (DT()) loadFeed(); render(); dtSync(); });
 } catch (e) {}
 
 function drawMenu() {
