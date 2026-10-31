@@ -115,7 +115,7 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .hd{min-width:0}.sub{font-size:12px;font-weight:400;color:var(--mut)}.sub.on{color:#31a24c}.sub:empty{display:none}
 .more{background:none;color:var(--mut);padding:2px 8px;font-size:18px;line-height:1;align-self:center}
 .acts{display:none;gap:6px;margin:2px 0 4px}.row.sel .acts{display:flex}
-.pic img{display:block;width:auto;height:auto;max-width:min(100%,360px);max-height:320px;border-radius:16px;cursor:pointer;background:var(--bg2)}.pic img.ld{min-width:180px;min-height:140px}.pic{margin-bottom:2px}.ldw{display:flex;justify-content:center;align-items:center;padding:28px 0;width:100%}.mgrid .ldw{grid-column:1/-1}#mv .ldw{padding:0}.spn{width:38px;height:38px;border-radius:50%;box-sizing:border-box;border:4px solid color-mix(in srgb,var(--accent,#7c3aed) 22%,transparent);border-top-color:var(--accent,#7c3aed);animation:spn .8s linear infinite}@keyframes spn{to{transform:rotate(360deg)}}#boot{position:fixed;inset:0;z-index:80;background:var(--bg,#0b0b12);display:flex;align-items:center;justify-content:center;transition:opacity .25s}#boot.off{opacity:0;pointer-events:none}#ptr{position:fixed;left:50%;top:0;z-index:60;width:42px;height:42px;border-radius:50%;background:var(--bg2,#1d1d25);box-shadow:0 2px 10px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transform:translate(-50%,0)}#ptr .spn{width:24px;height:24px;border-width:3px;animation:none}#ptr.go .spn{animation:spn .8s linear infinite}#list{overscroll-behavior-y:contain}.pic video{display:block;max-width:min(100%,360px);max-height:320px;min-width:180px;min-height:140px;border-radius:16px;background:#000}.pic img,.pic video,.mtile{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}.mtile{position:relative;display:inline-block;cursor:pointer;line-height:0;overflow:hidden;border-radius:inherit}.mtile .pb{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}.mtile .pb i{width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center}.mtile .pb svg{width:20px;height:20px;fill:#fff;margin-left:3px}.mgrid .mtile{display:block;aspect-ratio:1;border-radius:0}.mgrid .mtile img,.mgrid .mtile video{width:100%;height:100%;object-fit:cover;display:block;background:var(--bg2)}.mprev .mtile{display:block;width:100%;height:100%;border-radius:0}.mprev .mtile:first-child{grid-row:1/3}.mprev .mtile img,.mprev .mtile video{width:100%;height:100%;object-fit:cover;display:block;background:var(--bg2)}#mv{position:fixed;inset:0;z-index:150;background:#000;color:#fff;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}#mv button{all:unset;cursor:pointer;display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;color:var(--accent,#7c3aed);flex:none}#mv button:hover{background:rgba(255,255,255,.1)}#mv svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}#mv .mt{display:flex;align-items:center;gap:2px;padding:10px 10px 6px}#mv .sp{flex:1;text-align:center;font-size:13px;color:#aaa}#mv .st{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;padding:6px 10px;touch-action:pan-y}#mv .st img,#mv .st video{max-width:100%;max-height:100%;border-radius:18px;object-fit:contain;background:#000}#mv .hint{color:#999}#mv .vc{position:absolute;left:22px;right:22px;bottom:16px;display:flex;align-items:center;gap:10px;padding:4px 12px 4px 4px;border-radius:30px;background:rgba(0,0,0,.45)}#mv .vc button{color:#fff;width:36px;height:36px}#mv .vc svg{width:20px;height:20px}#mv .vc input{flex:1;accent-color:var(--accent,#7c3aed);height:4px;min-width:0}#mv .vc .tl{font-size:12px;color:#fff;min-width:38px;text-align:right}#mv .nv{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.5)}#mv .nv.l{left:10px}#mv .nv.r{right:10px}#mv .mb{display:flex;align-items:center;gap:8px;padding:8px 12px 12px}#mv .mb input{flex:1;min-width:0;background:#2a2a32;color:#fff;border:0;border-radius:24px;padding:12px 16px;font-size:15px;outline:none}#mv .mm{position:absolute;top:58px;right:12px;background:#1d1d25;border:1px solid #33333d;border-radius:14px;padding:6px;min-width:170px;box-shadow:0 8px 28px rgba(0,0,0,.6)}#mv .mm button{all:unset;display:block;box-sizing:border-box;width:100%;padding:12px 14px;border-radius:10px;color:#fff;font-size:15px;cursor:pointer}#mv .mm button:hover{background:rgba(255,255,255,.08)}#mv .mm button.red{color:#ff6b7a}
+.pic img{display:block;width:auto;height:auto;max-width:min(100%,360px);max-height:320px;border-radius:16px;cursor:pointer;background:var(--bg2)}.pic img.ld{min-width:180px;min-height:140px}.pic{margin-bottom:2px}.ldw{display:flex;justify-content:center;align-items:center;padding:28px 0;width:100%}.mgrid .ldw{grid-column:1/-1}#mv .ldw{padding:0}.spn{width:38px;height:38px;display:block}.spn svg{display:block;width:100%;height:100%;overflow:visible}.spn svg *{transform-box:fill-box;transform-origin:center}.spn .ct{stroke:color-mix(in srgb,var(--accent,#7c3aed) 22%,transparent)}.spn .cf{stroke:var(--accent,#7c3aed);stroke-dasharray:1000;stroke-dashoffset:1000;animation:cfill 1.5s ease-in-out infinite}.spn .cl{fill:var(--accent,#7c3aed);animation:ctail 1.5s ease-in-out infinite}@keyframes cfill{0%{stroke-dashoffset:1000;opacity:1}68%{stroke-dashoffset:0;opacity:1}88%{stroke-dashoffset:0;opacity:1}100%{stroke-dashoffset:0;opacity:0}}@keyframes ctail{0%,64%{transform:scale(1)}74%{transform:scale(1.3) rotate(-6deg)}86%,100%{transform:scale(1)}}@keyframes spn{to{transform:rotate(360deg)}}#boot{position:fixed;inset:0;z-index:80;background:var(--bg,#0b0b12);display:flex;align-items:center;justify-content:center;transition:opacity .25s}#boot.off{opacity:0;pointer-events:none}#ptr{position:fixed;left:50%;top:0;z-index:60;width:42px;height:42px;border-radius:50%;background:var(--bg2,#1d1d25);box-shadow:0 2px 10px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transform:translate(-50%,0)}#ptr .spn{width:30px;height:30px}#ptr .spn .cf,#ptr .spn .cl{animation:none}#ptr .spn .cf{opacity:1}#ptr.go .spn .cf{animation:cfill 1.5s ease-in-out infinite}#ptr.go .spn .cl{animation:ctail 1.5s ease-in-out infinite}#list{overscroll-behavior-y:contain}.pic video{display:block;max-width:min(100%,360px);max-height:320px;min-width:180px;min-height:140px;border-radius:16px;background:#000}.pic img,.pic video,.mtile{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}.mtile{position:relative;display:inline-block;cursor:pointer;line-height:0;overflow:hidden;border-radius:inherit}.mtile .pb{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}.mtile .pb i{width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center}.mtile .pb svg{width:20px;height:20px;fill:#fff;margin-left:3px}.mgrid .mtile{display:block;aspect-ratio:1;border-radius:0}.mgrid .mtile img,.mgrid .mtile video{width:100%;height:100%;object-fit:cover;display:block;background:var(--bg2)}.mprev .mtile{display:block;width:100%;height:100%;border-radius:0}.mprev .mtile:first-child{grid-row:1/3}.mprev .mtile img,.mprev .mtile video{width:100%;height:100%;object-fit:cover;display:block;background:var(--bg2)}#mv{position:fixed;inset:0;z-index:150;background:#000;color:#fff;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}#mv button{all:unset;cursor:pointer;display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;color:var(--accent,#7c3aed);flex:none}#mv button:hover{background:rgba(255,255,255,.1)}#mv svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}#mv .mt{display:flex;align-items:center;gap:2px;padding:10px 10px 6px}#mv .sp{flex:1;text-align:center;font-size:13px;color:#aaa}#mv .st{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;padding:6px 10px;touch-action:pan-y}#mv .st img,#mv .st video{max-width:100%;max-height:100%;border-radius:18px;object-fit:contain;background:#000}#mv .hint{color:#999}#mv .vc{position:absolute;left:22px;right:22px;bottom:16px;display:flex;align-items:center;gap:10px;padding:4px 12px 4px 4px;border-radius:30px;background:rgba(0,0,0,.45)}#mv .vc button{color:#fff;width:36px;height:36px}#mv .vc svg{width:20px;height:20px}#mv .vc input{flex:1;accent-color:var(--accent,#7c3aed);height:4px;min-width:0}#mv .vc .tl{font-size:12px;color:#fff;min-width:38px;text-align:right}#mv .nv{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.5)}#mv .nv.l{left:10px}#mv .nv.r{right:10px}#mv .mb{display:flex;align-items:center;gap:8px;padding:8px 12px 12px}#mv .mb input{flex:1;min-width:0;background:#2a2a32;color:#fff;border:0;border-radius:24px;padding:12px 16px;font-size:15px;outline:none}#mv .mm{position:absolute;top:58px;right:12px;background:#1d1d25;border:1px solid #33333d;border-radius:14px;padding:6px;min-width:170px;box-shadow:0 8px 28px rgba(0,0,0,.6)}#mv .mm button{all:unset;display:block;box-sizing:border-box;width:100%;padding:12px 14px;border-radius:10px;color:#fff;font-size:15px;cursor:pointer}#mv .mm button:hover{background:rgba(255,255,255,.08)}#mv .mm button.red{color:#ff6b7a}
 .row .bub.gone,.row.me .bub.gone{background:none;border:1px dashed var(--line);color:var(--mut);font-style:italic}
 .typing{height:18px;padding:0 18px;font-size:12px;color:var(--mut);font-style:italic}
 .bar{display:flex;align-items:center;gap:10px;padding:6px 14px;border-top:1px solid var(--line);font-size:13px;color:var(--mut)}.bar span{flex:1}.bar img,.bar video{height:48px;border-radius:8px}
@@ -163,6 +163,16 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .drf select{background:var(--bg2);color:var(--tx);border:0;border-radius:16px;padding:7px 10px;font:inherit;font-size:14px}.drf .r.w{flex-wrap:wrap}
 .drf .r{display:flex;gap:8px;align-items:center}.drf .r span{flex:1;min-width:0;color:var(--mut);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .str{display:flex;gap:8px;overflow-x:auto;padding:0 12px 14px;scrollbar-width:none}.str::-webkit-scrollbar{display:none}
+.cs{flex:none;width:100px;display:flex;flex-direction:column;align-items:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.cs .ct{position:relative;width:100px;height:128px;border-radius:30px;overflow:hidden;background:var(--cd2,#2a2b2c);box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent,#7c3aed)}
+.cs .ct img,.cs .ct video{position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;object-fit:cover;border-radius:0}
+.cs .cav{position:relative;z-index:1;width:38px;height:38px;margin-top:-19px;border-radius:50%;border:3px solid var(--bg);background:var(--bg);box-sizing:border-box}
+.cs .cav .av{width:100%;height:100%;font-size:14px}
+.cs .cn{margin-top:5px;max-width:100px;font-size:12px;font-weight:700;color:var(--tx);text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.cs.add .ct{background:color-mix(in srgb,var(--accent,#7c3aed) 12%,var(--cd,#18191a));box-shadow:none;border:2px dashed color-mix(in srgb,var(--accent,#7c3aed) 60%,transparent);display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+.cs.add .pl{width:44px;height:44px;border-radius:50%;background:var(--pgrad,var(--accent,#7c3aed));display:flex;align-items:center;justify-content:center;box-shadow:0 6px 14px color-mix(in srgb,var(--accent-deep,#4f46e5) 40%,transparent)}
+.cs.add .pl svg{width:22px;height:22px}
+
 .sc{position:relative;flex:none;width:120px;height:224px;border-radius:14px;overflow:hidden;background:#2a2b2c;border:1px solid var(--line);cursor:pointer;color:#fff}
 .sc>img,.sc>video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .sc .sg2{position:absolute;left:0;right:0;bottom:0;height:90px;background:linear-gradient(transparent,#000a)}
@@ -416,7 +426,7 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .compose .att{width:44px;height:44px;padding:0;border-radius:50%;background:var(--cd2);display:flex;align-items:center;justify-content:center}
 #send{background:var(--pgrad);color:#fff;border-radius:22px;height:44px;padding:0 20px;box-shadow:0 4px 12px color-mix(in srgb,var(--accent-deep) 30%,transparent)}
 #st{position:fixed;inset:0;z-index:70;background:var(--bg);overflow-y:auto}#st .sw2{max-width:640px;margin:0 auto;padding-bottom:40px}#st .stp{padding:14px 18px;display:flex;flex-direction:column;gap:12px}#st .cap{color:var(--mut);font-size:13px;white-space:normal}#st input{width:100%}#st .ok{color:var(--me);font-weight:700;font-size:20px}
-/* Help and Support page: simple mobile layout matching the supplied reference */
+/* Help & Feedback page: simple mobile layout matching the supplied reference */
 #st .help-support-screen>.mtop,#st .help-support-detail>.mtop{height:64px;padding:0 14px;gap:14px;border-bottom:1px solid var(--line);margin:0 0 8px;background:var(--bg);position:sticky;top:0;z-index:4}
 #st .help-support-screen>.mtop b,#st .help-support-detail>.mtop b{font-size:20px;font-weight:750;letter-spacing:-.25px}
 #st .help-support-screen>.mtop button,#st .help-support-detail>.mtop button{background:none;color:var(--tx);font-size:23px;padding:0 4px;width:30px}
@@ -459,7 +469,7 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 
 .confirm-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;background:#0009}.confirm-card{width:min(100%,360px);background:var(--bg2);color:var(--tx);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 12px 40px #0007}.confirm-card h3{margin:0 0 10px;font-size:19px}.confirm-card p{margin:0 0 22px;color:var(--mut);line-height:1.5}.confirm-actions{display:flex;justify-content:flex-end;gap:10px}.confirm-actions button{min-width:78px}
 
-/* Instagram-inspired story viewer controls */
+/* Story viewer controls */
 .sv{background:#000;color:#fff;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);gap:0}
 .sv .sb{order:0;padding:10px 10px 6px;gap:4px;z-index:4}
 .sv .st{order:1;padding:8px 14px 12px;min-height:58px;gap:10px;z-index:4}
@@ -698,7 +708,7 @@ button:not(.danger):not(.gray):not(.ghost):not(.mlog):not(.att):not(.end){--butt
 :is(#list,#feedc)[data-t="feed"] .sc .sr .av{border-color:var(--accent)!important}
 #st .accent-choice.selected{border-color:var(--accent)!important}
 
-/* Newsfeed "Add friend" = same plain look as on Profile */
+/* Newsfeed "Follow" = same plain look as on Profile */
 :is(#list,#feedc)[data-t="feed"] .pc .l1 .dot{display:inline!important}
 :is(#list,#feedc)[data-t="feed"] .pc .hx{color:var(--tx)!important}
 :is(#list,#feedc)[data-t="feed"] .pc .l1 .fl,:is(#list,#feedc)[data-t="feed"] .pc .l1 .fl.mut{margin-left:0!important;padding:0!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;font-size:inherit!important}
@@ -751,7 +761,7 @@ html.dt .app.open #list :is(.mid,.dot,.hint,.sec){display:none}
 html.dt .app.open #list .item{margin:6px 0;padding:0;border:0;background:none;border-radius:0}
 html.dt .app.open #list .item .av{width:60px;height:60px}
 html.dt .app.open #list .item.on .av{box-shadow:0 0 0 3px var(--accent,#7c3aed)}html.dt .app.open .side{padding-left:calc(var(--navw) + 4px)}html.dt .app.open #list{overflow-x:hidden;scrollbar-width:none;-ms-overflow-style:none}html.dt .app.open #list *{scrollbar-width:none}html.dt .app.open #list::-webkit-scrollbar,html.dt .app.open #list *::-webkit-scrollbar{display:none;width:0;height:0}html.dt .app.open #list .item{justify-content:center;max-width:100%;box-sizing:border-box}
-/* avatar rail (chat open): no "Active now" strip, no scrollbars (Windows shows thick ones), nothing sideways */
+/* avatar rail (chat open): no "Online now" strip, no scrollbars (Windows shows thick ones), nothing sideways */
 html.dt .app.open #list{overflow-x:hidden;scrollbar-width:none}
 html.dt .app.open #list::-webkit-scrollbar{display:none}
 html.dt .app.open #list .actrow{display:none}
@@ -759,7 +769,7 @@ html.dt .app.open #list .item{justify-content:center}
 html.dt #dtbar{position:fixed;top:0;left:0;right:0;height:76px;z-index:72;pointer-events:none}
 html.dt #dtbar>*{pointer-events:auto}
 html.dt #dtbar .dtl{position:absolute;left:22px;top:16px;display:flex;align-items:center;gap:8px;font-size:30px;font-weight:800;color:var(--accent,#7c3aed);user-select:none}
-html.dt .app.coll #dtbar .dtl span:last-child,html.dt .app.cmo #dtbar .dtl span:last-child{display:none}
+html.dt .app.coll #dtbar .dtl span:last-child,html.dt .app.cmo #dtbar .dtl span:last-child{display:none}#dtbar .dtl .dlw{display:block;line-height:0}#dtbar .dtl .dlsvg{width:46px;height:46px;display:block;overflow:visible}.dlsvg .dl-bg{fill:var(--bg,#000)}.dlsvg .dl-t{fill:var(--tx,#fff)}.dlsvg .dl-a{stop-color:var(--accent,#7c3aed)}.dlsvg .dl-af{fill:var(--accent,#7c3aed)}.dlsvg .dl-as{stroke:var(--accent,#7c3aed)}.dlsvg .dl-s0{stop-color:var(--tx,#fff)}.dlsvg .dl-s1{stop-color:color-mix(in srgb,var(--tx,#fff) 92%,var(--bg,#000))}.dlsvg .dl-s2{stop-color:color-mix(in srgb,var(--accent,#7c3aed) 60%,var(--tx,#fff))}.dlsvg .dl-s2f{fill:color-mix(in srgb,var(--accent,#7c3aed) 70%,var(--tx,#fff))}.dlsvg .dl-tile{fill:color-mix(in srgb,var(--accent,#7c3aed) 22%,var(--bg,#000));stroke:color-mix(in srgb,var(--accent,#7c3aed) 60%,var(--tx,#fff));stroke-opacity:.6}.dlsvg .dl-ts{stroke:var(--tx,#fff)}
 html.dt .app.coll #dtcol,html.dt .app.cmo #dtcol{left:76px}
 html.dt #dtcol{position:absolute;left:200px;top:24px;width:30px;height:30px;padding:4px;background:none;color:var(--mut);line-height:0}
 html.dt #dtcol svg{width:22px;height:22px}
@@ -774,7 +784,7 @@ html.dt #dtdd .dsp{height:26px}
 html.dt #dtdd .dlo{width:100%;padding:11px;border-radius:10px;background:var(--cd,#131416);color:#f02849;font-size:12px;font-weight:800}
 html.dt #pfv,html.dt #st{inset:auto;top:0;bottom:0;right:auto;left:var(--fcx,500px);width:var(--fcw,505px)}
 html.dt #st{z-index:66}
-/* comments (Clips + Newsfeed): side panel to the right of the video, like TikTok */
+/* comments (Clips + Newsfeed): side panel to the right of the video */
 html.dt .sheetbg.cmside{inset:auto;top:76px;bottom:0;left:auto;right:12px;width:max(340px,min(400px,calc(100vw - var(--fcx,500px) - var(--fcw,505px) - 24px)));display:block;background:none;pointer-events:none;z-index:70}
 html.dt .sheetbg.cmside .sheet{pointer-events:auto;height:calc(100% - 12px);max-height:none;border-radius:16px;border:1px solid var(--line);box-shadow:0 8px 28px rgba(0,0,0,.4)}
 
@@ -827,7 +837,7 @@ html.dt #st .nmbar{left:var(--fcx,500px);transform:none;width:var(--fcw,505px);m
 .act .t2{max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}.actrow{scrollbar-width:thin}
 .pcard{cursor:pointer}.pcard button{cursor:pointer}
 
-/* ===== PHOTO GRID + POST PAGE (Facebook style) ===== */
+/* ===== PHOTO GRID + POST PAGE ===== */
 .pcg{display:grid;grid-template-columns:1fr 1fr;gap:2px;aspect-ratio:1/1;overflow:hidden;background:var(--bg2)}
 .pcg.n2{aspect-ratio:2/1}
 .pcg.n3,.pcg.n4{grid-template-rows:1fr 1fr}
@@ -883,7 +893,231 @@ html.dt .story-activity-panel{max-width:none}
 </style>
 </head>
 <body>
-<div id="boot"><div class="spn"></div></div>
+<style>
+#boot{background:#000;z-index:9999}
+#boot .bt-svg{width:166px;height:auto;overflow:visible}html.dt #boot .bt-svg{width:124px}
+#boot .bt-svg *{transform-box:fill-box;transform-origin:center}
+#boot .bt-p{animation:btperson 1.8s ease-in-out infinite}
+#boot .bt-p2{animation-delay:.25s}#boot .bt-p3{animation-delay:.5s}
+@keyframes btperson{0%,100%{transform:scale(1);opacity:.55}30%{transform:scale(1.18);opacity:1}60%{transform:scale(1);opacity:.8}}
+#boot .bt-tile{animation:bttile 2.4s ease-in-out infinite;opacity:.35}
+#boot .bt-t2{animation-delay:.35s}#boot .bt-t3{animation-delay:.7s}
+@keyframes bttile{0%,100%{transform:translate(-26px,8px) scale(.82);opacity:.3}35%{transform:translate(0,-10px) scale(1.08);opacity:1}60%{transform:translate(0,0) scale(1);opacity:1}85%{transform:translate(-10px,4px) scale(.9);opacity:.5}}
+#boot .bt-sp{animation:btspark 1.2s ease-out infinite;opacity:0}
+#boot .bt-s2{animation-delay:.2s}#boot .bt-s3{animation-delay:.4s}
+@keyframes btspark{0%{opacity:0;transform:scale(.4)}30%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:scale(1.35)}}
+#boot .bt-orbit{animation:btorbit 2.2s linear infinite}
+@keyframes btorbit{to{stroke-dashoffset:-1000}}
+#boot .bt-edge{animation:btedge 2.4s ease-in-out infinite}
+@keyframes btedge{0%,100%{opacity:.55}50%{opacity:1}}
+#boot #bt-tail{transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
+#boot .bt-done #bt-tail{transform:scale(1.25) rotate(-6deg)}
+#boot #bt-er{transition:filter .3s}
+#boot .bt-done #bt-er{filter:drop-shadow(0 0 14px var(--accent))}
+#boot #bt-flash{opacity:0;transition:opacity .25s}
+#boot .bt-done #bt-flash{opacity:.9}
+</style>
+<style id="pf2">
+/* profile: centered identity card, squircle avatar, stat tiles, underline tabs, detail chips */
+:is(.pfw,#list,#feedc) .pfx .pcv{height:156px;margin:10px 12px 0;border-radius:30px}
+:is(.pfw,#list,#feedc) .pfx .phd{display:flex;flex-direction:column;align-items:center;text-align:center;gap:0;padding:0 18px}
+:is(.pfw,#list,#feedc) .pfx .pav{margin:-46px auto 0;width:108px}
+:is(.pfw,#list,#feedc) .pfx .pav::before{inset:-4px;border-radius:36px;background:conic-gradient(from 210deg,var(--accent),color-mix(in srgb,var(--accent) 55%,#fff),var(--accent-deep,var(--accent)),var(--accent))!important;box-shadow:0 10px 24px color-mix(in srgb,var(--accent) 30%,transparent)!important}
+:is(.pfw,#list,#feedc) .pfx .pav .av{width:108px;height:108px;border-radius:32px!important;font-size:42px;border:4px solid var(--pg,var(--bg))}
+:is(.pfw,#list,#feedc) .pfx .pav.hasst .av{box-shadow:none}
+:is(.pfw,#list,#feedc) .pfx .pav .odot{right:-4px;bottom:-4px}
+:is(.pfw,#list,#feedc) .pfx .phi{width:100%;padding-top:12px}
+:is(.pfw,#list,#feedc) .pfx .pnr{justify-content:center}
+:is(.pfw,#list,#feedc) .pfx .pname{font-size:24px;text-align:center}
+:is(.pfw,#list,#feedc) .pfx .psub{margin:6px auto 0;display:table}
+:is(.pfw,#list,#feedc) .pfx .pinfo2,:is(.pfw,#list,#feedc) .pfx .pbio{text-align:center}
+:is(.pfw,#list,#feedc) .pfx .pstats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:16px 12px 0}
+:is(.pfw,#list,#feedc) .pfx .pst{padding:9px 2px;border-radius:16px;min-width:0}
+:is(.pfw,#list,#feedc) .pfx .pst b{font-size:18px}
+:is(.pfw,#list,#feedc) .pfx .pst span{font-size:10.5px;letter-spacing:-.1px;white-space:nowrap;display:block}
+:is(.pfw,#list,#feedc) .pfx .pst{border:1px solid var(--line);background:var(--cd,var(--bg2))}
+:is(.pfw,#list,#feedc) .pfx .pst:first-child{border-left:1px solid var(--line)}
+:is(.pfw,#list,#feedc) .pfx .pst b{color:var(--accent)}
+:is(.pfw,#list,#feedc) .pfx .pst span{font-weight:600}
+:is(.pfw,#list,#feedc) .pfx .pmut{margin:10px 14px 0;padding:8px 12px;border-radius:999px;background:var(--cd,var(--bg2));border:1px solid var(--line);width:max-content;max-width:calc(100% - 28px);align-self:center}
+:is(.pfw,#list,#feedc) .pfx .pact{padding:14px 14px 4px}
+:is(.pfw,#list,#feedc) .pfx .pact button{border-radius:999px}
+:is(.pfw,#list,#feedc) .pfx .ptabs{background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:0;margin:12px 14px 4px;gap:0}
+:is(.pfw,#list,#feedc) .pfx .ptabs button{border-radius:0;background:none;color:var(--mut);box-shadow:none;padding:12px 6px;position:relative}
+:is(.pfw,#list,#feedc) .pfx .ptabs button.on{background:none!important;color:var(--accent)!important;box-shadow:none!important}
+:is(.pfw,#list,#feedc) .pfx .ptabs button.on::after{content:"";position:absolute;left:22%;right:22%;bottom:-1px;height:3px;border-radius:3px;background:var(--accent)}
+:is(.pfw,#list,#feedc) .pfx .asec{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+:is(.pfw,#list,#feedc) .pfx .asec>.ah{flex:0 0 100%}
+:is(.pfw,#list,#feedc) .pfx .asec>.abio,:is(.pfw,#list,#feedc) .pfx .asec>.t2{flex:0 0 100%}
+:is(.pfw,#list,#feedc) .pfx .asec .arow{display:inline-flex;align-items:center;gap:6px;padding:7px 13px 7px 9px;border-radius:999px;background:var(--cd2,var(--bg2));font-size:14px;font-weight:600;max-width:100%}
+:is(.pfw,#list,#feedc) .pfx .asec .arow .ai{width:auto;height:auto;background:none;border-radius:0;font-size:15px}
+/* edit profile: preview card + field tiles */
+#ep{padding-bottom:48px}
+#ep .ehero{margin:14px 14px 0;border:1px solid var(--line);border-radius:28px;background:var(--cd,var(--bg2));padding-bottom:14px}
+#ep .ecv{height:104px;border-radius:28px 28px 0 0;background:var(--pgrad,linear-gradient(135deg,#7c3aed,#4f46e5)) center/cover}
+#ep .eav{width:84px;margin:-38px auto 0;position:relative}
+#ep .eav .av{width:84px;height:84px;border-radius:26px!important;font-size:34px;border:4px solid var(--cd,var(--bg))}
+#ep .ebt{display:flex;gap:8px;justify-content:center;margin-top:12px}
+#ep .esl{display:flex;align-items:center;gap:8px;padding:22px 18px 8px;font-size:12px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:var(--mut)}
+#ep .esl::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent)}
+#ep .efg{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px}
+#ep .eft{display:flex;gap:10px;align-items:flex-start;min-width:0;padding:12px;border:1px solid var(--line);border-radius:18px;background:var(--cd,var(--bg2));cursor:pointer}
+#ep .eft:active{transform:scale(.98)}
+#ep .eft.empty{border-style:dashed;background:transparent}
+#ep .eic{flex:none;width:26px;text-align:center;font-size:20px}
+#ep .em{min-width:0}
+#ep .ehl{font-size:12px;font-weight:600;color:var(--mut)}
+#ep .ehv{font-size:15px;font-weight:700;overflow-wrap:anywhere}
+#ep .eft.empty .ehv{color:var(--accent);font-weight:600}
+#ep .ehp{margin-top:2px;font-size:11px;color:var(--mut)}
+@media(max-width:340px){#ep .efg{grid-template-columns:1fr}}
+</style>
+<style id="chat2">
+/* chat screens (DM, group, global): floating header, asymmetric bubbles, dock composer */
+.main>.head{margin:8px 10px 0;padding:8px 12px;border:1px solid var(--line);border-radius:22px;background:var(--cd,var(--bg2))}
+#hav .av{border-radius:14px!important}
+#msgs{padding:14px 12px;gap:6px}
+#msgs .row>.av{border-radius:10px!important}
+#msgs .bub{border-radius:6px 20px 20px 20px;padding:9px 14px}
+#msgs .row.me .bub{border-radius:20px 6px 20px 20px}
+#f.compose{margin:6px 10px calc(10px + env(safe-area-inset-bottom,0px));padding:6px;gap:6px;border:1px solid var(--line);border-radius:28px;background:var(--cd,var(--bg2))}
+#f.compose input#in{background:transparent;border:0;box-shadow:none;outline:none;height:42px;padding:0 8px;border-radius:0}
+#f .att{width:42px;height:42px;border-radius:50%;padding:0;background:color-mix(in srgb,var(--accent,#7c3aed) 14%,transparent);color:var(--accent,#7c3aed);display:flex;align-items:center;justify-content:center;flex:none}
+#f .att svg{width:22px;height:22px}
+#f #send{width:42px;height:42px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;font-weight:800}
+#f #send svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+/* chat info */
+#info .itop{margin:12px 14px 0;padding:22px 16px 16px;gap:6px;border:1px solid var(--line);border-radius:28px;background:var(--cd,var(--bg2))}
+#info .itop .av{border-radius:30px!important}
+#info .iq{display:grid;grid-template-columns:repeat(auto-fit,minmax(68px,1fr));gap:8px!important;padding:12px 14px 4px}
+#info .qb{padding:10px 4px;border:1px solid var(--line);border-radius:18px;background:var(--cd,var(--bg2));color:var(--tx);font-weight:600}
+#info .qb button{width:auto;height:auto;border-radius:0;background:none;box-shadow:none;font-size:22px}
+#info .sec{display:flex;align-items:center;gap:8px;padding:20px 18px 8px;font-size:12px;font-weight:800;letter-spacing:.7px;text-transform:uppercase}
+#info .sec::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent,#7c3aed)}
+#info .irow{margin:0 14px 8px;border:1px solid var(--line);border-radius:18px;background:var(--cd,var(--bg2))}
+</style>
+<style id="msg2">
+/* Messages tab: segmented filter, squircle avatars, edge-marked unread rows, floating nav */
+.side .ph .ic{width:42px;height:42px;padding:0;border-radius:14px;background:var(--cd,var(--bg2));border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+.side .ph .ic svg{width:22px;height:22px}
+.sw input{border-radius:18px;background:var(--cd,var(--bg2));border:1px solid var(--line)}
+#chips{margin:2px 14px 10px;padding:4px;gap:2px;overflow:hidden;background:var(--cd,var(--bg2));border:1px solid var(--line);border-radius:18px}
+#chips .chip{flex:1 1 0;min-width:0;padding:8px 4px;font-size:14px;font-weight:700;border-radius:14px;background:none;color:var(--mut);border:0;box-shadow:none}
+#chips .chip.on{background:var(--pgrad);color:#fff;box-shadow:0 4px 12px color-mix(in srgb,var(--accent-deep,#4f46e5) 30%,transparent)}
+.actrow{gap:12px}
+.actrow .act .av{border-radius:22px!important}
+.actrow .act.hasst .av{box-shadow:0 0 0 2px var(--bg,#000),0 0 0 4px var(--accent,#7c3aed)}
+.actrow .actplus{width:22px;height:22px;border-radius:9px;line-height:21px;font-weight:700}
+:is(#list,#feedc)[data-t=chats] .item{position:relative;margin:0 12px 8px;padding:10px 14px 10px 16px;gap:12px;border-radius:24px;overflow:hidden}
+:is(#list,#feedc)[data-t=chats] .item .av{width:54px;height:54px;border-radius:19px!important;font-size:21px}
+:is(#list,#feedc)[data-t=chats] .item .av .odot{right:-3px;bottom:-3px}
+:is(#list,#feedc)[data-t=chats] .item.unread{background:color-mix(in srgb,var(--accent,#7c3aed) 9%,var(--cd,var(--bg2)))}
+:is(#list,#feedc)[data-t=chats] .item.unread::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 4px 4px 0;background:var(--accent,#7c3aed)}
+:is(#list,#feedc)[data-t=chats] .item.unread .t1{font-weight:800}
+:is(#list,#feedc)[data-t=chats] .item.unread .t2{color:var(--tx);font-weight:600}
+:is(#list,#feedc)[data-t=chats] .mtl{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+:is(#list,#feedc)[data-t=chats] .mtl .t1{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+:is(#list,#feedc)[data-t=chats] .mtime{flex:none;font-size:12px;font-weight:600;color:var(--mut)}
+:is(#list,#feedc)[data-t=chats] .item.unread .mtime{color:var(--accent,#7c3aed)}
+:is(#list,#feedc)[data-t=chats] .item .dot{width:10px;height:10px;background:var(--accent,#7c3aed);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent,#7c3aed) 22%,transparent)}
+html:not(.dt) .side .tabs{margin:0 12px calc(10px + env(safe-area-inset-bottom,0px));padding:6px 4px;border:1px solid var(--line);border-radius:26px;background:var(--cd,var(--bg2))}
+</style>
+<style id="feed2">
+/* newsfeed: inset rounded media, squircle avatars, pill action buttons, accent composer */
+.cmp{border:1.5px dashed color-mix(in srgb,var(--accent,#7c3aed) 50%,transparent)!important;background:transparent!important}
+.cmp .cph::before{content:"✎";margin-right:8px;color:var(--accent,#7c3aed);font-weight:800}
+.cmp .av{border-radius:14px!important}
+:is(#list,#feedc)[data-t="feed"] .pc{padding:12px 0 4px}
+:is(#list,#feedc)[data-t="feed"] .pc .ph1 .av{width:46px;height:46px;border-radius:16px!important;font-size:18px}
+:is(#list,#feedc)[data-t="feed"] .pc .pb{font-size:16px;line-height:1.45;padding:2px 16px 12px}
+:is(#list,#feedc)[data-t="feed"] .pc>img,:is(#list,#feedc)[data-t="feed"] .pc>video,:is(#list,#feedc)[data-t="feed"] .pc>.pcg{width:calc(100% - 24px);margin:0 12px;border-radius:22px;overflow:hidden}
+:is(#list,#feedc)[data-t="feed"] .pc .cn{padding:10px 16px 0;font-size:13px;font-weight:600}
+:is(#list,#feedc)[data-t="feed"] .pc .ac{border-top:0;margin:10px 10px 8px;gap:6px!important}
+:is(#list,#feedc)[data-t="feed"] .pc .ac button{flex:1 1 auto;min-width:0;background:var(--cd2);border-radius:999px;padding:9px 7px;gap:4px;font-size:12px;white-space:nowrap}
+:is(#list,#feedc)[data-t="feed"] .pc .ac svg{width:18px;height:18px}
+:is(#list,#feedc)[data-t="feed"] .pc .ac button.on{background:color-mix(in srgb,#f3425f 16%,var(--cd2))}
+:is(#list,#feedc)[data-t="feed"] .pc .ac button.rpon{background:color-mix(in srgb,#22c55e 16%,var(--cd2))}
+:is(#list,#feedc)[data-t="feed"] .pc .ac button.svp.on{background:color-mix(in srgb,#ffc928 18%,var(--cd2))}
+/* clips: inset rounded card, info on top, actions in a bottom glass capsule */
+.rl{height:calc(100% - var(--ftop,56px) - 10px);margin:0 10px 10px;border-radius:30px;overflow:hidden}
+.rl .ov{left:18px;right:18px;bottom:102px}
+.rl .sd{flex-direction:row;left:12px;right:12px;top:auto;bottom:12px;gap:0;padding:8px 10px;border-radius:28px;justify-content:space-between;align-items:center}
+.rl .sd button{flex:1 1 0;width:auto;min-width:0}
+.rl .sd svg{width:28px;height:28px}
+.rl .rav{margin:0;flex:1 1 0;display:flex;justify-content:center}
+.rl .sd .rav .av{width:44px;height:44px;border-radius:16px!important}
+.rl .sd .rplus{left:auto;right:calc(50% - 32px);bottom:-8px;transform:none;border-radius:8px}
+.clipbox .rl{margin:0;border-radius:0;height:100%}
+</style>
+<div id="boot"><svg id="bt-logo" class="bt-svg" viewBox="60 60 1130 1130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Chatter loading">
+<defs>
+ <linearGradient id="bt-eg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--accent)"/><stop offset=".35" stop-opacity="0" style="stop-color:var(--accent)"/><stop offset=".65" stop-opacity="0" style="stop-color:var(--accent)"/><stop offset="1" style="stop-color:var(--accent)"/></linearGradient>
+ <linearGradient id="bt-cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".6" stop-color="#e9e9ee"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--accent) 60%,#fff)"/></linearGradient>
+ <linearGradient id="bt-sw" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:var(--accent)"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--accent) 60%,#fff)"/></linearGradient>
+ <radialGradient id="bt-glowR" cx=".5" cy=".5" r=".5"><stop offset="0" stop-opacity=".5" style="stop-color:var(--accent)"/><stop offset="1" stop-opacity="0" style="stop-color:var(--accent)"/></radialGradient>
+ <filter id="bt-blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+
+<rect x="80" y="80" width="1090" height="1095" rx="240" fill="#0b0b0d"/>
+<rect class="bt-edge" x="86" y="86" width="1078" height="1083" rx="234" fill="none" stroke="url(#bt-eg)" stroke-width="16" filter="url(#bt-blur)"/>
+<rect class="bt-edge" x="86" y="86" width="1078" height="1083" rx="234" fill="none" stroke="url(#bt-eg)" stroke-width="8"/>
+<circle id="bt-flash" cx="570" cy="540" r="330" fill="url(#bt-glowR)"/>
+
+<!-- C: dim track + progress fill -->
+<path d="M734.7 401.8 A215 215 0 1 0 756.2 647.5" fill="none" stroke="#232327" stroke-width="130"/>
+<path id="bt-cfill" d="M734.7 401.8 A215 215 0 1 0 756.2 647.5" fill="none" stroke="url(#bt-cg)" stroke-width="130" pathLength="1000" stroke-dasharray="1000" stroke-dashoffset="1000"/>
+<polygon id="bt-tail" points="790,715 806,822 712,772" style="fill:color-mix(in srgb,var(--accent) 70%,#fff)"/>
+
+<!-- people -->
+<g fill="#fff">
+ <g class="bt-p bt-p2"><circle cx="527" cy="497" r="28"/><path d="M480 585Q480 540 520 540Q548 540 550 585Z"/></g>
+ <g class="bt-p bt-p3"><circle cx="672" cy="497" r="28"/><path d="M722 585Q722 540 682 540Q654 540 652 585Z"/></g>
+ <g class="bt-p"><circle cx="601" cy="475" r="36"/><path d="M543 585Q543 515 601 515Q659 515 659 585Z"/></g>
+</g>
+
+<!-- orbiting swoosh -->
+<g transform="rotate(-12 560 575)">
+ <ellipse cx="560" cy="575" rx="370" ry="108" fill="none" stroke-opacity=".22" stroke-width="6" style="stroke:var(--accent)"/>
+ <ellipse class="bt-orbit" cx="560" cy="575" rx="370" ry="108" fill="none" stroke="url(#bt-sw)" stroke-width="16" stroke-linecap="round" pathLength="1000" stroke-dasharray="260 740" style="filter:drop-shadow(0 0 12px var(--accent))"/>
+</g>
+
+<!-- sparks -->
+<g stroke-width="16" stroke-linecap="round" style="stroke:var(--accent)">
+ <line class="bt-sp" x1="770" y1="205" x2="760" y2="252"/>
+ <line class="bt-sp bt-s2" x1="855" y1="236" x2="820" y2="268"/>
+ <line class="bt-sp bt-s3" x1="885" y1="312" x2="840" y2="308"/>
+</g>
+
+<!-- media tiles -->
+<g transform="translate(1008 335) rotate(14)"><g class="bt-tile">
+ <rect x="-65" y="-65" width="130" height="130" rx="30" stroke-opacity=".5" stroke-width="3" style="fill:color-mix(in srgb,var(--accent) 22%,#000);stroke:color-mix(in srgb,var(--accent) 60%,#fff)"/>
+ <rect x="-30" y="-25" width="60" height="50" rx="5" fill="none" stroke="#fff" stroke-width="6"/>
+ <path d="M-22 18L-6 0L4 10L12 2L24 18Z" fill="#fff"/><circle cx="14" cy="-10" r="5" fill="#fff"/></g></g>
+<g transform="translate(915 483) rotate(-10)"><g class="bt-tile bt-t2">
+ <rect x="-65" y="-65" width="130" height="130" rx="30" stroke-opacity=".6" stroke-width="3" style="fill:color-mix(in srgb,var(--accent) 28%,#000);stroke:color-mix(in srgb,var(--accent) 60%,#fff)"/>
+ <path d="M-16 -28L28 0L-16 28Z" fill="#fff"/></g></g>
+<g transform="translate(1012 605) rotate(14)"><g class="bt-tile bt-t3">
+ <rect x="-65" y="-65" width="130" height="130" rx="30" stroke-opacity=".6" stroke-width="3" style="fill:color-mix(in srgb,var(--accent) 28%,#000);stroke:color-mix(in srgb,var(--accent) 60%,#fff)"/>
+ <path d="M0 26C-44 -6-30 -36-12 -32C-4 -30 0 -22 0 -18C0 -22 4 -30 12 -32C30 -36 44 -6 0 26Z" fill="#fff"/></g></g>
+
+<!-- wordmark -->
+<g font-family="'Poppins','Nunito','Segoe UI',system-ui,sans-serif" font-weight="800" font-style="italic" font-size="200" fill="#fff">
+ <text x="225" y="985" textLength="800" lengthAdjust="spacingAndGlyphs">
+  <tspan>Chatt</tspan><tspan id="bt-er" style="fill:var(--accent)">er</tspan></text>
+</g>
+<path d="M390 1060Q640 1000 870 1030Q600 1022 390 1070Z" style="fill:var(--accent)"/>
+</svg></div>
+<script>try{var _n=localStorage.getItem("chatter_accent"),_M={purple:["#7c3aed","#4f46e5"],blue:["#2563eb","#1d4ed8"],pink:["#ec4899","#be185d"],red:["#ef4444","#b91c1c"],orange:["#f97316","#c2410c"],green:["#22a06b","#15803d"],teal:["#14b8a6","#0f766e"],gold:["#eab308","#a16207"]};if(_M[_n]){document.documentElement.style.setProperty("--accent",_M[_n][0]);document.documentElement.style.setProperty("--accent-deep",_M[_n][1])}}catch(e){}
+(function(){var f=document.getElementById("bt-cfill"),s=document.getElementById("bt-logo"),T=3600,t0=null,q=[],fin=false;if(!f||!s)return;
+function e(x){return 1-Math.pow(1-x,2.2)}
+// app calls this when it is ready; cb runs only after the C finished filling
+window.__btWait=function(cb){if(fin)setTimeout(cb,150);else q.push(cb)};
+function k(t){if(!s.isConnected)return;if(t0===null)t0=t;var c=((t-t0)%T)/T,v=c<.78?e(c/.78):1;
+f.setAttribute("stroke-dashoffset",c>=.95?1000:(1-v)*1000);
+s.classList.toggle("bt-done",c>.78&&c<.95);
+if(c>=.78&&c<.95){fin=true;if(q.length){var a=q.splice(0);setTimeout(function(){a.forEach(function(x){x()})},450)}}else fin=false;
+requestAnimationFrame(k)}
+requestAnimationFrame(k)})()</script>
 <script>setTimeout(function(){var b=document.getElementById("boot");if(b)b.classList.add("off")},15000)</script>
 <div id="auth" class="hide">
  <form id="af">
@@ -909,7 +1143,26 @@ html.dt .story-activity-panel{max-width:none}
 <div id="st" class="hide"></div>
 <div class="app hide" id="app">
  <div id="ng" class="hide"></div>
- <div id="dtbar"><div class="dtl"><span>💬</span><span>Chatter</span></div><button type="button" id="dtcol" title="Collapse sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg></button><button type="button" id="dtme"></button><div id="dtdd" class="hide"></div></div>
+ <div id="dtbar"><div class="dtl"><span class="dlw"><svg class="dlsvg" viewBox="60 60 1130 1130" xmlns="http://www.w3.org/2000/svg" aria-label="Chatter"><defs>
+<linearGradient id="dl-eg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" class="dl-a"/><stop offset=".35" class="dl-a" stop-opacity="0"/><stop offset=".65" class="dl-a" stop-opacity="0"/><stop offset="1" class="dl-a"/></linearGradient>
+<linearGradient id="dl-cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="dl-s0"/><stop offset=".6" class="dl-s1"/><stop offset="1" class="dl-s2"/></linearGradient>
+<linearGradient id="dl-sw" x1="0" y1="0" x2="1" y2="0"><stop offset="0" class="dl-a"/><stop offset="1" class="dl-s2"/></linearGradient>
+<radialGradient id="dl-gl" cx=".5" cy=".5" r=".5"><stop offset="0" class="dl-a" stop-opacity=".45"/><stop offset="1" class="dl-a" stop-opacity="0"/></radialGradient>
+<filter id="dl-bl" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="12"/></filter></defs>
+<rect class="dl-bg" x="80" y="80" width="1090" height="1095" rx="240"/>
+<rect x="86" y="86" width="1078" height="1083" rx="234" fill="none" stroke="url(#dl-eg)" stroke-width="22" filter="url(#dl-bl)"/>
+<rect x="86" y="86" width="1078" height="1083" rx="234" fill="none" stroke="url(#dl-eg)" stroke-width="10"/>
+<circle cx="570" cy="540" r="300" fill="url(#dl-gl)"/>
+<path d="M734.7 401.8 A215 215 0 1 0 756.2 647.5" fill="none" stroke="url(#dl-cg)" stroke-width="130"/>
+<polygon class="dl-s2f" points="790,715 806,822 712,772"/>
+<g class="dl-t"><circle cx="527" cy="497" r="28"/><path d="M480 585Q480 540 520 540Q548 540 550 585Z"/><circle cx="672" cy="497" r="28"/><path d="M722 585Q722 540 682 540Q654 540 652 585Z"/><circle cx="601" cy="475" r="36"/><path d="M543 585Q543 515 601 515Q659 515 659 585Z"/></g>
+<g transform="rotate(-12 560 575)" fill="none"><ellipse cx="560" cy="575" rx="370" ry="108" class="dl-as" stroke-opacity=".22" stroke-width="6"/><ellipse cx="560" cy="575" rx="370" ry="108" stroke="url(#dl-sw)" stroke-width="22" stroke-linecap="round" pathLength="1000" stroke-dasharray="400 600" stroke-dashoffset="-300"/></g>
+<g class="dl-as" stroke-width="16" stroke-linecap="round"><line x1="770" y1="205" x2="760" y2="252"/><line x1="855" y1="236" x2="820" y2="268"/><line x1="885" y1="312" x2="840" y2="308"/></g>
+<g transform="translate(1008 335) rotate(14)"><rect class="dl-tile" x="-65" y="-65" width="130" height="130" rx="30" stroke-width="3"/><rect class="dl-ts" x="-30" y="-25" width="60" height="50" rx="5" fill="none" stroke-width="6"/><path class="dl-t" d="M-22 18L-6 0L4 10L12 2L24 18Z"/><circle class="dl-t" cx="14" cy="-10" r="5"/></g>
+<g transform="translate(915 483) rotate(-10)"><rect class="dl-tile" x="-65" y="-65" width="130" height="130" rx="30" stroke-width="3"/><path class="dl-t" d="M-16 -28L28 0L-16 28Z"/></g>
+<g transform="translate(1012 605) rotate(14)"><rect class="dl-tile" x="-65" y="-65" width="130" height="130" rx="30" stroke-width="3"/><path class="dl-t" d="M0 26C-44 -6-30 -36-12 -32C-4 -30 0 -22 0 -18C0 -22 4 -30 12 -32C30 -36 44 -6 0 26Z"/></g>
+<g font-family="Poppins,Nunito,'Segoe UI',system-ui,sans-serif" font-weight="800" font-style="italic" font-size="200"><text x="225" y="985" textLength="800" lengthAdjust="spacingAndGlyphs"><tspan class="dl-t">Chatt</tspan><tspan class="dl-af">er</tspan></text></g>
+<path class="dl-af" d="M390 1060Q640 1000 870 1030Q600 1022 390 1070Z"/></svg></span><span>Chatter</span></div><button type="button" id="dtcol" title="Collapse sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg></button><button type="button" id="dtme"></button><div id="dtdd" class="hide"></div></div>
  <aside class="side">
   <div class="ph"><button type="button" class="ic" id="ham" title="Menu"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><h1 id="ptitle">Chatter</h1><button type="button" class="ic" id="newg" title="New group"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button></div>
   <div class="sw" id="sqw"><input id="sq" style="width:100%" maxlength="30"></div>
@@ -933,7 +1186,7 @@ html.dt .story-activity-panel{max-width:none}
   <div class="bar hide" id="rb"><span id="rbt"></span><button type="button" class="gray sm" id="rbx">✕</button></div>
   <div class="bar hide" id="eb"><span>✎ Editing message</span><button type="button" class="gray sm" id="ec">✕</button></div>
   <div class="bar hide" id="pv"></div>
-  <form class="compose" id="f"><button type="button" class="gray att" id="att">📎</button><input type="file" id="file" accept="image/*,video/*" class="hide"><input id="in" placeholder="Type a message…" autocomplete="off" maxlength="1000"><button id="send">Send</button></form>
+  <form class="compose" id="f"><button type="button" class="gray att" id="att" aria-label="Attach"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button><input type="file" id="file" accept="image/*,video/*" class="hide"><input id="in" placeholder="Write a message…" autocomplete="off" maxlength="1000"><button id="send" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button></form>
   <div id="info" class="hide"></div>
  </section>
  <section id="feedc"></section>
@@ -1007,7 +1260,7 @@ const avatar = (id, label, cls, pres) => { const a = el("div", "av " + (cls || "
 const isVid = p => /\.(mp4|webm|mov|m4v)$/i.test(p || "");
 const storyTag = b => { const x = /^\[\[story:([^\]]+)\]\]([\s\S]*)$/.exec(b || ""); return x ? {id: x[1], text: x[2]} : null; };
 const storyPv = l => { const g = storyTag(l.body); return g ? (l.user_id === me.id ? "You replied to a story: " : "Replied to your story: ") + g.text : l.body; };
-const pvText = l => l.deleted_at ? "Message unsent" : sysText(l) || callPv(l) || (l.image_path ? (isVid(l.image_path) ? "🎬 " + (l.body || "Video") : "📷 " + (l.body || "Photo")) : storyPv(l));
+const pvText = l => l.deleted_at ? "Message taken back" : sysText(l) || callPv(l) || (l.image_path ? (isVid(l.image_path) ? "🎬 " + (l.body || "Video") : "📷 " + (l.body || "Photo")) : storyPv(l));
 let rd = {}; try { rd = JSON.parse(localStorage.getItem("rd") || "{}"); } catch (e) {}
 const markRead = (rid, ts) => { rd[rid] = ts; try { localStorage.setItem("rd", JSON.stringify(rd)); } catch (e) {} };
 
@@ -1016,7 +1269,7 @@ let pref = {rcpt: true, typ: true, mute: {}}; try { Object.assign(pref, JSON.par
 let tab = "chats", filter = "all", query = "", results = null, cur = null, seen = new Set(), lastUid = null, signup = false;
 
 // ---------- AUTH ----------
-function bootOff() { const b = document.getElementById("boot"); if (b) { b.classList.add("off"); setTimeout(() => b.remove(), 400); } }
+function bootOff() { const b = document.getElementById("boot"); if (!b) return; const go = () => { b.classList.add("off"); setTimeout(() => b.remove(), 400); }; if (window.__btWait) window.__btWait(go); else go(); }
 function showAuth() {
   bootOff(); W.reset = false;
   $("#app").classList.add("hide"); $("#auth").classList.remove("hide");
@@ -1247,6 +1500,32 @@ const rel = uid => {
   const f = fr.find(f => (f.requester === me.id && f.addressee === uid) || (f.requester === uid && f.addressee === me.id));
   return f ? {id: f.id, status: f.status, incoming: f.addressee === me.id} : null;
 };
+// FOLLOW MODEL: one row in friendships = one follow. requester->addressee pending = requester follows addressee.
+// When the other person follows back the row becomes "accepted" = both follow each other = friends.
+const followErr = e => /CHATTER_FRIEND_REQUESTS_CLOSED/.test(e.message) ? "This person is not accepting followers." : /CHATTER_CANNOT_FRIEND_SELF/.test(e.message) ? "You cannot follow yourself." : e.message;
+async function followUser(u) {
+  const r = rel(u);
+  if (r && r.status === "accepted") return true;
+  if (r && r.status === "pending" && !r.incoming) return true;
+  if (r) { const {error} = await sb.from("friendships").update({status: "accepted"}).eq("id", r.id); if (error) { alert(error.message); return false; } }
+  else { const {error} = await sb.from("friendships").insert({addressee: u}); if (error) { alert(followErr(error)); return false; } }
+  await loadFriends(); return true;
+}
+async function unfollowUser(u) {
+  const r = rel(u); if (!r) return;
+  if (r.status === "accepted" && !confirm("Unfollow " + (names[u] || "this person") + "? You will stop being friends.")) return;
+  await sb.from("friendships").delete().eq("id", r.id); await loadFriends();
+}
+function fcMine() {
+  const A = fr.filter(f => f.status === "accepted").length, I = fr.filter(f => f.status === "pending" && f.addressee === me.id).length, O = fr.filter(f => f.status === "pending" && f.requester === me.id).length;
+  return {followers: A + I, following: A + O};
+}
+function openFollowList(kind) {
+  const {body} = sheet(kind === "followers" ? "Followers" : "Following");
+  const L = fr.filter(f => f.status === "accepted" || (f.status === "pending" && (kind === "followers" ? f.addressee === me.id : f.requester === me.id))).map(f => f.requester === me.id ? f.addressee : f.requester);
+  if (!L.length) body.append(el("div", "hint", kind === "followers" ? "No followers yet." : "You are not following anyone yet."));
+  L.forEach(u => userRow(body, u));
+}
 const other = r => (members[r.id] || []).find(u => u !== me.id);
 const title = r => r.is_dm ? (names[other(r)] || "Chat") : r.name;
 const hasUnread = r => { if (pref.mute && pref.mute[r.id]) return false; const l = latest[r.id]; return !!l && l.user_id !== me.id && (!rd[r.id] || l.created_at > rd[r.id]); };
@@ -1377,10 +1656,10 @@ $("#sq").oninput = e => {
 function userRow(box, uid) {
   const r = rel(uid), name = names[uid] || "Someone", btns = [];
   const btn = (txt, cls, fn) => { const b = el("button", "sm " + cls, txt); b.onclick = e => { e.stopPropagation(); fn(); }; return b; };
-  if (!r) btns.push(btn("Add", "", async () => { const {error} = await sb.from("friendships").insert({addressee: uid}); if (error) alert(/CHATTER_FRIEND_REQUESTS_CLOSED/.test(error.message) ? "This person is not accepting friend requests." : /CHATTER_CANNOT_FRIEND_SELF/.test(error.message) ? "You cannot send a friend request to yourself." : error.message); loadFriends(); }));
-  else if (r.status === "pending" && !r.incoming) btns.push(btn("Pending ✕", "gray", async () => { await sb.from("friendships").delete().eq("id", r.id); loadFriends(); }));
+  if (!r) btns.push(btn("Follow", "", () => followUser(uid)));
+  else if (r.status === "pending" && !r.incoming) btns.push(btn("Following", "gray", () => unfollowUser(uid)));
   else if (r.status === "pending") {
-    btns.push(btn("Accept", "", async () => { await sb.from("friendships").update({status: "accepted"}).eq("id", r.id); loadFriends(); }));
+    btns.push(btn("Follow back", "", () => followUser(uid)));
     btns.push(btn("✕", "gray", async () => { await sb.from("friendships").delete().eq("id", r.id); loadFriends(); }));
   } else btns.push(btn("Message", "gray", () => openDM(uid)));
   const d = el("div", "item"), mid = el("div", "mid"); mid.append(el("div", "t1", name));
@@ -1412,7 +1691,7 @@ function render() {
       const d = el("div", "item" + (un ? " unread" : "") + (cur === r.id ? " on" : "")), mid = el("div", "mid");
       let pv = "Start a conversation";
       if (l) pv = (sysLog(l.body) ? "" : l.user_id === me.id ? "You: " : (r.is_dm ? "" : (names[l.user_id] || "") + ": ")) + pvText(l);
-      mid.append(el("div", "t1", t), el("div", "t2", pv + (l ? " · " + fmt(l.created_at) : "")));
+      const mtl = el("div", "mtl"); mtl.append(el("div", "t1", t)); if (l) mtl.append(el("span", "mtime", fmt(l.created_at))); mid.append(mtl, el("div", "t2", pv));
       d.append(avatar(r.is_dm ? other(r) : r.id, initial(r), "", r.is_dm ? other(r) : null), mid);
       if (un) d.append(el("div", "dot"));
       d.onclick = () => openRoom(r.id); box.append(d);
@@ -1426,9 +1705,9 @@ function render() {
       const fs = fr.filter(f => f.status === "accepted").map(f => f.requester === me.id ? f.addressee : f.requester);
       const act = fs.filter(u => online.has(u)), req = fr.filter(f => f.status === "pending" && f.addressee === me.id);
       const bar = el("div", "chips pchips");
-      [["active", "● " + act.length + " active"], ["requests", "Friend requests" + (req.length ? " (" + req.length + ")" : "")], ["all", "All"]].forEach(([k, t]) => { const b = el("button", "chip" + (pfilter === k ? " on" : ""), t); b.onclick = () => { pfilter = k; render(); }; bar.append(b); });
+      [["active", "● " + act.length + " active"], ["requests", "New followers" + (req.length ? " (" + req.length + ")" : "")], ["all", "Friends"]].forEach(([k, t]) => { const b = el("button", "chip" + (pfilter === k ? " on" : ""), t); b.onclick = () => { pfilter = k; render(); }; bar.append(b); });
       box.append(bar);
-      if (pfilter === "requests") { if (!req.length) box.append(el("div", "hint", "No friend requests.")); req.forEach(f => userRow(box, f.requester)); }
+      if (pfilter === "requests") { if (!req.length) box.append(el("div", "hint", "No new followers.")); req.forEach(f => userRow(box, f.requester)); }
       else { const L = pfilter === "active" ? act : fs; if (!L.length) box.append(el("div", "hint", pfilter === "active" ? "No friends are active right now." : "No friends yet. Search a username above to add one.")); L.forEach(uid => friendRow(box, uid)); pymkSection(box); }
     }
   } else if (tab === "notifs") {
@@ -1447,9 +1726,9 @@ function render() {
     items.forEach(({f, a, t}) => {
       if (a) return notifActRow(box, a, t, seenT);
       const u = f.requester === me.id ? f.addressee : f.requester, inc = f.status === "pending", nm = names[u] || "Someone", d = el("div", "item"), mid = el("div", "mid");
-      mid.append(el("div", "t1", nm), el("div", "t2", (inc ? "Sent you a friend request." : "You are now friends. Tap to chat.") + (t ? " · " + ago2(t) : "")));
+      mid.append(el("div", "t1", nm), el("div", "t2", (inc ? "Started following you." : "You follow each other, so you are friends now. Tap to chat.") + (t ? " · " + ago2(t) : "")));
       if (inc) {
-        const row = el("div", "prow"), ok = el("button", "sm", "Accept"), no = el("button", "sm gray", "Decline"); row.style.marginTop = "6px";
+        const row = el("div", "prow"), ok = el("button", "sm", "Follow back"), no = el("button", "sm gray", "Remove"); row.style.marginTop = "6px";
         ok.onclick = async e => { e.stopPropagation(); await sb.from("friendships").update({status: "accepted"}).eq("id", f.id); loadFriends(); };
         no.onclick = async e => { e.stopPropagation(); await sb.from("friendships").delete().eq("id", f.id); loadFriends(); };
         row.append(ok, no); mid.append(row);
@@ -1569,7 +1848,7 @@ async function openPost(id, seed, idx) {
     await load(); await postUrls(p);
   }
   fopen.add(id); await ensureNames([p.user_id]);
-  // Facebook-style post page: back arrow, "<Name>'s post", then the post with its photos stacked
+  // Post page: back arrow, "<Name>'s post", then the post with its photos stacked
   const ov = el("div", "pov"), top = el("div", "pvt"), x = el("button", "gray pvback"), box = el("div", "pvb");
   x.type = "button"; x.title = "Back"; x.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>'; x.onclick = closePov;
   top.append(x, el("div", "pvtt", p.kind === "clip" ? "Clip" : (names[p.user_id] || "Someone") + "’s post"), el("div", "pvsp")); ov.append(top, box); document.body.append(ov);
@@ -1633,14 +1912,14 @@ function feedRender() {
   hb.type = "button"; hb.innerHTML = FI.ham; hb.onclick = openMenu;
   [["post", "Newsfeed"], ["clip", "Clips"]].forEach(([k, t]) => { const b = el("button", fmode === k ? "on" : "", t); b.type = "button"; b.onclick = () => { if (fmode !== k) { dropFile(); fdraft.open = false; fdraft.txt = ""; } fmode = k; fposts = []; floading = true; feedDirty = true; render(); loadFeed(); }; tt.append(b); });
   fm.append(hb, tt, el("div", "sp")); top.append(fm);
-  // "What's on your mind?"
-  const cmp = el("div", "cmp"), ph = el("div", "cph", fmode === "clip" ? "Add a clip" : "What's on your mind?"), gi = el("button", "pi2");
+  // "Share something…"
+  const cmp = el("div", "cmp"), ph = el("div", "cph", fmode === "clip" ? "Add a clip" : "Share something…"), gi = el("button", "pi2");
   ph.onclick = () => openDraft(); gi.type = "button"; gi.innerHTML = FI.photo; gi.onclick = () => pickMedia();
   cmp.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase(), "fa"), ph, gi); top.append(cmp);
   if (fdraft.open || fdraft.file) {
     const clip = fmode === "clip", d = el("div", "drf"), t = el("textarea"), r = el("div", "r w"), sel = el("select"), go = el("button", "sm", fbusy ? "Posting…" : "Post"), no = el("button", "sm gray", "Cancel");
     const ok = () => !fbusy && (clip ? !!fdraft.file : (!!fdraft.file || !!fdraft.txt.trim()));
-    t.placeholder = clip ? "Write a caption…" : "What's on your mind?"; t.rows = 3; t.maxLength = 2000; t.value = fdraft.txt;
+    t.placeholder = clip ? "Write a caption…" : "Share something…"; t.rows = 3; t.maxLength = 2000; t.value = fdraft.txt;
     t.oninput = () => { fdraft.txt = t.value; go.disabled = !ok(); };
     [["public", "🌐 Public"], ["friends", "👥 Friends"]].forEach(([v, l]) => { const o = el("option", null, l); o.value = v; sel.append(o); });
     sel.value = fdraft.vis; sel.disabled = fbusy;
@@ -1669,7 +1948,7 @@ function feedRender() {
   }
   if (fmode === "post") box.append(storiesRow());
   const vis = fposts.filter(p => !fhide.has(p.id));
-  if (!vis.length) box.append(floading ? spinEl() : el("div", "hint", fmode === "clip" ? "No clips yet. Add the first one!" : "No posts yet. Add friends or post something."));
+  if (!vis.length) box.append(floading ? spinEl() : el("div", "hint", fmode === "clip" ? "No clips yet. Add the first one!" : "No posts yet. Follow people or post something."));
   if (fmode === "clip") { box.style.setProperty("--ftop", top.offsetHeight + "px"); vis.forEach(p => reel(p)); watchReels(); return; }
   vis.forEach(p => box.append(postCard(p)));
 }
@@ -1731,22 +2010,22 @@ function pickStory() {
   }; i.click();
 }
 function storiesRow() {
-  const row = el("div", "str"), mk = el("div", "sc mk"), top = el("div", "top"), plus = el("div", "plus");
-  top.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase())); plus.innerHTML = FI.plus;
-  mk.append(top, plus, el("div", "sn", "Create story")); mk.onclick = pickStory; row.append(mk);
+  const row = el("div", "str"), mk = el("div", "cs add"), t = el("div", "ct"), pl = el("div", "pl"), av = el("div", "cav");
+  pl.innerHTML = FI.plus; t.append(pl); av.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase()));
+  mk.append(t, av, el("div", "cn", "Add story")); mk.onclick = pickStory; row.append(mk);
   const seenU = new Set(), latestOf = fstories.filter(s => !seenU.has(s.user_id) && seenU.add(s.user_id));
   latestOf.sort((a, b) => (b.user_id === me.id) - (a.user_id === me.id)).forEach(s => row.append(storyCard(s)));
   return row;
 }
 function storyCard(s) {
-  const u = s.user_id, nm = names[u] || "Someone", c = el("div", "sc"), r = el("div", "sr");
+  const u = s.user_id, nm = names[u] || "Someone", c = el("div", "cs"), t = el("div", "ct"), av = el("div", "cav");
   if (s.url) {
     const vid = s.media_type === "video", m = el(vid ? "video" : "img");
     if (vid) { m.muted = true; m.playsInline = true; m.preload = "metadata"; m.src = s.url + "#t=0.1"; } else m.src = s.url;
-    c.append(m);
+    t.append(m);
   }
-  r.append(avatar(u, nm[0].toUpperCase()));
-  c.append(el("div", "sg2"), r, el("div", "sn", u === me.id ? "Your story" : nm));
+  av.append(avatar(u, nm[0].toUpperCase()));
+  c.append(t, av, el("div", "cn", u === me.id ? "Your story" : nm));
   c.onclick = () => openStory(u); return c;
 }
 async function openStory(u, custom) {
@@ -1967,9 +2246,12 @@ function postCard(p, inProfile, noRp, full) {
   const nb = el("b", null, nm); nb.style.cursor = "pointer"; nb.onclick = () => openProfile(u); l1.append(nb);
   if (p.tags && p.tags.length) l1.append(el("span", "mut", " is with " + p.tags.map(t => names[t] || "Someone").join(", ")));
   if (u !== me.id && !r) {
-    const fl = el("span", "fl", "Add friend"); fl.onclick = async () => { const {error} = await sb.from("friendships").insert({addressee: u}); if (error) return alert(/CHATTER_FRIEND_REQUESTS_CLOSED/.test(error.message) ? "This person is not accepting friend requests." : error.message); await loadFriends(); fkeep(() => {}); };
+    const fl = el("span", "fl", "Follow"); fl.onclick = async () => { await followUser(u); fkeep(() => {}); };
     l1.append(el("span", "dot", "·"), fl);
-  } else if (r && r.status === "pending") l1.append(el("span", "dot", "·"), el("span", "fl mut", "Pending"));
+  } else if (r && r.status === "pending") {
+    if (r.incoming) { const fb2 = el("span", "fl", "Follow back"); fb2.onclick = async () => { await followUser(u); fkeep(() => {}); }; l1.append(el("span", "dot", "·"), fb2); }
+    else l1.append(el("span", "dot", "·"), el("span", "fl mut", "Following"));
+  }
   const l2 = el("div", "l2"), gl = el("span"); gl.innerHTML = p.visibility === "friends" ? FI.friends : FI.globe; gl.title = p.visibility === "friends" ? "Friends" : "Public"; l2.append(el("span", null, agoS(p.created_at) + " ·"), gl);
   n.append(l1, l2);
   const mb = el("button", "hx"), xb = el("button", "hx"); mb.type = xb.type = "button"; mb.innerHTML = FI.dots; xb.innerHTML = FI.x;
@@ -2008,7 +2290,7 @@ function reel(p, into, onGone) {
   const who = el("div", "ovh"); who.append(el("div", "t1", names[p.user_id] || "Someone")); who.onclick = e => { e.stopPropagation(); openProfile(p.user_id); };
   const bub = el("div", "bubs"), rpr = el("div", "rpr"), rpl = el("div", "rpl"); rpr.onclick = e => { e.stopPropagation(); openReposts(p); }; ov.append(bub, rpr, who); if (p.visibility === "friends") { const ft = el("div", "", "👥 Friends only"); ft.style.cssText = "font-size:12px;opacity:.85;margin-bottom:2px"; ov.append(ft); } ov.append(el("div", "", p.body || ""));
   const rav = el("div", "rav"), ra = avatar(p.user_id, (names[p.user_id] || "?")[0].toUpperCase(), "fa"); ra.style.cursor = "pointer"; ra.onclick = () => openProfile(p.user_id); rav.append(ra);
-  if (p.user_id !== me.id && !rel(p.user_id)) { const pl = el("button", "rplus", "+"); pl.type = "button"; pl.onclick = async () => { const {error} = await sb.from("friendships").insert({addressee: p.user_id}); if (error) return alert(/CHATTER_FRIEND_REQUESTS_CLOSED/.test(error.message) ? "This person is not accepting friend requests." : error.message); pl.remove(); loadFriends(); }; rav.append(pl); }
+  { const rr = rel(p.user_id); if (p.user_id !== me.id && (!rr || (rr.status === "pending" && rr.incoming))) { const pl = el("button", "rplus", "+"); pl.type = "button"; pl.onclick = async () => { if (await followUser(p.user_id)) pl.remove(); }; rav.append(pl); } }
   const lk = el("button"), cm = el("button"), sv = el("button"); lk.type = cm.type = sv.type = "button";
   paintLike(p, lk); paintCmt(p, cm); paintSave(p, sv);
   lk.onclick = () => reelLike(p, lk); cm.onclick = () => openCmts(p, () => paintCmt(p, cm)); sv.onclick = () => toggleSave(p, sv);
@@ -2151,7 +2433,7 @@ async function postRepost(p, b) {
   toast(on ? "Repost removed" : "🔁 Reposted"); fkeep(() => {});
 }
 
-// ---------- CLIPS: repost (Instagram style) + friends' likes / reposts bubbles ----------
+// ---------- CLIPS: repost + friends' likes / reposts bubbles ----------
 let frep = {}, frepOK = null, liveCh = null; const reelUI = {};
 const REP_MSG = "Reposts aren't set up yet. Run clips_repost.sql in the Supabase SQL Editor.";
 const repMap = id => frep[id] || (frep[id] = new Map());
@@ -2229,7 +2511,7 @@ function openNoteSheet(p) {
   };
   wrap.append(nb, av, msg, emr, inp, save); body.append(wrap); paint();
 }
-// ---------- CLIPS: "N reposted" pill + Reposts sheet (TikTok style) ----------
+// ---------- CLIPS: "N reposted" pill + Reposts sheet ----------
 const PEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';
 const repRank = u => u === me.id ? 0 : isFriend(u) ? 1 : 2;
 const repSorted = id => [...repMap(id).entries()].sort((a, b) => (repRank(a[0]) - repRank(b[0])) || String(b[1].at).localeCompare(String(a[1].at)));
@@ -2484,7 +2766,7 @@ function drawSaved(box) {
   box.append(g);
 }
 
-// ---------- PROFILE PAGE (Facebook style): cover, avatar, Posts + Clips ----------
+// ---------- PROFILE PAGE: cover, avatar, Posts + Clips ----------
 const blankPf = () => ({uid: null, tab: "posts", posts: [], clips: [], loaded: false, box: null, ov: false, info: null, friends: null});
 let pf = blankPf();
 async function pfLoad(uid) {
@@ -2567,8 +2849,8 @@ function drawProfile() {
   if (mine) sub = "";
   else if (bl) sub = "Blocked";
   else {
-    sub = rl && rl.status === "accepted" ? "" : rl && rl.status === "pending" ? (rl.incoming ? "Sent you a friend request" : "Friend request sent") : "";
-    if (online.has(uid)) sub += (sub ? " · " : "") + "Active now";
+    sub = rl && rl.status === "accepted" ? "" : rl && rl.status === "pending" ? (rl.incoming ? "Follows you" : "Following") : "";
+    if (online.has(uid)) sub += (sub ? " · " : "") + "Online now";
   }
   const hd = el("div", "phd"), col = el("div", "phi"), nr = el("div", "pnr");
   nr.append(el("div", "pname", nm));
@@ -2581,13 +2863,17 @@ function drawProfile() {
   }
   if (!bl) {
     const st = el("div", "pstats"), stat = (n, l) => { const d = el("div", "pst"); d.append(el("b", null, String(n)), el("span", null, l)); return d; };
-    st.append(stat(mine ? fr.filter(f => f.status === "accepted").length : (pf.friends ? pf.friends.length : "–"), "Friends"), stat(pf.loaded ? pf.posts.length : "–", "Posts"), stat(pf.loaded ? pf.clips.length : "–", "Clips")); st.firstChild.style.cursor = "pointer"; st.firstChild.onclick = () => openFriendList(uid); box.append(st);
+    const fc = mine ? fcMine() : (pf.fc || null);
+    st.append(stat(fc ? fc.followers : "–", "Followers"), stat(fc ? fc.following : "–", "Following"), stat(mine ? fr.filter(f => f.status === "accepted").length : (pf.friends ? pf.friends.length : "–"), "Friends"), stat(pf.loaded ? pf.posts.length : "–", "Posts"), stat(pf.loaded ? pf.clips.length : "–", "Clips"));
+    st.children[2].style.cursor = "pointer"; st.children[2].onclick = () => openFriendList(uid);
+    if (mine) { st.children[0].style.cursor = st.children[1].style.cursor = "pointer"; st.children[0].onclick = () => openFollowList("followers"); st.children[1].onclick = () => openFollowList("following"); }
+    box.append(st);
     const mf = !mine && pf.friends ? pf.friends.filter(x => x.is_mutual) : [];
     if (mf.length) {
       const fn = x => ((names[x.friend_id] || "Someone").trim().split(/\s+/)[0]) || "Someone";
       const txt = mf.length === 1 ? fn(mf[0]) : mf.length === 2 ? fn(mf[0]) + " and " + fn(mf[1]) : fn(mf[0]) + " and " + (mf.length - 1) + " others";
       const r = el("div", "pmut"), av = el("div", "mav"); mf.slice(0, 3).forEach(x => av.append(avatar(x.friend_id, (names[x.friend_id] || "?")[0].toUpperCase(), "sm")));
-      r.append(av, el("span", null, "Friends with " + txt)); box.append(r);
+      r.append(av, el("span", null, "Mutual: " + txt)); box.append(r);
     }
   }
   // action buttons
@@ -2595,17 +2881,17 @@ function drawProfile() {
   const btn = (t, cls, fn) => { const b = el("button", cls, t); b.type = "button"; b.onclick = e => { e.stopPropagation(); closePop(); fn(e); }; act.append(b); return b; };
   const refresh = async () => { await loadFriends(); pfPaint(); };
   if (mine) {
-    btn("＋ Add to story", "", pickStory);
-    btn("✏️ Edit profile", "gray", editProfile);
+    btn("New story", "", pickStory);
+    btn("Edit details", "gray", editProfile);
   } else if (bl) {
     btn("Unblock", "", () => doUnblock(uid));
   } else {
-    if (!rl) btn("➕ Add friend", "", async () => { const {error} = await sb.from("friendships").insert({addressee: uid}); if (error) return alert(/CHATTER_FRIEND_REQUESTS_CLOSED/.test(error.message) ? "This person is not accepting friend requests." : error.message); refresh(); });
-    else if (rl.status === "pending" && !rl.incoming) btn("⏳ Cancel request", "gray", async () => { await sb.from("friendships").delete().eq("id", rl.id); refresh(); });
+    if (!rl) btn("＋ Follow", "", async () => { if (await followUser(uid)) pfPaint(); });
+    else if (rl.status === "pending" && !rl.incoming) btn("Following", "gray", async () => { await unfollowUser(uid); pfPaint(); });
     else if (rl.status === "pending") {
-      btn("✅ Accept", "", async () => { await sb.from("friendships").update({status: "accepted"}).eq("id", rl.id); refresh(); });
-      btn("Decline", "gray", async () => { await sb.from("friendships").delete().eq("id", rl.id); refresh(); });
-    }
+      btn("Follow back", "", async () => { if (await followUser(uid)) pfPaint(); });
+      btn("Remove follower", "gray", async () => { await sb.from("friendships").delete().eq("id", rl.id); refresh(); });
+    } else btn("Friends ✓", "gray", async () => { await unfollowUser(uid); pfPaint(); });
     btn("💬 Message", rl && rl.status === "accepted" ? "" : "gray", () => { closeProfile(); openDM(uid); });
     btn("⋯", "gray sq", e => popMenu(e.currentTarget, [
       ["Audio call", () => { closeProfile(); callUser(uid, false); }],
@@ -2616,7 +2902,7 @@ function drawProfile() {
   if (bl) return box.append(el("div", "hint", "You blocked this person."));
   // Posts | Clips
   const tb = el("div", "ptabs");
-  [["posts", "All"], ["photos", "Photos"], ["clips", "Clips"], ["reposts", "Reposts"]].forEach(([k, t]) => { const b = el("button", pf.tab === k ? "on" : "", t); b.type = "button"; b.onclick = () => { pf.tab = k; if (k === "saved" && !pf.saved) loadSaved(); if (k === "reposts" && !pf.reps) loadRepTab(); pfPaint(); }; tb.append(b); });
+  [["posts", "Posts"], ["photos", "Photos"], ["clips", "Clips"], ["reposts", "Reposts"]].forEach(([k, t]) => { const b = el("button", pf.tab === k ? "on" : "", t); b.type = "button"; b.onclick = () => { pf.tab = k; if (k === "saved" && !pf.saved) loadSaved(); if (k === "reposts" && !pf.reps) loadRepTab(); pfPaint(); }; tb.append(b); });
   box.append(tb);
   if (!pf.loaded) return box.append(spinEl());
   if (pf.tab === "photos") {
@@ -2645,8 +2931,9 @@ const MONTHS = ["January", "February", "March", "April", "May", "June", "July", 
 const fmtDate = v => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v || ""); return m ? MONTHS[+m[2] - 1] + " " + (+m[3]) + ", " + m[1] : (v || ""); };
 const PENCIL = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14.5 6.5l3 3"/></svg>';
 async function pfLoadExtra(uid) {
-  const [i, f, d] = await Promise.all([sb.from("profiles").select("city,hometown,school,school_date,birthday").eq("id", uid).maybeSingle(), sb.rpc("profile_friends", {target: uid}), sb.rpc("get_profile_details", {target: uid})]);
+  const [i, f, d, c] = await Promise.all([sb.from("profiles").select("city,hometown,school,school_date,birthday").eq("id", uid).maybeSingle(), sb.rpc("profile_friends", {target: uid}), sb.rpc("get_profile_details", {target: uid}), sb.rpc("profile_follow_counts", {target: uid})]);
   if (pf.uid !== uid) return;
+  pf.fc = c && !c.error && c.data ? (Array.isArray(c.data) ? c.data[0] : c.data) : null;
   pf.info = i.error ? {} : (i.data || {}); pf.det = d.error ? {} : (d.data || {});
   pf.friends = f.error ? (uid === me.id ? fr.filter(x => x.status === "accepted").map(x => ({friend_id: x.requester === me.id ? x.addressee : x.requester, mutual: null, is_mutual: false})) : null) : (f.data || []);
   const ids = (pf.friends || []).map(x => x.friend_id); await ensureNames(ids); loadPhotos(ids.slice(0, 24));
@@ -2668,9 +2955,9 @@ function drawAbout(box, mine, uid) {
     s.append(h, ...kids); box.append(s);
   };
   EP.forEach(([title, fields]) => {
-    if (title === "Personal details") return;
+    if (title === "Basics") return;
     const kids = []; fields.forEach(f => { const v = epVal(f); if (v) kids.push(row(f[1], f[3] === "date" ? fmtDate(v) : v)); });
-    if (kids.length) sec(title, kids); else if (mine && title === "Personal details") sec(title, [el("div", "t2", "Add your current city, hometown and birthday.")]);
+    if (kids.length) sec(title, kids); else if (mine && title === "Basics") sec(title, [el("div", "t2", "Add your current city, hometown and birthday.")]);
   });
 }
 function openFriendList(uid) {
@@ -2681,17 +2968,17 @@ function openFriendList(uid) {
     d.append(avatar(u, nm[0].toUpperCase(), "md", u), mid); d.onclick = () => { closeSheet(); openProfile(u); }; body.append(d);
   });
 }
-const EPV = {public: "🌐 Public", friends: "👥 Friends", me: "🔒 Only me"};
+const EPV = {public: "🌐 Public", friends: "👥 Friends", me: "🔒 Private"};
 const EP = [
-  ["Personal details", [["city", "📍", "Current city", "text", "legacy"], ["hometown", "🏠", "Hometown", "text", "legacy"], ["birthday", "🎂", "Birthday", "date", "legacy"],
-    ["rel", "💞", "Relationship status", "sel:Single|In a relationship|Engaged|Married|It's complicated|Separated|Divorced|Widowed"], ["gender", "⚧", "Gender", "sel:Male|Female|Custom|Prefer not to say"], ["lang", "🗣", "Languages", "text"]]],
-  ["Work", [["work", "💼", "Work experience", "text"]]],
-  ["Education", [["school", "🎓", "School", "text", "legacy"], ["school_date", "📅", "Graduation date", "date", "legacy"], ["hs", "🏫", "High school", "text"]]],
+  ["Basics", [["city", "📍", "City", "text", "legacy"], ["hometown", "🏠", "From", "text", "legacy"], ["birthday", "🎂", "Birthday", "date", "legacy"],
+    ["rel", "💞", "Status", "sel:Single|In a relationship|Engaged|Married|Complicated|Separated|Divorced|Widowed"], ["gender", "⚧", "Gender", "sel:Male|Female|Custom|Prefer not to say"], ["lang", "🗣", "Languages", "text"]]],
+  ["Work", [["work", "💼", "Work", "text"]]],
+  ["Education", [["school", "🎓", "School", "text", "legacy"], ["school_date", "📅", "Graduated", "date", "legacy"], ["hs", "🏫", "Secondary school", "text"]]],
   ["Hobbies", [["hobbies", "🎨", "Hobbies", "text"]]],
-  ["Interests", [["music", "🎵", "Music", "text"], ["tv", "📺", "TV shows", "text"], ["movies", "🎬", "Movies", "text"], ["games", "🎮", "Games", "text"], ["sports", "⚽", "Sports teams and athletes", "text"]]],
-  ["Travel", [["places", "🧭", "Places", "text"]]],
-  ["Links", [["links", "🔗", "Websites, blogs, portfolios", "text"]]],
-  ["Contact info", [["social", "@", "Social media", "text"], ["phone", "📞", "Phone", "text", "me"], ["email", "✉️", "Email", "text", "me"]]]
+  ["Interests", [["music", "🎵", "Music", "text"], ["tv", "📺", "Shows", "text"], ["movies", "🎬", "Movies", "text"], ["games", "🎮", "Games", "text"], ["sports", "⚽", "Sports", "text"]]],
+  ["Favorite places", [["places", "🧭", "Places", "text"]]],
+  ["Links", [["links", "🔗", "Links", "text"]]],
+  ["Contact", [["social", "@", "Social handles", "text"], ["phone", "📞", "Phone", "text", "me"], ["email", "✉️", "Email", "text", "me"]]]
 ];
 const epVal = f => f[4] === "legacy" ? (pf.info || {})[f[0]] : ((pf.det || {})[f[0]] || {}).v;
 async function editProfile() {
@@ -2727,17 +3014,21 @@ async function editProfile() {
   };
   const draw = () => {
     o.replaceChildren();
-    const hd = el("div", "ihead"), bk = el("button", "ghost", "←"), t = el("div", null, "Edit profile"); bk.type = "button"; bk.onclick = () => { o.remove(); pfPaint(); }; t.style.flex = "1"; hd.append(bk, t); o.append(hd);
-    const ph = el("div", "ph2"), b1 = el("button", "sm gray", "Profile photo"), b2 = el("button", "sm gray", "Cover photo"); b1.type = b2.type = "button";
-    b1.onclick = () => pickPhoto("avatar"); b2.onclick = () => pickPhoto("cover"); ph.append(b1, b2); o.append(ph);
+    const hd = el("div", "ihead"), bk = el("button", "ghost", "←"), t = el("div", null, "Edit your profile"); bk.type = "button"; bk.onclick = () => { o.remove(); pfPaint(); }; t.style.flex = "1"; hd.append(bk, t); o.append(hd);
+    const hero = el("div", "ehero"), cv = el("div", "ecv"), av = el("div", "eav"), bs = el("div", "ebt"), b1 = el("button", "sm gray", "Change photo"), b2 = el("button", "sm gray", "Change cover"); b1.type = b2.type = "button";
+    if (coverUrl[me.id]) cv.style.backgroundImage = 'url("' + coverUrl[me.id] + '")';
+    av.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase(), "xxl", me.id));
+    b1.onclick = () => pickPhoto("avatar"); b2.onclick = () => pickPhoto("cover"); bs.append(b1, b2); hero.append(cv, av, bs); o.append(hero);
     EP.forEach(([title, fields]) => {
-      const c = closed.has(title), h = el("div", "eph"); h.append(el("b", null, title), el("span", null, c ? "⌄" : "⌃")); h.onclick = () => { c ? closed.delete(title) : closed.add(title); draw(); }; o.append(h);
-      if (c) return;
+      o.append(el("div", "esl", title));
+      const g = el("div", "efg");
       fields.forEach(f => {
-        const v = get(f), row = el("div", "irow"), mid = el("div", "mid");
-        mid.append(el("div", v ? "t1" : "t1 mutl", v ? (f[3] === "date" ? fmtDate(v) : v) : f[2])); if (v) mid.append(el("div", "t2", f[2] + " · " + EPV[prv(f)]));
-        row.append(el("span", "ic", f[1]), mid); row.onclick = () => editField(f); o.append(row);
+        const v = get(f), tile = el("div", "eft" + (v ? "" : " empty")), m = el("div", "em");
+        m.append(el("div", "ehl", f[2]), el("div", "ehv", v ? (f[3] === "date" ? fmtDate(v) : v) : "Tap to add"));
+        if (v) m.append(el("div", "ehp", EPV[prv(f)]));
+        tile.append(el("span", "eic", f[1]), m); tile.onclick = () => editField(f); g.append(tile);
       });
+      o.append(g);
     });
   };
   draw();
@@ -2770,7 +3061,7 @@ async function openClip(list, i0) {
   const k = Math.max(0, L.indexOf(target)); if (box.children[k]) box.children[k].scrollIntoView({block: "start"});
 }
 
-// ---------- MENU (Facebook style): Settings and privacy + Log out ----------
+// ---------- MENU: Privacy & settings + Log out ----------
 const MI = {
   access: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.6" r="1.9"/><path d="M5 8.4l7 1.6 7-1.6"/><path d="M12 10v4.4"/><path d="M8.8 20l3.2-5.6 3.2 5.6"/></svg>',
   gear: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
@@ -2787,7 +3078,7 @@ let mset = false, mblk = false, mapp = false;
 // ---------- USER ACCENT COLOR ----------
 const ACCENT_COLORS = {
   purple: {label:"Purple", color:"#7c3aed", deep:"#4f46e5"},
-  blue:   {label:"Blue", color:"#1877f2", deep:"#0866ff"},
+  blue:   {label:"Blue", color:"#2563eb", deep:"#1d4ed8"},
   pink:   {label:"Pink", color:"#ec4899", deep:"#be185d"},
   red:    {label:"Red", color:"#ef4444", deep:"#b91c1c"},
   orange: {label:"Orange", color:"#f97316", deep:"#c2410c"},
@@ -2796,6 +3087,7 @@ const ACCENT_COLORS = {
   gold:   {label:"Gold", color:"#eab308", deep:"#a16207"}
 };
 function applyAccentColor(name) {
+  try { localStorage.setItem("chatter_accent", ACCENT_COLORS[name] ? name : "purple"); } catch (e) {}
   const c = ACCENT_COLORS[name] || ACCENT_COLORS.purple;
   const root = document.documentElement;
   root.style.setProperty("--accent", c.color);
@@ -2845,8 +3137,8 @@ function dtDD() {
   row(DDI.prof, "View Profile", () => openProfile(me.id));
   row(bmIcon(false), "Saved", () => openSaved());
   row(MI.gear, "Settings", () => openSettings());
-  row(MI.access, "Accessibility and Display", () => { stCat = "Accessibility and Display"; stItem = null; $("#st").classList.remove("hide"); drawSet(); });
-  row(DDI.help, "Help and Support", () => { stCat = "Help and Support"; stItem = null; $("#st").classList.remove("hide"); drawSet(); });
+  row(MI.access, "Display & accessibility", () => { stCat = "Display & accessibility"; stItem = null; $("#st").classList.remove("hide"); drawSet(); });
+  row(DDI.help, "Help & Feedback", () => { stCat = "Help & Feedback"; stItem = null; $("#st").classList.remove("hide"); drawSet(); });
   const lo = el("button", "dlo", "Log out"); lo.type = "button"; lo.onclick = async () => { dtClose(); await dropPush(); hardOut(); };
   d.append(el("div", "dsp"), lo);
 }
@@ -2876,24 +3168,24 @@ function drawMenu() {
   chv.innerHTML = MI.right; card.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase()), el("div", "nmv", names[me.id] || "Me"), chv);
   card.onclick = () => { closeMenu(); setTab("menu"); };
   w.append(top, card);
-  // Appearance and Settings and privacy were removed from the menu as requested.
+  // Appearance and Privacy & settings were removed from the menu as requested.
   // Keep the dedicated Settings entry as the single route to account settings.
   const sv0 = el("div", "mrow"); sv0.innerHTML = bmIcon(false); sv0.append(el("span", "mt", "Saved")); sv0.onclick = () => { closeMenu(); openSaved(); }; w.append(sv0);
   const ss = el("div", "mrow"); ss.innerHTML = MI.gear; ss.append(el("span", "mt", "Settings")); ss.onclick = () => { closeMenu(); openSettings(); }; w.append(ss);
-  const ax = el("div", "mrow"); ax.innerHTML = MI.access; ax.append(el("span", "mt", "Accessibility and Display"));
-  ax.onclick = () => { closeMenu(); stCat = "Accessibility and Display"; stItem = null; $("#st").classList.remove("hide"); drawSet(); }; w.append(ax);
-  // Direct Help and Support shortcut below it in the Menu.
+  const ax = el("div", "mrow"); ax.innerHTML = MI.access; ax.append(el("span", "mt", "Display & accessibility"));
+  ax.onclick = () => { closeMenu(); stCat = "Display & accessibility"; stItem = null; $("#st").classList.remove("hide"); drawSet(); }; w.append(ax);
+  // Direct Help & Feedback shortcut below it in the Menu.
   const hs = el("div", "mrow");
   hs.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9a2.5 2.5 0 1 1 4.2 1.8c-1.2 1-1.8 1.3-1.8 2.7"/><path d="M12 17h.01"/></svg>';
-  hs.append(el("span", "mt", "Help and Support"));
-  hs.onclick = () => { closeMenu(); stCat = "Help and Support"; stItem = null; $("#st").classList.remove("hide"); drawSet(); };
+  hs.append(el("span", "mt", "Help & Feedback"));
+  hs.onclick = () => { closeMenu(); stCat = "Help & Feedback"; stItem = null; $("#st").classList.remove("hide"); drawSet(); };
   w.append(hs);
   const lo = el("button", "mlog", "Log out"); lo.type = "button"; lo.onclick = async () => { closeMenu(); await dropPush(); hardOut(); };
   w.append(el("div", "msp"), lo); o.append(w); o.scrollTop = y;
 }
 
 
-// ---------- SETTINGS (General / Privacy / Security and Login / Notifications) ----------
+// ---------- SETTINGS (General / Privacy / Security & Sign-in / Notifications) ----------
 pymk = []; let bdays = [], tagged = [];
 async function loadTagged() {
   try { const {data, error} = await sb.from("posts").select("id,user_id,body,created_at,kind").contains("tags", [me.id]).order("created_at", {ascending: false}).limit(20); if (error) return;
@@ -2912,25 +3204,25 @@ async function loadBdays() {
 }
 let S = {}, stCat = null, stItem = null;
 const ST = {
-  "General Account Settings": ["Name", "Username", "Contact Information", "Password and Security", "Language and Region", "Deactivation and Deletion", "Account ownership and control"],
-  "Privacy Settings": ["Who can see your future posts?", "Review all your posts and things you're tagged in", "Who can send you friend requests?", "Who can see your friends list?", "Who can look you up using your email address?", "Who can look you up using your phone number?", "Do you want search engines outside Chatter to link to your profile?", "Who can comment on your public posts?", "Who can see your profile information?"],
-  "Security and Login": ["Change password", "Where you're logged in", "Log out of devices", "Save your login information", "Two-factor authentication", "Get alerts about unrecognized logins", "Authorized logins", "Recovery email and phone"],
-  "Notifications": ["Sounds", "Comments", "Likes", "Replies to comments", "Tags", "Mentions", "Messages", "Reminders", "Friend requests", "Friend acceptances", "People you may know", "Birthdays", "Group activity", "Profile activity", "Clips", "Push notifications", "Email notifications", "In-app notifications", "Notification sounds"],
-  "Audience and Tagging": ["Who can see posts you're tagged in?", "Review posts you're tagged in before they appear on your profile", "Who can reply to your stories?", "Public post notifications"],
-  "Blocking": ["Blocked accounts", "Restricted list", "Block messages from strangers", "Block app invitations", "Block event invitations"],
+  "Account Basics": ["Name", "Username", "Contact Information", "Password and safety", "Language and Region", "Deactivate or delete", "Account control"],
+  "Privacy Settings": ["Who can see your new posts?", "Review your posts and tags", "Who can follow you?", "Who can view your friends?", "Can people find you by your email?", "Can people find you by your phone number?", "Should your profile show up in search engines?", "Who can comment on your public posts?", "Who can see your profile information?"],
+  "Security & Sign-in": ["Change password", "Active sessions", "Sign out of devices", "Remember this device", "Two-factor authentication", "Alerts for new sign-ins", "Trusted devices", "Recovery contact"],
+  "Notifications": ["Sounds", "Comments", "Likes", "Replies to comments", "Tags", "Mentions", "Messages", "Reminders", "New followers", "New friends", "Suggested people", "Birthdays", "Group activity", "Profile activity", "Clips", "Push notifications", "Email notifications", "In-app notifications", "Notification sounds"],
+  "Audience & Tags": ["Who sees posts you're tagged in?", "Approve tags before they show on your profile", "Who can reply to your stories?", "Public post notifications"],
+  "Blocking": ["Blocked accounts", "Limited accounts", "Block messages from strangers", "App invites", "Event invites"],
   "Stories and Clips": ["Who can see your stories?", "Allow story replies", "Save stories to archive", "Autoplay clips"],
-  "Your Chatter Information": ["Activity Log", "Download Your Chatter Information", "Account activity and history"],
-  "Apps and Websites": ["Connected apps and websites", "Active integrations", "Remove app access"],
-  "Accessibility and Display": ["Theme", "Accent color", "Text size", "Autoplay media", "Reduce motion"],
-  "Help and Support": ["Help Center", "Report a problem", "Community Guidelines"]
+  "Your Chatter Data": ["Activity summary", "Download your Chatter data", "Account activity and history"],
+  "Integrations": ["Connected apps and websites", "Active integrations", "Remove app access"],
+  "Display & accessibility": ["Theme", "Accent color", "Text size", "Autoplay media", "Reduce motion"],
+  "Help & Feedback": ["Help Center", "Report a problem", "Community Guidelines"]
 };
-const INFO = {"Who can see your friends list?": "Your friends list is private: friendship records can only be read by you and the other person.", "Who can look you up using your email address?": "People can only search by name or @username, so nobody can look you up by your email.", "Who can look you up using your phone number?": "People can only search by name or @username, so nobody can look you up by your phone number.", "Do you want search engines outside Chatter to link to your profile?": "No. Chatter profiles are only visible to people who are logged in, so search engines can't list them.", "Recovery email and phone": "Your recovery methods are managed by Supabase Authentication. Use Contact Information to update your email or phone number.", "Restricted list": "Restricted-list behavior is not implemented separately yet. Use Blocked accounts to manage accounts you have blocked.", "Connected apps and websites": "Third-party app connections are not currently managed from this Chatter build.", "Active integrations": "No integration management screen is connected in this build.", "Remove app access": "Third-party access revocation is not available in this build.", "Activity Log": "Activity Log currently summarizes only activity supported by the app. A full cross-account Facebook-style log is not available yet.", "Account activity and history": "Recent sign-in time is available under Security and Login. A complete account-wide history is not available yet.", "Help Center": "For help, use the app owner or project support channel configured for this Chatter deployment.", "Report a problem": "Please include the screen, what you were doing, and any error message when reporting a problem.", "Community Guidelines": "Be respectful, protect private information, and do not share harmful or abusive content."};
+const INFO = {"Who can view your friends?": "Your friends list is private: friendship records can only be read by you and the other person.", "Can people find you by your email?": "People can only search by name or @username, so nobody can look you up by your email.", "Can people find you by your phone number?": "People can only search by name or @username, so nobody can look you up by your phone number.", "Should your profile show up in search engines?": "No. Chatter profiles are only visible to people who are logged in, so search engines can't list them.", "Recovery contact": "Your recovery methods are managed by Supabase Authentication. Use Contact Information to update your email or phone number.", "Limited accounts": "Restricted-list behavior is not implemented separately yet. Use Blocked accounts to manage accounts you have blocked.", "Connected apps and websites": "Third-party app connections are not currently managed from this Chatter build.", "Active integrations": "No integration management screen is connected in this build.", "Remove app access": "Third-party access revocation is not available in this build.", "Activity summary": "Activity summary currently summarizes only activity supported by the app. A full cross-account activity log is not available yet.", "Account activity and history": "Recent sign-in time is available under Security & Sign-in. A complete account-wide history is not available yet.", "Help Center": "For help, use the app owner or project support channel configured for this Chatter deployment.", "Report a problem": "Please include the screen, what you were doing, and any error message when reporting a problem.", "Community Guidelines": "Be respectful, protect private information, and do not share harmful or abusive content."};
 const OPT = {
-  "Who can see your future posts?": ["post_vis", [["public", "🌐 Public"], ["friends", "👥 Friends"]], "public", "Used as the default audience when you create a post."],
-  "Who can send you friend requests?": ["friend_req", [["everyone", "Everyone"], ["nobody", "Nobody"]], "everyone", "To enforce this setting on the server, run chatter_settings_privacy_upgrade.sql in Supabase."],
+  "Who can see your new posts?": ["post_vis", [["public", "🌐 Public"], ["friends", "👥 Friends"]], "public", "Used as the default audience when you create a post."],
+  "Who can follow you?": ["friend_req", [["everyone", "Everyone"], ["nobody", "Nobody"]], "everyone", "To enforce this setting on the server, run chatter_settings_privacy_upgrade.sql in Supabase."],
   "Who can comment on your public posts?": ["public_comments", [["everyone", "Everyone"], ["friends", "Friends"], ["nobody", "No one"]], "everyone", "To enforce this setting on the server, run chatter_settings_privacy_upgrade.sql in Supabase."],
   "Who can see your profile information?": ["profile_audience", [["public", "Everyone on Chatter"], ["friends", "Friends"], ["private", "Only me"]], "public", "Saved preference only; profile fields are not yet consistently hidden by this choice."],
-  "Who can see posts you're tagged in?": ["tagged_audience", [["public", "Everyone on Chatter"], ["friends", "Friends"], ["private", "Only me"]], "friends", "Saved as your tagged-post audience preference."],
+  "Who sees posts you're tagged in?": ["tagged_audience", [["public", "Everyone on Chatter"], ["friends", "Friends"], ["private", "Only me"]], "friends", "Saved as your tagged-post audience preference."],
   "Who can reply to your stories?": ["story_replies", [["everyone", "Everyone"], ["friends", "Friends"], ["off", "No one"]], "friends", "Saved as your story reply preference."],
   "Who can see your stories?": ["story_audience", [["public", "Everyone on Chatter"], ["friends", "Friends"]], "friends", "Controls story visibility using the app's supported Public and Friends audiences."],
   "Public post notifications": ["public_post_notifications", [["everyone", "Everyone"], ["friends", "Friends"], ["off", "Off"]], "everyone", "Saved as your public-post notification preference."],
@@ -2938,8 +3230,8 @@ const OPT = {
   "Text size": ["text_size", [["small", "Small"], ["medium", "Default"], ["large", "Large"]], "medium", "Changes the base text size in this browser."],
   "Language and Region": ["language_region", [["en", "English"], ["fil", "Filipino"]], "en", "Saves your preferred language. Some app labels may remain in English until translations are added."]
 };
-const TOG = {"Sounds": ["sounds", true, "Plays sounds for messages, likes, notifications and calls."], "Save your login information": ["save_login", true, "When off, you're signed out when you close the app or tab."], "Get alerts about unrecognized logins": ["alert_login", true, "This preference is saved; security alert emails are not sent by this build."],
-  "Comments": ["n_comments", true, "Hides comment notifications in the activity list."], "Likes": ["n_likes", true, "Controls notifications when someone likes your post."], "Replies to comments": ["n_replies", true, "Preference is saved, but this build does not generate separate reply-to-comment notification events yet."], "Tags": ["n_tags", true, "Shows or hides tag notifications."], "Mentions": ["n_mentions", true, "Preference is saved, but mention notifications are not generated separately in this build yet."], "Messages": ["n_messages", true, "Shows or hides recent incoming direct-message notifications in the Notifications tab."], "Reminders": ["n_rem", true, "Shows or hides unread-chat reminders."], "Friend requests": ["n_fr", true, "Shows or hides friend-request notifications."], "Friend acceptances": ["n_friend_accept", true, "Saves your preference for accepted-friend notifications."], "People you may know": ["n_pymk", true, "Turn off to hide People You May Know."], "Birthdays": ["n_bday", true, "Shows or hides birthday notifications."], "Group activity": ["n_groups", true, "Preference is saved, but a separate group-activity notification feed is not implemented yet."], "Profile activity": ["n_profile", true, "Saves your preference for profile activity notifications."], "Clips": ["n_clips", true, "Hides clip notifications in the activity list."], "Push notifications": ["n_push", true, "Enable this and register this browser/device for Web Push. HTTPS, a service worker, and server-side VAPID configuration are required."], "Email notifications": ["n_email", true, "Email delivery requires the deployed chatter-notify Edge Function and a verified Resend sender."], "In-app notifications": ["n_inapp", true, "Saves your in-app notification preference."], "Notification sounds": ["n_sound", true, "Plays a short original tone for newly detected in-app activity after you interact with Chatter. Browser audio rules apply."], "Review posts you're tagged in before they appear on your profile": ["tag_review", false, "When enabled, the app records pending approvals and shows a review queue. Hiding tagged posts across every profile/feed query still requires server-side enforcement."], "Allow story replies": ["story_reply_enabled", true, "Saves your story reply preference."], "Save stories to archive": ["story_archive", true, "Saves the preference; automatic story archiving is not implemented yet."], "Autoplay clips": ["autoplay_clips", true, "Saves your autoplay preference."], "Block messages from strangers": ["block_strangers", false, "When enabled, the companion SQL migration blocks incoming direct messages from people who are not accepted friends. Existing rooms may remain visible."], "Block app invitations": ["block_app_invites", true, "Saves your preference; app invitations are not currently supported."], "Block event invitations": ["block_event_invites", true, "Saves your preference; event invitations are not currently supported."], "Autoplay media": ["autoplay_media", true, "Saves your media autoplay preference."], "Reduce motion": ["reduce_motion", false, "Saves your reduced-motion preference; some animations may remain." ]};
+const TOG = {"Sounds": ["sounds", true, "Plays sounds for messages, likes, notifications and calls."], "Remember this device": ["save_login", true, "When off, you're signed out when you close the app or tab."], "Alerts for new sign-ins": ["alert_login", true, "This preference is saved; security alert emails are not sent by this build."],
+  "Comments": ["n_comments", true, "Hides comment notifications in the activity list."], "Likes": ["n_likes", true, "Controls notifications when someone likes your post."], "Replies to comments": ["n_replies", true, "Preference is saved, but this build does not generate separate reply-to-comment notification events yet."], "Tags": ["n_tags", true, "Shows or hides tag notifications."], "Mentions": ["n_mentions", true, "Preference is saved, but mention notifications are not generated separately in this build yet."], "Messages": ["n_messages", true, "Shows or hides recent incoming direct-message notifications in the Notifications tab."], "Reminders": ["n_rem", true, "Shows or hides unread-chat reminders."], "New followers": ["n_fr", true, "Shows or hides new-follower notifications."], "New friends": ["n_friend_accept", true, "Saves your preference for notifications when someone you follow follows you back and you become friends."], "Suggested people": ["n_pymk", true, "Turn off to hide Suggested people."], "Birthdays": ["n_bday", true, "Shows or hides birthday notifications."], "Group activity": ["n_groups", true, "Preference is saved, but a separate group-activity notification feed is not implemented yet."], "Profile activity": ["n_profile", true, "Saves your preference for profile activity notifications."], "Clips": ["n_clips", true, "Hides clip notifications in the activity list."], "Push notifications": ["n_push", true, "Enable this and register this browser/device for Web Push. HTTPS, a service worker, and server-side VAPID configuration are required."], "Email notifications": ["n_email", true, "Email delivery requires the deployed chatter-notify Edge Function and a verified Resend sender."], "In-app notifications": ["n_inapp", true, "Saves your in-app notification preference."], "Notification sounds": ["n_sound", true, "Plays a short original tone for newly detected in-app activity after you interact with Chatter. Browser audio rules apply."], "Approve tags before they show on your profile": ["tag_review", false, "When enabled, the app records pending approvals and shows a review queue. Hiding tagged posts across every profile/feed query still requires server-side enforcement."], "Allow story replies": ["story_reply_enabled", true, "Saves your story reply preference."], "Save stories to archive": ["story_archive", true, "Saves the preference; automatic story archiving is not implemented yet."], "Autoplay clips": ["autoplay_clips", true, "Saves your autoplay preference."], "Block messages from strangers": ["block_strangers", false, "When enabled, the companion SQL migration blocks incoming direct messages from people who are not accepted friends. Existing rooms may remain visible."], "App invites": ["block_app_invites", true, "Saves your preference; app invitations are not currently supported."], "Event invites": ["block_event_invites", true, "Saves your preference; event invitations are not currently supported."], "Autoplay media": ["autoplay_media", true, "Saves your media autoplay preference."], "Reduce motion": ["reduce_motion", false, "Saves your reduced-motion preference; some animations may remain." ]};
 function chatterBase64UrlBytes(base64url) {
   const pad = "=".repeat((4 - base64url.length % 4) % 4);
   const raw = atob((base64url + pad).replace(/-/g, "+").replace(/_/g, "/"));
@@ -2993,24 +3285,24 @@ async function loadSettings() { try { const {data, error} = await sb.from("user_
 async function saveS(k, v) { const previous = S[k]; S[k] = v; if (k === "post_vis") fdraft.vis = v; applySavedPreferences(); const {error} = await sb.from("user_settings").upsert({user_id: me.id, data: S}); if (error) { S[k] = previous; applySavedPreferences(); alert("Couldn't save: " + error.message + (/user_settings|relation/i.test(error.message) ? "\n\nRun upgrade9.sql in Supabase first." : "")); } }
 addEventListener("pagehide", e => { if (e.persisted) return; if (S.save_login === false) Object.keys(localStorage).filter(k => k.startsWith("sb-")).forEach(k => localStorage.removeItem(k)); });
 // these two open from the Menu only, so they are not listed inside Settings any more
-const MENU_ONLY = new Set(["Help and Support", "Accessibility and Display"]);
+const MENU_ONLY = new Set(["Help & Feedback", "Display & accessibility"]);
 const ci = d => '<svg class="rico" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>';
 const CATI = {
-  "General Account Settings": ci('<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c0-4 3.4-6.2 7.5-6.2s7.5 2.2 7.5 6.2"/>'),
+  "Account Basics": ci('<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c0-4 3.4-6.2 7.5-6.2s7.5 2.2 7.5 6.2"/>'),
   "Privacy Settings": ci('<rect x="5" y="10.5" width="14" height="10" rx="2.6"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/><path d="M12 14.6v2.2"/>'),
-  "Security and Login": ci('<path d="M12 3l7 2.8v5.4c0 4.4-2.9 7.8-7 9.8-4.1-2-7-5.4-7-9.8V5.8z"/><path d="M8.8 12.2l2.3 2.3 4.2-4.6"/>'),
+  "Security & Sign-in": ci('<path d="M12 3l7 2.8v5.4c0 4.4-2.9 7.8-7 9.8-4.1-2-7-5.4-7-9.8V5.8z"/><path d="M8.8 12.2l2.3 2.3 4.2-4.6"/>'),
   "Notifications": ci('<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.7 2.3H4.3z"/><path d="M10 21a2.1 2.1 0 0 0 4 0"/>'),
-  "Audience and Tagging": ci('<path d="M3.5 12.2V4.8a1.3 1.3 0 0 1 1.3-1.3h7.4l8.3 8.3a1.5 1.5 0 0 1 0 2.1l-6.4 6.4a1.5 1.5 0 0 1-2.1 0z"/><circle cx="8.4" cy="8.4" r="1.4"/>'),
+  "Audience & Tags": ci('<path d="M3.5 12.2V4.8a1.3 1.3 0 0 1 1.3-1.3h7.4l8.3 8.3a1.5 1.5 0 0 1 0 2.1l-6.4 6.4a1.5 1.5 0 0 1-2.1 0z"/><circle cx="8.4" cy="8.4" r="1.4"/>'),
   "Blocking": ci('<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>'),
   "Stories and Clips": ci('<rect x="3" y="4.5" width="18" height="15" rx="3.2"/><path d="M10.2 9.2l4.6 2.8-4.6 2.8z"/>'),
-  "Your Chatter Information": ci('<path d="M6.5 3h8l4 4v13a1.5 1.5 0 0 1-1.5 1.5H6.5A1.5 1.5 0 0 1 5 20V4.5A1.5 1.5 0 0 1 6.5 3z"/><path d="M14.5 3v4h4"/><path d="M8.5 12h7M8.5 15.5h7"/>'),
-  "Apps and Websites": ci('<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.8 2.9 2.8 15.1 0 18M12 3c-2.8 2.9-2.8 15.1 0 18"/>')
+  "Your Chatter Data": ci('<path d="M6.5 3h8l4 4v13a1.5 1.5 0 0 1-1.5 1.5H6.5A1.5 1.5 0 0 1 5 20V4.5A1.5 1.5 0 0 1 6.5 3z"/><path d="M14.5 3v4h4"/><path d="M8.5 12h7M8.5 15.5h7"/>'),
+  "Integrations": ci('<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.8 2.9 2.8 15.1 0 18M12 3c-2.8 2.9-2.8 15.1 0 18"/>')
 };
 const openSettings = () => { dtClearCenter("st"); stCat = stItem = null; $("#st").classList.remove("hide"); drawSet(); };
 const closeSet = () => $("#st").classList.add("hide");
 function drawSet() {
   const o = $("#st"); o.replaceChildren(); const w = el("div", "sw2"), top = el("div", "mtop"), bk = el("button", "", "←");
-  if (stCat === "Help and Support") w.classList.add(stItem ? "help-support-detail" : "help-support-screen");
+  if (stCat === "Help & Feedback") w.classList.add(stItem ? "help-support-detail" : "help-support-screen");
   if (stItem === "Name") w.classList.add("name-page");
   bk.type = "button"; bk.onclick = () => { if (stItem) stItem = null; else if (stCat && !MENU_ONLY.has(stCat)) stCat = null; else return closeSet(); drawSet(); };
   top.append(bk); if (stItem !== "Name") top.append(el("b", null, stItem || stCat || "Settings")); w.append(top);
@@ -3031,9 +3323,9 @@ function setDetail(it, row) {
     const faqs = [
       ["How do I update my profile?", "Open your profile from the Menu, then use the profile edit controls to update the information available to you."],
       ["Why can't I send someone a message?", "Some conversations are limited to friends. If the other person only accepts messages from friends, you may need to become friends before sending a message."],
-      ["How do I manage who can see my posts?", "Open Settings, then Privacy Settings or Audience and Tagging to review the audience choices available in this version of Chatter."],
+      ["How do I manage who can see my posts?", "Open Settings, then Privacy Settings or Audience & Tags to review the audience choices available in this version of Chatter."],
       ["How do I block or unblock someone?", "Open Settings, then Blocking. From Blocked accounts, you can review accounts you have blocked and unblock them."],
-      ["How do I change dark mode?", "Open Settings, then Accessibility and Display, then Theme. Choose Light, Dark, or Use device setting."],
+      ["How do I change dark mode?", "Open Settings, then Display & accessibility, then Theme. Choose Light, Dark, or Use device setting."],
       ["What should I include in a problem report?", "Describe what you were doing, what you expected, what happened instead, and any steps that reliably reproduce the problem. Do not include your password or verification codes."]
     ];
     const paintHelpFaqs = () => {
@@ -3059,7 +3351,7 @@ function setDetail(it, row) {
       if (text.length < 10) { status.textContent = "Please describe the problem in at least 10 characters."; description.focus(); return; }
       b.disabled = true; b.textContent = "Submitting…"; status.textContent = "Sending your report securely…";
       try {
-        const {error} = await sb.from("support_reports").insert({user_id: me.id, category: category.value, description: text, screen: "Settings > Help and Support > Report a problem", user_agent: navigator.userAgent});
+        const {error} = await sb.from("support_reports").insert({user_id: me.id, category: category.value, description: text, screen: "Settings > Help & Feedback > Report a problem", user_agent: navigator.userAgent});
         if (error) {
           console.error("Chatter support report submission failed:", error);
           status.textContent = /support_reports|relation|schema cache|does not exist/i.test(error.message || "") ? "Report submission is not set up yet. Run the supplied chatter_support_reports.sql in Supabase, then try again." : "We couldn't submit the report. Please check your connection and try again.";
@@ -3111,7 +3403,7 @@ function setDetail(it, row) {
       d.append(btn("Enable push on this device", enableChatterPush, "gray"));
       d.append(btn("Disable push on this device", disableChatterPush, "gray"));
     }
-    if (it === "Review posts you're tagged in before they appear on your profile") {
+    if (it === "Approve tags before they show on your profile") {
       const status = el("div", "cap", "Loading tag approvals…"), queue = el("div"); d.append(status, queue);
       (async () => {
         const {data: approvals, error} = await sb.from("post_tag_approvals").select("post_id,post_owner_id,status,created_at").eq("tagged_user_id", me.id).eq("status", "pending").order("created_at", {ascending: false}).limit(50);
@@ -3210,7 +3502,7 @@ function setDetail(it, row) {
       msg.textContent = !error ? "Saved. You are @" + v : error.code === "23505" ? "That username is taken." : /handle/i.test(error.message) ? "Run upgrade10.sql in Supabase first." : error.message;
     }));
   } else if (it === "Two-factor authentication") { fillMfa(d);
-  } else if (it === "Activity Log" || it === "Account activity and history") {
+  } else if (it === "Activity summary" || it === "Account activity and history") {
     cap("Recent activity Chatter can retrieve for your signed-in account. This is not a complete server audit log and may omit events the app does not store.");
     const log = el("div"), status = el("div", "cap", "Loading activity…"); d.append(status, log);
     (async () => {
@@ -3235,22 +3527,22 @@ function setDetail(it, row) {
     d.append(e, btn("Change email", () => /^\S+@\S+\.\S+$/.test(e.value.trim()) ? ask("email", e.value.trim()) : msg.textContent = "Enter a valid email."), c,
       btn("Change mobile number", () => { const p = phone(c.value); p ? ask("phone", p) : msg.textContent = "Enter a valid mobile number."; }), code,
       btn("Confirm code", async () => { const r = await sb.auth.verifyOtp(ty === "email" ? {email: tg, token: code.value.trim(), type: "email_change"} : {phone: tg, token: code.value.trim(), type: "phone_change"}); msg.textContent = r.error ? r.error.message : "Updated."; }), msg);
-  } else if (it === "Password and Security" || it === "Change password") {
+  } else if (it === "Password and safety" || it === "Change password") {
     const a = inp("New password (min. 6)", "password"), b = inp("Confirm new password", "password");
     d.append(a, b, msg, btn("Change password", async () => { if (a.value.length < 6) return msg.textContent = "At least 6 characters."; if (a.value !== b.value) return msg.textContent = "Passwords don't match."; const {error} = await sb.auth.updateUser({password: a.value}); msg.textContent = error ? error.message : "Password changed."; if (!error) a.value = b.value = ""; }));
-    if (it === "Password and Security") { cap("Tip: use a password you don't use anywhere else."); d.append(btn("Log out of other devices", async () => { await sb.auth.signOut({scope: "others"}); msg.textContent = "Logged out of your other devices."; }, "gray")); }
-  } else if (it === "Where you're logged in" || it === "Authorized logins") {
+    if (it === "Password and safety") { cap("Tip: use a password you don't use anywhere else."); d.append(btn("Log out of other devices", async () => { await sb.auth.signOut({scope: "others"}); msg.textContent = "Logged out of your other devices."; }, "gray")); }
+  } else if (it === "Active sessions" || it === "Trusted devices") {
     cap("This device:"); d.append(el("div", "", (navigator.userAgent.match(/\(([^)]+)\)/) || [0, "Unknown device"])[1]), el("div", "cap", "Last sign-in: " + (me.last_sign_in_at ? new Date(me.last_sign_in_at).toLocaleString() : "—")));
-    cap("A full list of every device isn't available yet. Use “Log out of devices” to sign out everywhere else.");
-  } else if (it === "Log out of devices") {
+    cap("A full list of every device isn't available yet. Use “Sign out of devices” to sign out everywhere else.");
+  } else if (it === "Sign out of devices") {
     cap("Signs you out on every other phone or browser. This device stays signed in.");
     d.append(msg, btn("Log out of other devices", async () => { await sb.auth.signOut({scope: "others"}); msg.textContent = "Done."; }));
-  } else if (it === "Deactivation and Deletion") {
+  } else if (it === "Deactivate or delete") {
     cap("Deactivate: hides you from search and signs you out. Log in again any time to come back.");
     d.append(msg, btn("Deactivate account", async () => { if (!(await appConfirm("Deactivate account?", "You’ll be signed out. You can log in again any time to reactivate your account.", "Deactivate"))) return; const {error} = await sb.from("profiles").update({deactivated: true}).eq("id", me.id); if (error) return msg.textContent = /deactivated/i.test(error.message) ? "Run upgrade11.sql in Supabase first." : error.message; closeSet(); await hardOut(); }, "gray"));
     cap("Delete: removes your account, posts, messages and photos permanently.");
     d.append(btn("Delete account…", () => { closeSet(); deleteAccount(); }, "danger"));
-  } else if (it.startsWith("Review all") || it === "Review posts you're tagged in before they appear on your profile") {
+  } else if (it.startsWith("Review all") || it === "Approve tags before they show on your profile") {
     cap("Posts you're tagged in. Remove the tag if you don't want to be linked to a post. This build does not have a separate pre-publication tag approval queue."); const box = el("div");
     d.append(box, btn("Open my profile", () => { closeSet(); setTab("menu"); }));
     (async () => { await loadTagged(); if (!tagged.length) box.append(mfaCap("You're not tagged in any posts."));
@@ -3260,7 +3552,7 @@ function setDetail(it, row) {
     cap("Accounts you blocked. Unblocking restores the ability to find or contact each other, subject to other privacy controls.");
     if (!blocked.size) d.append(mfaCap("You haven't blocked anyone."));
     [...blocked].forEach(u => { const r = el("div", "mrow"), mid = el("span", "mt", names[u] || "Chatter user"), b = btn("Unblock", async () => { await doUnblock(u); drawSet(); }, "sm gray"); r.append(avatar(u, (names[u] || "?")[0].toUpperCase(), "md"), mid, b); d.append(r); });
-  } else if (it === "Download Your Chatter Information") {
+  } else if (it === "Download your Chatter data") {
     cap("Downloads a JSON export of account data available to your signed-in account, including profile, posts, friendships, comments, likes, saved posts, accessible chat messages, and settings. Uploaded media files themselves are not embedded; media paths/URLs may be included.");
     d.append(btn("Download my Chatter data (JSON)", async b => {
       b.disabled = true; b.textContent = "Preparing export…"; msg.textContent = "Collecting data available to this account…";
@@ -3288,7 +3580,7 @@ function setDetail(it, row) {
   } else if (it === "Language and Region") {
     cap("Choose a preferred language. Some interface text may remain in English until translations are available.");
     [["en","English"],["fil","Filipino"]].forEach(([v,l]) => d.append(row(l, () => { saveS("language_region", v).then(drawSet); }, (S.language_region || "en") === v)));
-  } else cap({"Memorialization Settings": "Memorialization and legacy contacts are not supported by this Chatter build.", "Account ownership and control": "You control your account details and saved preferences here. Use Deactivation and Deletion for account actions."}[it] || INFO[it] || "This setting is listed for reference, but its full behavior is not implemented in this Chatter build yet.");
+  } else cap({"Memorialization Settings": "Memorialization and legacy contacts are not supported by this Chatter build.", "Account control": "You control your account details and saved preferences here. Use Deactivate or delete for account actions."}[it] || INFO[it] || "This setting is listed for reference, but its full behavior is not implemented in this Chatter build yet.");
   return d;
 }
 
@@ -3479,7 +3771,7 @@ function fill(m) {
   const o = rows[m.id]; if (!o) return; o.m = m;
   const gone = !!m.deleted_at, box = $("#msgs"), cl = gone ? null : callLog(m.body);
   o.pic.replaceChildren(); o.pic.classList.add("hide");
-  if (gone) { o.bub.textContent = "Message unsent"; o.bub.classList.add("gone"); o.bub.classList.remove("clog"); o.bub.classList.remove("hide"); }
+  if (gone) { o.bub.textContent = "Message taken back"; o.bub.classList.add("gone"); o.bub.classList.remove("clog"); o.bub.classList.remove("hide"); }
   else {
     o.bub.classList.remove("gone"); o.bub.classList.toggle("clog", !!cl); if (cl) drawCall(o.bub, m, cl); else { const stg = storyTag(m.body), tx = stg ? stg.text : m.body; o.bub.textContent = tx || ""; o.bub.classList.toggle("hide", !tx); }
     if (m.image_path && isVid(m.image_path)) {
@@ -3572,7 +3864,7 @@ function openMpop(m, anchor) {
   RXK.forEach(k => { const b = el("button", k === mine ? "on" : ""); b.type = "button"; b.title = RXS[k].n; b.innerHTML = RXS[k].s; b.onclick = e => { e.stopPropagation(); closeMpop(); setRx(m, k); }; bar.append(b); });
   const act = (ic, t, fn, cls) => { const b = el("button", cls || ""); b.type = "button"; b.append(el("span", null, ic), document.createTextNode(t)); b.onclick = e => { e.stopPropagation(); closeMpop(); fn(); }; acts.append(b); };
   act("↩", "Reply", () => setReply(m));
-  if (m.user_id === me.id) { if (m.body) act("✎", "Edit", () => startEdit(m)); act("🗑", "Unsend", () => unsend(m), "dng"); }
+  if (m.user_id === me.id) { if (m.body) act("✎", "Edit", () => startEdit(m)); act("🗑", "Take back", () => unsend(m), "dng"); }
   pop.append(bar, acts); document.body.append(pop);
   const a = anchor.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight, top = DT() ? 80 : 8;
   let x = m.user_id === me.id ? a.right - w : a.left; x = Math.max(8, Math.min(x, innerWidth - w - 8));
@@ -3583,7 +3875,7 @@ function openMpop(m, anchor) {
 document.addEventListener("click", e => { if (!e.target.closest("#mpop")) closeMpop(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeMpop(); });
 addEventListener("resize", closeMpop); $("#msgs").addEventListener("scroll", closeMpop, {passive: true});
-const msgSnip = m => !m ? "" : m.deleted_at ? "Message unsent" : m.body ? m.body.slice(0, 80) : m.image_path ? (isVid(m.image_path) ? "🎬 Video" : "📷 Photo") : "";
+const msgSnip = m => !m ? "" : m.deleted_at ? "Message taken back" : m.body ? m.body.slice(0, 80) : m.image_path ? (isVid(m.image_path) ? "🎬 Video" : "📷 Photo") : "";
 function setReply(m) {
   if (m && editing) stopEdit();
   replyTo = m || null; $("#rb").classList.toggle("hide", !m);
@@ -3631,7 +3923,8 @@ async function unsend(m) {
   afterChange(data);
 }
 
-function spinEl() { const d = el("div", "ldw"); d.append(el("div", "spn")); return d; }
+function cSpin() { return '<svg viewBox="280 250 590 590" aria-hidden="true"><path class="ct" d="M734.7 401.8 A215 215 0 1 0 756.2 647.5" fill="none" stroke-width="130"/><path class="cf" d="M734.7 401.8 A215 215 0 1 0 756.2 647.5" fill="none" stroke-width="130" pathLength="1000"/><polygon class="cl" points="790,715 806,822 712,772"/></svg>'; }
+function spinEl() { const d = el("div", "ldw"), s = el("div", "spn"); s.innerHTML = cSpin(); d.append(s); return d; }
 // ---- pull to refresh ----
 async function refreshCurrent() {
   if (tab === "people") await loadFriends();
@@ -3642,9 +3935,9 @@ async function refreshCurrent() {
 }
 (function () {
   const list = document.getElementById("list"); if (!list) return;
-  const ind = document.createElement("div"); ind.id = "ptr"; ind.innerHTML = '<div class="spn"></div>'; document.body.append(ind);
+  const ind = document.createElement("div"); ind.id = "ptr"; ind.innerHTML = '<div class="spn">' + cSpin() + '</div>'; document.body.append(ind);
   let y0 = 0, pull = 0, on = false, busy = false; const TH = 64, sp = ind.firstChild;
-  const paint = (p, spin) => { ind.style.transform = "translate(-50%," + p + "px)"; ind.style.opacity = Math.min(1, p / 36); ind.classList.toggle("go", !!spin); sp.style.transform = spin ? "" : "rotate(" + p * 5 + "deg)"; };
+  const paint = (p, spin) => { ind.style.transform = "translate(-50%," + p + "px)"; ind.style.opacity = Math.min(1, p / 36); ind.classList.toggle("go", !!spin); sp.querySelector(".cf").style.strokeDashoffset = spin ? "" : (1000 * (1 - Math.min(1, p / TH))) + "px"; };
   list.addEventListener("touchstart", e => {
     if (busy || list.scrollTop > 0 || e.touches.length !== 1) { on = false; return; }
     on = true; y0 = e.touches[0].clientY; pull = 0; ind.style.transition = "none"; ind.style.top = (list.getBoundingClientRect().top - 44) + "px";
@@ -3666,6 +3959,7 @@ async function refreshCurrent() {
   list.addEventListener("touchend", end); list.addEventListener("touchcancel", end);
 })();
 // ---- images ----
+const SENDI = '<svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>';
 $("#att").onclick = () => $("#file").click();
 $("#file").onchange = e => {
   const f = e.target.files[0]; e.target.value = ""; if (!f) return;
@@ -3703,7 +3997,7 @@ $("#f").onsubmit = async e => {
   busy = true; $("#send").disabled = true;
   try {
     const vid = pend.file.type.startsWith("video/"), ext = vid ? (/webm/.test(pend.file.type) ? "webm" : "mp4") : "jpg";
-    if (vid) $("#send").textContent = "Uploading…";
+    if (vid) $("#send").textContent = "…";
     const blob = vid ? pend.file : await shrink(pend.file), path = me.id + "/" + uid() + "." + ext;
     const up = await sb.storage.from("chat-images").upload(path, blob, {contentType: vid ? (ext === "webm" ? "video/webm" : "video/mp4") : "image/jpeg"});
     if (up.error) throw up.error;
@@ -3712,7 +4006,7 @@ $("#f").onsubmit = async e => {
     if (error) { sb.storage.from("chat-images").remove([path]); throw error; }
     i.value = ""; setPend(null);
   } catch (err) { alert("Couldn't send: " + (err.message || err)); }
-  busy = false; $("#send").disabled = false; $("#send").textContent = "Send";
+  busy = false; $("#send").disabled = false; $("#send").innerHTML = SENDI;
 };
 
 // ---- typing + online ----
@@ -3745,9 +4039,9 @@ function joinPresence() {
 function updateHead() {
   const r = rooms.find(x => x.id === cur), s = $("#sub"), on = !!(r && r.is_dm && online.has(other(r)));
   const ls = r && r.is_dm && !on ? lastSeen[other(r)] : 0;
-  s.textContent = on ? "Active now" : (r && r.is_group ? (members[r.id] || []).length + " members" : (ls ? "Active " + ago(ls) : "")); s.className = "sub";
+  s.textContent = on ? "Online now" : (r && r.is_group ? (members[r.id] || []).length + " members" : (ls ? "Active " + ago(ls) : "")); s.className = "sub";
   const hv = $("#hav"); hv.replaceChildren();
-  if (r) hv.append(avatar(r.is_dm ? other(r) : r.id, initial(r), "md", r.is_dm ? other(r) : null)); $("#cb").classList.toggle("hide", !r); const cl = !!(r && (r.is_dm || r.is_group)), bl = !!(r && r.is_dm && blocked.has(other(r))); $("#vc").classList.toggle("hide", !cl || bl); $("#vd").classList.toggle("hide", !cl || bl); $("#in").disabled = bl; $("#send").disabled = bl; $("#in").placeholder = bl ? "You blocked this person. Unblock to message." : "Type a message…";
+  if (r) hv.append(avatar(r.is_dm ? other(r) : r.id, initial(r), "md", r.is_dm ? other(r) : null)); $("#cb").classList.toggle("hide", !r); const cl = !!(r && (r.is_dm || r.is_group)), bl = !!(r && r.is_dm && blocked.has(other(r))); $("#vc").classList.toggle("hide", !cl || bl); $("#vd").classList.toggle("hide", !cl || bl); $("#in").disabled = bl; $("#send").disabled = bl; $("#in").placeholder = bl ? "You blocked this person. Unblock to message." : "Write a message…";
 }
 
 // ---------- SEEN + CHAT INFO ----------
@@ -3800,31 +4094,31 @@ function openInfo(view) {
   infoProfile = null;
   const p = $("#info"); p.classList.remove("hide"); p.replaceChildren(); p.scrollTop = 0;
   const hd = el("div", "ihead"), bk = el("button", "ghost", "←"); bk.type = "button"; bk.onclick = view ? () => openInfo() : closeInfo;
-  hd.append(bk, el("div", null, view === "media" ? "Media" : "Chat info")); p.append(hd);
+  hd.append(bk, el("div", null, view === "media" ? "Media" : "Details")); p.append(hd);
   if (view === "media") return drawMedia(p, r);
   const dm = r.is_dm, grp = r.is_group, u = dm ? other(r) : null, nm = title(r), muted = !!pref.mute[r.id], n = (members[r.id] || []).length;
   const top = el("div", "itop");
   top.append(avatar(dm ? u : r.id, initial(r), "xl", dm ? u : null), el("div", "iname", nm),
-    el("div", "t2", dm ? (online.has(u) ? "Active now" : "") : (grp ? "" : n + " members")));
+    el("div", "t2", dm ? (online.has(u) ? "Online now" : "") : (grp ? "" : n + " members")));
   const q = el("div", "iq"); if (grp) q.style.gap = "16px";
   if (grp) q.append(qbtn("➕", "Add", () => openAddMembers(r)), qbtn("✏️", "Name", () => renameGroup(r)));
   q.append(qbtn("🔍", "Search", startSearch));
   if (!grp) q.append(qbtn("🖼", "Media", () => openInfo("media")));
   q.append(qbtn(muted ? "🔕" : "🔔", muted ? "Unmute" : "Mute", () => { toggleMute(r.id); openInfo(); }));
   p.append(top, q);
-  if (grp) p.append(el("div", "sec", n + " members"), actRow("👥", "See chat members", () => openMembers(r)));
-  p.append(el("div", "sec", "Chat info")); mediaPreview(p, r);
-  p.append(actRow("🖼", "View all media", () => openInfo("media")));
-  p.append(el("div", "sec", "Actions"));
-  p.append(toggleRow("Mute chat", "Hide the unread badge for this chat", muted, v => toggleMute(r.id, v)));
-  if (dm) p.append(actRow("👥", "Create group chat with " + nm, () => { gdraft.sel.add(u); closeInfo(); $("#app").classList.remove("open"); openNewGroup(); }));
-  if (grp) p.append(actRow("➕", "Create a new group chat", () => { closeInfo(); $("#app").classList.remove("open"); openNewGroup(); }));
-  p.append(el("div", "sec", "Privacy & support"));
-  p.append(toggleRow("Read receipts", "Show and send when messages are seen", pref.rcpt !== false, v => { pref.rcpt = v; savePref(); updateSeen(); if (v) markSeen(cur); }));
-  p.append(toggleRow("Typing indicator", "Show and send when someone is typing", pref.typ !== false, v => { pref.typ = v; savePref(); showTyping(); }));
+  if (grp) p.append(el("div", "sec", n + " members"), actRow("👥", "All members", () => openMembers(r)));
+  p.append(el("div", "sec", "Shared media")); mediaPreview(p, r);
+  p.append(actRow("🖼", "All media", () => openInfo("media")));
+  p.append(el("div", "sec", "Controls"));
+  p.append(toggleRow("Mute notifications", "Hide the unread badge for this chat", muted, v => toggleMute(r.id, v)));
+  if (dm) p.append(actRow("👥", "Start a group with " + nm, () => { gdraft.sel.add(u); closeInfo(); $("#app").classList.remove("open"); openNewGroup(); }));
+  if (grp) p.append(actRow("➕", "Start a new group", () => { closeInfo(); $("#app").classList.remove("open"); openNewGroup(); }));
+  p.append(el("div", "sec", "Privacy"));
+  p.append(toggleRow("Seen status", "Show and send when messages are seen", pref.rcpt !== false, v => { pref.rcpt = v; savePref(); updateSeen(); if (v) markSeen(cur); }));
+  p.append(toggleRow("Typing status", "Show and send when someone is typing", pref.typ !== false, v => { pref.typ = v; savePref(); showTyping(); }));
   if (grp) p.append(actRow("⛔", "Block a member", () => openMembers(r, "block")));
   if (dm) p.append(actRow("🗑", "Delete chat", deleteChat, "red"));
-  if (grp) p.append(actRow("🚪", "Leave chat", () => leaveGroup(r), "red"));
+  if (grp) p.append(actRow("🚪", "Exit group", () => leaveGroup(r), "red"));
 }
 function holdReact(node, o) {
   let tm = null, held = false, sx = 0, sy = 0;
@@ -3910,7 +4204,7 @@ function openViewer(items, start) {
     e.stopPropagation(); const it = items[i]; menu.replaceChildren();
     const add = (t, fn, red) => { const b = el("button", red ? "red" : "", t); b.type = "button"; b.onclick = ev => { ev.stopPropagation(); menu.classList.add("hide"); fn(); }; menu.append(b); };
     add("Open in new tab", async () => { const u = await imgUrl(it.path); if (u) window.open(u, "_blank", "noopener"); });
-    if (it.m.user_id === me.id) add("Unsend", () => { closeViewer(); unsend(it.m); }, true);
+    if (it.m.user_id === me.id) add("Take back", () => { closeViewer(); unsend(it.m); }, true);
     menu.classList.toggle("hide");
   };
   inp.placeholder = "Message"; inp.maxLength = 1000;
@@ -4064,7 +4358,7 @@ $("#hav").onclick = () => { const r = rooms.find(x => x.id === cur); if (!r) ret
 function dmIntro(r) {
   const u = other(r), nm = names[u] || "Chat", rl = rel(u), d = el("div", "intro");
   d.append(avatar(u, nm[0].toUpperCase(), "xxl", null), el("div", "iname", nm));
-  const st = blocked.has(u) ? "You blocked this person" : rl && rl.status === "accepted" ? "You're friends on " + document.title : rl && rl.status === "pending" ? (rl.incoming ? "Sent you a friend request" : "Friend request sent") : "";
+  const st = blocked.has(u) ? "You blocked this person" : rl && rl.status === "accepted" ? "You're friends on " + document.title : rl && rl.status === "pending" ? (rl.incoming ? "Follows you" : "Following") : "";
   if (st) d.append(el("div", null, st));
   const vp = el("button", "gray sm", "View profile"); vp.type = "button"; vp.style.marginTop = "10px"; vp.onclick = () => openProfile(u); d.append(vp);
   d.append(el("div", "note", "🔒 Only people in this chat can see these messages."));
@@ -4137,9 +4431,9 @@ function openMembers(r, mode, tabSel) {
     const btn = (t, cls, fn) => { const x = el("button", "sm " + cls, t); x.type = "button"; x.onclick = e => { e.stopPropagation(); fn(); }; d.append(x); };
     if (u !== me.id) {
       if (mode === "block") { const bl = blocked.has(u); btn(bl ? "Unblock" : "Block", bl ? "gray" : "danger", async () => { await (bl ? doUnblock(u) : doBlock(u)); redraw(); }); }
-      else if (!rl) btn("Add friend", "", async () => { const {error} = await sb.from("friendships").insert({addressee: u}); if (error) return alert(/CHATTER_FRIEND_REQUESTS_CLOSED/.test(error.message) ? "This person is not accepting friend requests." : error.message); await loadFriends(); redraw(); });
-      else if (rl.status === "pending" && !rl.incoming) btn("Pending", "gray", () => {});
-      else if (rl.status === "pending") btn("Accept", "", async () => { await sb.from("friendships").update({status: "accepted"}).eq("id", rl.id); await loadFriends(); redraw(); });
+      else if (!rl) btn("Follow", "", async () => { if (await followUser(u)) redraw(); });
+      else if (rl.status === "pending" && !rl.incoming) btn("Following", "gray", () => {});
+      else if (rl.status === "pending") btn("Follow back", "", async () => { if (await followUser(u)) redraw(); });
     }
     d.onclick = () => { if (mode !== "block") openProfile(u); };
     p.append(d);
@@ -4222,9 +4516,9 @@ function openNewGroup() {
   const hd = el("div", "ihead"), bk = el("button", "ghost", "←"), t = el("div", null, "New group"), go = el("button", "sm", "Create");
   bk.type = go.type = "button"; bk.onclick = closeNG; t.style.flex = "1"; hd.append(bk, t, go);
   const inp = el("input"); inp.type = "text"; inp.placeholder = "Group name"; inp.maxLength = 40; inp.value = gdraft.name; inp.style.cssText = "margin:12px 16px;width:calc(100% - 32px)"; inp.oninput = () => gdraft.name = inp.value;
-  o.append(hd, inp, el("div", "sec", "Add friends"));
+  o.append(hd, inp, el("div", "sec", "Choose friends"));
   const fs = fr.filter(f => f.status === "accepted").map(f => f.requester === me.id ? f.addressee : f.requester);
-  if (!fs.length) o.append(el("div", "hint", "Add friends first to start a group."));
+  if (!fs.length) o.append(el("div", "hint", "You need friends first. Follow people and have them follow you back."));
   fs.forEach(u => {
     const d = el("div", "item"), mid = el("div", "mid"), cb = el("input"), nm = names[u] || "Someone";
     cb.type = "checkbox"; cb.checked = gdraft.sel.has(u); cb.style.cssText = "width:22px;height:22px";
@@ -4236,7 +4530,7 @@ function openNewGroup() {
 }
 function friendRow(box, u) {
   const f = fr.find(x => x.status === "accepted" && (x.requester === u || x.addressee === u)), cd = f && Date.parse(f.updated_at || f.created_at || ""), d = el("div", "item"), mid = el("div", "mid");
-  mid.append(el("div", "t1", names[u] || "Someone"), el("div", "t2", online.has(u) ? "Active now" : (cd ? "Friend since " + new Date(cd).toLocaleDateString([], {month: "long"}) : "Friend")));
+  mid.append(el("div", "t1", names[u] || "Someone"), el("div", "t2", online.has(u) ? "Online now" : (cd ? "Friend since " + new Date(cd).toLocaleDateString([], {month: "long"}) : "Friend")));
   d.append(avatar(u, (names[u] || "?")[0].toUpperCase(), "", u), mid); d.onclick = () => openDM(u); box.append(d);
 }
 const pymkHide = new Set();
@@ -4245,10 +4539,10 @@ function pymkSection(box) {
   if (!pymk) { loadPymk(); return; }
   const list = pymk.filter(u => names[u] && !pymkHide.has(u) && !rel(u) && !blocked.has(u)); if (!list.length) return;
   const h = el("div", "shead"), sm = el("button", "ghost", pymkAll ? "See less" : "See more"); sm.onclick = () => { pymkAll = !pymkAll; render(); };
-  h.append(el("span", null, "People you may know"), sm); box.append(h);
+  h.append(el("span", null, "Suggested people"), sm); box.append(h);
   (pymkAll ? list : list.slice(0, 3)).forEach(u => {
-    const d = el("div", "pcard"), mid = el("div", "mid"), row = el("div", "prow"), add = el("button", null, "Add friend"), rm = el("button", "gray", "Remove");
-    add.onclick = async () => { const {error} = await sb.from("friendships").insert({addressee: u}); if (error) return alert(/CHATTER_FRIEND_REQUESTS_CLOSED/.test(error.message) ? "This person is not accepting friend requests." : error.message); await loadFriends(); };
+    const d = el("div", "pcard"), mid = el("div", "mid"), row = el("div", "prow"), add = el("button", null, "Follow"), rm = el("button", "gray", "Remove");
+    add.onclick = async () => { await followUser(u); };
     rm.onclick = () => { pymkHide.add(u); render(); };
     row.append(add, rm); mid.append(el("div", "t1", names[u] || "Someone"), row); d.append(avatar(u, (names[u] || "?")[0].toUpperCase(), "sq"), mid);
     d.onclick = e => { if (!e.target.closest("button")) openProfile(u); }; box.append(d);
