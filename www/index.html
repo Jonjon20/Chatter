@@ -963,14 +963,16 @@ html.dt .story-activity-panel{max-width:none}
 #ep .efg{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px}
 #ep .eft{display:flex;gap:10px;align-items:flex-start;min-width:0;padding:12px;border:1px solid var(--line);border-radius:18px;background:var(--cd,var(--bg2));cursor:pointer}
 #ep .eft:active{transform:scale(.98)}
-#ep .eft.empty{border-style:dashed;background:transparent}
+#ep .eft.noval{border-style:dashed;background:transparent}
 #ep .eic{flex:none;width:26px;text-align:center;font-size:20px}
 #ep .em{min-width:0}
 #ep .ehl{font-size:12px;font-weight:600;color:var(--mut)}
 #ep .ehv{font-size:15px;font-weight:700;overflow-wrap:anywhere}
-#ep .eft.empty .ehv{color:var(--accent);font-weight:600}
+#ep .eft.noval .ehv{color:var(--accent);font-weight:600}
 #ep .ehp{margin-top:2px;font-size:11px;color:var(--mut)}
 @media(max-width:340px){#ep .efg{grid-template-columns:1fr}}
+/* desktop: same center column as profile and settings, not the whole screen */
+html.dt #ep{inset:auto;top:0;bottom:0;right:auto;left:var(--fcx,500px);width:var(--fcw,505px);z-index:67;padding-bottom:48px}
 </style>
 <style id="chat2">
 /* chat screens (DM, group, global): floating header, asymmetric bubbles, dock composer */
@@ -1048,6 +1050,62 @@ html:not(.dt) .side .tabs{margin:0 12px calc(10px + env(safe-area-inset-bottom,0
 .rl .sd .rav .av{width:44px;height:44px;border-radius:16px!important}
 .rl .sd .rplus{left:auto;right:calc(50% - 32px);bottom:-8px;transform:none;border-radius:8px}
 .clipbox .rl{margin:0;border-radius:0;height:100%}
+</style>
+<style id="menu2">
+/* MENU: centered profile hero + 2x2 shortcut tiles. SETTINGS: category tiles, grouped item lists */
+#mnu .mw{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:min-content;gap:10px;align-content:start}
+#mnu .mw>.mtop,#mnu .mw>.mcard,#mnu .mw>.mlog,#mnu .mw>.msp{grid-column:1/-1}
+#mnu .mw>.msp{display:none}
+#mnu .mtop button{border-radius:14px}
+#mnu .mcard{flex-direction:column;text-align:center;padding:22px 16px 18px;gap:8px;border-radius:30px;background:linear-gradient(160deg,color-mix(in srgb,var(--accent,#7c3aed) 16%,var(--cd)),var(--cd) 70%)}
+#mnu .mcard .av{width:84px;height:84px;font-size:32px;border-radius:28px!important}
+#mnu .mcard .chv{display:none}
+#mnu .mcard::after{content:"View profile";margin-top:4px;padding:7px 16px;border-radius:999px;background:var(--pgrad);color:#fff;font-size:13px;font-weight:700}
+#mnu .mw>.mrow{margin:0;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:12px;padding:16px;min-height:118px;border-radius:26px;font-size:15px;line-height:1.25}
+#mnu .mw>.mrow>svg{width:46px;height:46px;border-radius:16px}
+#mnu .mw>.mrow .mt{font-size:15px;font-weight:700}
+#mnu .mlog{margin-top:4px;border-color:color-mix(in srgb,#f02849 35%,var(--line));background:color-mix(in srgb,#f02849 8%,var(--cd))}
+#st .sw2.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px 24px;align-content:start}
+#st .sw2.sgrid>.mtop{grid-column:1/-1;padding-left:0;padding-right:0}
+#st .sw2.sgrid>.mrow{margin:0;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:12px;min-height:116px;padding:16px;border-radius:26px}
+#st .sw2.sgrid>.mrow>span:last-child{display:none}
+#st .sw2.sgrid>.mrow>svg{width:46px;height:46px;padding:10px;box-sizing:border-box;border-radius:16px;background:color-mix(in srgb,var(--accent,#7c3aed) 14%,var(--cd2));color:var(--accent,#7c3aed)}
+#st .sw2.sgrid>.mrow .mt{font-size:15px;font-weight:700;line-height:1.25}
+#st .sw2:not(.sgrid):not(.name-page):not(.help-support-screen):not(.help-support-detail)>.mrow{margin:0 14px;border-radius:0;border-width:0 1px 1px;border-style:solid;border-color:var(--line)}
+#st .sw2:not(.sgrid):not(.name-page):not(.help-support-screen):not(.help-support-detail)>.mtop+.mrow{border-top-width:1px;border-radius:24px 24px 0 0}
+#st .sw2:not(.sgrid):not(.name-page):not(.help-support-screen):not(.help-support-detail)>.mrow:last-child{border-radius:0 0 24px 24px}
+#st .sw2:not(.sgrid):not(.name-page):not(.help-support-screen):not(.help-support-detail)>.mtop+.mrow:last-child{border-radius:24px}
+</style>
+<style id="pn2">
+/* PEOPLE: segmented filter, squircle rows, suggestion carousel. NOTIFICATIONS: type-colored edge, New/Earlier groups */
+.pchips{margin:2px 14px 10px;padding:4px;gap:2px;overflow:hidden;background:var(--cd,var(--bg2));border:1px solid var(--line);border-radius:18px}
+.pchips .chip{flex:1 1 0;min-width:0;padding:8px 4px;font-size:13px;font-weight:700;border-radius:14px;background:none;color:var(--mut);border:0;box-shadow:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pchips .chip.on{background:var(--pgrad);color:#fff;box-shadow:0 4px 12px color-mix(in srgb,var(--accent-deep,#4f46e5) 30%,transparent)}
+:is(#list,#feedc)[data-t="people"] .item{position:relative;margin:0 12px 8px;padding:10px 12px 10px 14px;gap:12px;border-radius:24px}
+:is(#list,#feedc)[data-t="people"] .item .av{width:52px;height:52px;border-radius:18px!important;font-size:20px}
+:is(#list,#feedc)[data-t="people"] .item .t2{font-size:13px}
+:is(#list,#feedc)[data-t="people"] .item button.sm{border-radius:999px;padding:8px 14px;flex:none}
+.shead{padding:18px 18px 10px;font-weight:800;font-size:13px;letter-spacing:.7px;text-transform:uppercase}
+.pcar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:0 12px 14px;width:100%;box-sizing:border-box}
+:is(#list,#feedc)[data-t="people"] .pcar .pcard{flex-direction:column;align-items:center;text-align:center;gap:10px;padding:16px 10px 12px;min-width:0;margin:0;border-radius:26px}
+:is(#list,#feedc)[data-t="people"] .pcar .pcard .av.sq{width:84px;height:84px;border-radius:28px!important;font-size:30px}
+:is(#list,#feedc)[data-t="people"] .pcar .pcard .mid{width:100%;min-width:0}
+:is(#list,#feedc)[data-t="people"] .pcar .pcard .t1{font-size:16px;margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+:is(#list,#feedc)[data-t="people"] .pcar .pcard .prow{flex-direction:column;gap:6px;margin:0}
+:is(#list,#feedc)[data-t="people"] .pcar .pcard .prow button{width:100%;border-radius:999px}
+:is(#list,#feedc)[data-t="notifs"] .sec{padding:18px 18px 8px;font-size:13px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:var(--mut)}
+:is(#list,#feedc)[data-t="notifs"] .item{position:relative;overflow:hidden;margin:0 12px 8px;padding:12px 14px 12px 18px;gap:12px;border-radius:24px}
+:is(#list,#feedc)[data-t="notifs"] .item .av{width:50px;height:50px;border-radius:17px!important;font-size:19px}
+:is(#list,#feedc)[data-t="notifs"] .item::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:5px;border-radius:0 5px 5px 0;background:var(--accent,#7c3aed)}
+:is(#list,#feedc)[data-t="notifs"] .item[data-k="like"]::before{background:#f3425f}
+:is(#list,#feedc)[data-t="notifs"] .item[data-k="post"]::before,:is(#list,#feedc)[data-t="notifs"] .item[data-k="friend"]::before{background:#22c55e}
+:is(#list,#feedc)[data-t="notifs"] .item[data-k="bday"]::before,:is(#list,#feedc)[data-t="notifs"] .item[data-k="rem"]::before{background:#f59e0b}
+:is(#list,#feedc)[data-t="notifs"] .item .t1{font-weight:800}
+:is(#list,#feedc)[data-t="notifs"] .item .t2{font-size:13.5px;line-height:1.4}
+:is(#list,#feedc)[data-t="notifs"] .item:has(.dot){background:color-mix(in srgb,var(--accent,#7c3aed) 9%,var(--cd,var(--bg2)))}
+:is(#list,#feedc)[data-t="notifs"] .item:has(.dot) .t2{color:var(--tx)}
+:is(#list,#feedc)[data-t="notifs"] .item .dot{width:10px;height:10px;background:var(--accent,#7c3aed);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent,#7c3aed) 22%,transparent)}
+:is(#list,#feedc)[data-t="notifs"] .item .prow button{border-radius:999px}
 </style>
 <div id="boot"><svg id="bt-logo" class="bt-svg" viewBox="60 60 1130 1130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Chatter loading">
 <defs>
@@ -1705,9 +1763,9 @@ function render() {
       const fs = fr.filter(f => f.status === "accepted").map(f => f.requester === me.id ? f.addressee : f.requester);
       const act = fs.filter(u => online.has(u)), req = fr.filter(f => f.status === "pending" && f.addressee === me.id);
       const bar = el("div", "chips pchips");
-      [["active", "● " + act.length + " active"], ["requests", "New followers" + (req.length ? " (" + req.length + ")" : "")], ["all", "Friends"]].forEach(([k, t]) => { const b = el("button", "chip" + (pfilter === k ? " on" : ""), t); b.onclick = () => { pfilter = k; render(); }; bar.append(b); });
+      [["active", "● " + act.length + " active"], ["requests", "Followers" + (req.length + fs.length ? " (" + (req.length + fs.length) + ")" : "")], ["all", "Friends"]].forEach(([k, t]) => { const b = el("button", "chip" + (pfilter === k ? " on" : ""), t); b.onclick = () => { pfilter = k; render(); }; bar.append(b); });
       box.append(bar);
-      if (pfilter === "requests") { if (!req.length) box.append(el("div", "hint", "No new followers.")); req.forEach(f => userRow(box, f.requester)); }
+      if (pfilter === "requests") { if (!req.length && !fs.length) box.append(el("div", "hint", "No followers yet.")); req.forEach(f => userRow(box, f.requester)); fs.forEach(u => friendRow(box, u)); }
       else { const L = pfilter === "active" ? act : fs; if (!L.length) box.append(el("div", "hint", pfilter === "active" ? "No friends are active right now." : "No friends yet. Search a username above to add one.")); L.forEach(uid => friendRow(box, uid)); pymkSection(box); }
     }
   } else if (tab === "notifs") {
@@ -1717,15 +1775,17 @@ function render() {
       .map(f => ({f, t: Date.parse(f.updated_at || f.created_at || "") || 0})), ...act.map(a => ({a, t: a.t}))].sort((x, y) => y.t - x.t);
     if (actErr) box.append(el("div", "hint", "Couldn't load likes/comments: " + actErr + ". Run upgrade8.sql and upgrade9.sql in Supabase."));
     const bl = S.n_bday === false ? [] : bdays;
-    bl.forEach(b => { const d = el("div", "item"), mid = el("div", "mid"); mid.append(el("div", "t1", "🎂 " + b.username + "'s birthday is today"), el("div", "t2", "Tap to wish them a happy birthday.")); d.append(avatar(b.id, (b.username || "?")[0].toUpperCase()), mid); d.onclick = () => openDM(b.id); box.append(d); });
+    bl.forEach(b => { const d = el("div", "item nf"), mid = el("div", "mid"); d.dataset.k = "bday"; mid.append(el("div", "t1", "🎂 " + b.username + "'s birthday is today"), el("div", "t2", "Tap to wish them a happy birthday.")); d.append(avatar(b.id, (b.username || "?")[0].toUpperCase()), mid); d.onclick = () => openDM(b.id); box.append(d); });
     const tg = S.n_tags === false ? [] : tagged, rem = S.n_rem === false ? 0 : rooms.filter(hasUnread).length;
-    if (rem) { const d = el("div", "item"), mid = el("div", "mid"); mid.append(el("div", "t1", "⏰ Reminder"), el("div", "t2", "You have " + rem + " unread chat" + (rem > 1 ? "s" : "") + ".")); d.append(mid); d.onclick = () => setTab("chats"); box.append(d); }
-    tg.forEach(p => { const d = el("div", "item"), mid = el("div", "mid"); mid.append(el("div", "t1", (names[p.user_id] || "Someone") + " tagged you in a post"), el("div", "t2", (p.body ? p.body.slice(0, 70) + " · " : "") + agoS(p.created_at))); d.append(avatar(p.user_id, (names[p.user_id] || "?")[0].toUpperCase()), mid); d.onclick = () => openProfile(p.user_id); box.append(d); });
+    if (rem) { const d = el("div", "item nf"), mid = el("div", "mid"); d.dataset.k = "rem"; mid.append(el("div", "t1", "⏰ Reminder"), el("div", "t2", "You have " + rem + " unread chat" + (rem > 1 ? "s" : "") + ".")); d.append(mid); d.onclick = () => setTab("chats"); box.append(d); }
+    tg.forEach(p => { const d = el("div", "item nf"), mid = el("div", "mid"); d.dataset.k = "tag"; mid.append(el("div", "t1", (names[p.user_id] || "Someone") + " tagged you in a post"), el("div", "t2", (p.body ? p.body.slice(0, 70) + " · " : "") + agoS(p.created_at))); d.append(avatar(p.user_id, (names[p.user_id] || "?")[0].toUpperCase()), mid); d.onclick = () => openProfile(p.user_id); box.append(d); });
     if (!items.length && !bl.length && !rem && !tg.length) box.append(el("div", "hint", "No new notifications."));
-    else if (items.length) box.append(el("div", "sec", "Earlier"));
+    let lastSec = "";
     items.forEach(({f, a, t}) => {
+      const secNow = t > seenT ? "New" : "Earlier"; if (secNow !== lastSec) { lastSec = secNow; box.append(el("div", "sec", secNow)); }
       if (a) return notifActRow(box, a, t, seenT);
-      const u = f.requester === me.id ? f.addressee : f.requester, inc = f.status === "pending", nm = names[u] || "Someone", d = el("div", "item"), mid = el("div", "mid");
+      const u = f.requester === me.id ? f.addressee : f.requester, inc = f.status === "pending", nm = names[u] || "Someone", d = el("div", "item nf"), mid = el("div", "mid");
+      d.dataset.k = inc ? "follow" : "friend";
       mid.append(el("div", "t1", nm), el("div", "t2", (inc ? "Started following you." : "You follow each other, so you are friends now. Tap to chat.") + (t ? " · " + ago2(t) : "")));
       if (inc) {
         const row = el("div", "prow"), ok = el("button", "sm", "Follow back"), no = el("button", "sm gray", "Remove"); row.style.marginTop = "6px";
@@ -1808,9 +1868,10 @@ async function loadActivity() {
   paintNBadge(); if (tab === "notifs") render();
 }
 function notifActRow(box, a, t, seenT) {
-  const nm = names[a.u] || "Someone", d = el("div", "item"), mid = el("div", "mid"), w = a.kind === "clip" ? "clip" : "post";
+  const nm = names[a.u] || "Someone", d = el("div", "item nf"), mid = el("div", "mid"), w = a.kind === "clip" ? "clip" : "post";
   const stg = a.type === "message" ? storyTag(a.txt) : null, sn = (stg ? stg.text : (a.txt || "")).trim(), cut = sn.length > 70 ? sn.slice(0, 70) + "…" : sn;
   const msg = a.type === "message" ? (stg ? "💬 Replied to your story" : "💬 Sent you a message") + (cut ? ": " + cut : ".") : a.type === "like" ? (a.kind === "story" ? "❤️ Reacted to your story." : "❤️ Liked your " + w + ".") : a.type === "comment" ? "💬 Commented on your " + w + (cut ? ": " + cut : ".") : "📝 Posted a new " + w + (cut ? ": " + cut : ".");
+  d.dataset.k = a.type;
   mid.append(el("div", "t1", nm), el("div", "t2", msg + (t ? " · " + ago2(t) : "")));
   d.append(avatar(a.u, nm[0].toUpperCase(), "", a.u), mid); if (t > seenT) d.append(el("div", "dot"));
   d.onclick = () => a.type === "message" ? openRoom(a.rid) : a.kind === "story" ? (fstories.some(x => x.user_id === me.id) ? openStory(me.id) : toast("This story has expired. You can find it in your archive.")) : openPost(a.pid); box.append(d);
@@ -3023,7 +3084,7 @@ async function editProfile() {
       o.append(el("div", "esl", title));
       const g = el("div", "efg");
       fields.forEach(f => {
-        const v = get(f), tile = el("div", "eft" + (v ? "" : " empty")), m = el("div", "em");
+        const v = get(f), tile = el("div", "eft" + (v ? "" : " noval")), m = el("div", "em");
         m.append(el("div", "ehl", f[2]), el("div", "ehv", v ? (f[3] === "date" ? fmtDate(v) : v) : "Tap to add"));
         if (v) m.append(el("div", "ehp", EPV[prv(f)]));
         tile.append(el("span", "eic", f[1]), m); tile.onclick = () => editField(f); g.append(tile);
@@ -3304,6 +3365,7 @@ function drawSet() {
   const o = $("#st"); o.replaceChildren(); const w = el("div", "sw2"), top = el("div", "mtop"), bk = el("button", "", "←");
   if (stCat === "Help & Feedback") w.classList.add(stItem ? "help-support-detail" : "help-support-screen");
   if (stItem === "Name") w.classList.add("name-page");
+  if (!stCat) w.classList.add("sgrid");
   bk.type = "button"; bk.onclick = () => { if (stItem) stItem = null; else if (stCat && !MENU_ONLY.has(stCat)) stCat = null; else return closeSet(); drawSet(); };
   top.append(bk); if (stItem !== "Name") top.append(el("b", null, stItem || stCat || "Settings")); w.append(top);
   const row = (t, fn, tick) => { const r = el("div", "mrow"), x = el("span", tick ? "ok" : "", tick ? "✓" : "›"); r.append(el("span", "mt", t), x); r.onclick = fn; return r; };
@@ -4531,7 +4593,8 @@ function openNewGroup() {
 function friendRow(box, u) {
   const f = fr.find(x => x.status === "accepted" && (x.requester === u || x.addressee === u)), cd = f && Date.parse(f.updated_at || f.created_at || ""), d = el("div", "item"), mid = el("div", "mid");
   mid.append(el("div", "t1", names[u] || "Someone"), el("div", "t2", online.has(u) ? "Online now" : (cd ? "Friend since " + new Date(cd).toLocaleDateString([], {month: "long"}) : "Friend")));
-  d.append(avatar(u, (names[u] || "?")[0].toUpperCase(), "", u), mid); d.onclick = () => openDM(u); box.append(d);
+  const mb = el("button", "sm gray", "Message"); mb.onclick = e => { e.stopPropagation(); openDM(u); };
+  d.append(avatar(u, (names[u] || "?")[0].toUpperCase(), "", u), mid, mb); d.onclick = () => openDM(u); box.append(d);
 }
 const pymkHide = new Set();
 async function loadPymk() { pymk = []; const {data} = await sb.from("profiles").select("id,username").neq("id", me.id).limit(40); (data || []).forEach(p => names[p.id] = p.username); pymk = (data || []).map(p => p.id); loadPhotos(pymk); render(); }
@@ -4540,13 +4603,15 @@ function pymkSection(box) {
   const list = pymk.filter(u => names[u] && !pymkHide.has(u) && !rel(u) && !blocked.has(u)); if (!list.length) return;
   const h = el("div", "shead"), sm = el("button", "ghost", pymkAll ? "See less" : "See more"); sm.onclick = () => { pymkAll = !pymkAll; render(); };
   h.append(el("span", null, "Suggested people"), sm); box.append(h);
-  (pymkAll ? list : list.slice(0, 3)).forEach(u => {
+  const car = el("div", "pcar");
+  (pymkAll ? list : list.slice(0, 4)).forEach(u => {
     const d = el("div", "pcard"), mid = el("div", "mid"), row = el("div", "prow"), add = el("button", null, "Follow"), rm = el("button", "gray", "Remove");
     add.onclick = async () => { await followUser(u); };
     rm.onclick = () => { pymkHide.add(u); render(); };
     row.append(add, rm); mid.append(el("div", "t1", names[u] || "Someone"), row); d.append(avatar(u, (names[u] || "?")[0].toUpperCase(), "sq"), mid);
-    d.onclick = e => { if (!e.target.closest("button")) openProfile(u); }; box.append(d);
+    d.onclick = e => { if (!e.target.closest("button")) openProfile(u); }; car.append(d);
   });
+  box.append(car);
 }
 async function loadPhotos(ids) {
   const need = [...new Set(ids)].filter(i => i && !(i in photoDone)); if (!need.length) return; need.forEach(i => photoDone[i] = 1);
