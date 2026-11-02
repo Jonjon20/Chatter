@@ -4931,12 +4931,27 @@ const backNav = (function () {
     return false;
   }
   let leaving = false, lastBack = 0;
-  history.replaceState({cv: 0}, ""); history.pushState({cv: 1}, "");
+  const A = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+  if (A && A.addListener) {
+    // Android app (Capacitor): take over the hardware Back button directly, no history tricks needed
+    A.addListener("backButton", () => {
+      let used = false; try { used = step(); } catch (e) { console.error("back:", e); }
+      if (used) return;
+      if (Date.now() - lastBack < 2200) return A.exitApp();
+      lastBack = Date.now(); toast("Press back again to exit");
+    });
+    return step;
+  }
+  // Browser / PWA: use history entries. Chrome ignores entries a page adds before the user has touched it,
+  // so the guard entry is only added on the first touch/click.
+  let armed = false;
+  const arm = () => { if (armed) return; armed = true; history.replaceState({cv: 0}, ""); history.pushState({cv: 1}, ""); };
+  ["pointerdown", "touchstart", "click", "keydown"].forEach(ev => addEventListener(ev, arm, {capture: true, passive: true}));
   addEventListener("popstate", () => {
-    if (leaving) return;
+    if (leaving || !armed) return;
     let used = false; try { used = step(); } catch (e) { console.error("back:", e); }
     if (used) { history.pushState({cv: 1}, ""); return; }
-    const exit = () => { leaving = true; setTimeout(() => { leaving = false; }, 700); const A = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App; if (A && A.exitApp) A.exitApp(); else history.back(); };
+    const exit = () => { leaving = true; setTimeout(() => { leaving = false; }, 700); history.back(); };
     if (DT() || Date.now() - lastBack < 2200) return exit();
     lastBack = Date.now(); toast("Press back again to exit"); history.pushState({cv: 1}, "");
   });
