@@ -19,7 +19,7 @@
   }
   try { apply(); window.addEventListener("resize", apply); } catch (e) {}
 })();</script>
-<title>Chatter</title>
+<title>Chatterverse</title>
 <style>
 :root{--bg:#fff;--bg2:#f0f2f5;--tx:#050505;--mut:#65676b;--me:var(--accent,#7c3aed);--metx:#fff;--oth:#e9ebee;--line:#e2e4e8;--dot:var(--accent,#7c3aed)}
 :root{color-scheme:light}:root[data-theme="light"]{color-scheme:light}
@@ -453,7 +453,7 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 #st .help-status{font-size:13px;color:var(--mut);line-height:1.4}
 
 
-/* Chatter-native block confirmation; avoids the browser's URL-branded confirm dialog */
+/* Chatterverse-native block confirmation; avoids the browser's URL-branded confirm dialog */
 .ch-confirm-bg{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;padding:22px;}
 .ch-confirm{width:100%;max-width:360px;background:var(--bg2);color:var(--tx);border:1px solid var(--line);border-radius:22px;padding:22px 20px 16px;box-shadow:0 18px 60px #0006;animation:chConfirmIn .16s ease-out;}
 .ch-confirm .ch-icon{width:52px;height:52px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;background:#f0284920;color:#f02849;font-size:25px;font-weight:800;}
@@ -738,9 +738,9 @@ button:not(.danger):not(.gray):not(.ghost):not(.mlog):not(.att):not(.end){--butt
 #dtbar,#feedc{display:none}
 html.dt #dtbar{display:block}
 html.dt #feedc{display:block}
-html.dt .app{--navw:190px;grid-template-columns:minmax(300px,calc(var(--navw) + 374px)) minmax(380px,505px) minmax(0,1fr);grid-template-rows:minmax(0,1fr);column-gap:50px}
+html.dt .app{--navw:190px;--dtg:clamp(16px,2.2vw,48px);--dtl:clamp(340px,30vw,460px);--dtf:clamp(380px,38vw,680px);grid-template-columns:minmax(340px,calc(var(--navw) + var(--dtl))) minmax(340px,var(--dtf)) minmax(0,1fr);grid-template-rows:minmax(0,1fr);column-gap:var(--dtg)}
 html.dt .app.coll,html.dt .app.cmo{--navw:76px}
-html.dt .app.open{grid-template-columns:calc(var(--navw) + 74px) 350px minmax(380px,505px) minmax(0,1fr);column-gap:0}
+html.dt .app.open{grid-template-columns:calc(var(--navw) + 74px) 350px minmax(340px,var(--dtf)) minmax(0,1fr);column-gap:0}
 html.dt .side{grid-column:1;grid-row:1;box-sizing:border-box;padding:84px 0 0 calc(var(--navw) + 8px)}
 html.dt .main{display:none;grid-column:2;grid-row:1}
 html.dt .app.open .main{display:flex}
@@ -773,7 +773,8 @@ html.dt .app.coll #dtbar .dtl span:last-child,html.dt .app.cmo #dtbar .dtl span:
 html.dt .app.coll #dtcol,html.dt .app.cmo #dtcol{left:76px}
 html.dt #dtcol{position:absolute;left:200px;top:24px;width:30px;height:30px;padding:4px;background:none;color:var(--mut);line-height:0}
 html.dt #dtcol svg{width:22px;height:22px}
-html.dt #dtme{position:absolute;right:15px;top:14px;display:flex;align-items:center;gap:10px;padding:5px 6px 5px 18px;border-radius:30px;background:var(--bg2);color:var(--tx);font-size:19px;font-weight:600;max-width:340px}
+html.dt #dtme{position:absolute;right:15px;top:14px;display:flex;align-items:center;gap:10px;padding:5px 6px 5px 18px;border-radius:30px;background:var(--bg2);color:var(--tx);font-size:clamp(14px,1.45vw,19px);font-weight:600;max-width:clamp(150px,15vw,340px)}
+@media(max-width:1279px){html.dt #dtme{padding:5px}html.dt #dtme .dtn{display:none}}
 html.dt #dtme .dtn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 html.dt #dtme .av{width:38px;height:38px;font-size:16px;flex:none;box-shadow:0 0 0 2px var(--bg2),0 0 0 4px var(--accent,#7c3aed)}
 html.dt #dtdd{position:absolute;right:15px;top:68px;width:215px;padding:6px;border-radius:12px;background:var(--bg2);box-shadow:0 8px 28px rgba(0,0,0,.45);display:flex;flex-direction:column;gap:5px}
@@ -785,7 +786,30 @@ html.dt #dtdd .dlo{width:100%;padding:11px;border-radius:10px;background:var(--c
 html.dt #pfv,html.dt #st{inset:auto;top:0;bottom:0;right:auto;left:var(--fcx,500px);width:var(--fcw,505px)}
 html.dt #st{z-index:66}
 /* comments (Clips + Newsfeed): side panel to the right of the video */
-html.dt .sheetbg.cmside{inset:auto;top:76px;bottom:0;left:auto;right:12px;width:max(340px,min(400px,calc(100vw - var(--fcx,500px) - var(--fcw,505px) - 24px)));display:block;background:none;pointer-events:none;z-index:70}
+html.dt{--cmw:clamp(280px,27vw,400px)}
+/* Newsfeed tab: the left list is empty, so the feed sits in the middle of the window */
+html.dt .app:not(.open):not(.cmo):has(#list[data-t="none"]){column-gap:0;grid-template-columns:minmax(calc(var(--navw) + 16px),1fr) minmax(340px,var(--dtf)) minmax(calc(var(--navw) + 16px),1fr)}
+/* comments panel open: the feed gives up just enough width for the panel; Messages / chat never get squeezed.
+   On narrow windows the Messages list turns into the avatar rail (same look as when a chat is open). */
+html.dt .app.cmo{column-gap:14px;grid-template-columns:minmax(340px,calc(var(--navw) + var(--dtl))) minmax(340px,1fr) calc(var(--cmw) + 12px)}
+html.dt .app.open.cmo{column-gap:0;grid-template-columns:calc(var(--navw) + 74px) 350px minmax(320px,1fr) calc(var(--cmw) + 12px)}
+html.dt .app.cmo #feedc{justify-self:end;width:min(100%,var(--dtf))}
+html.dt .app.open.cmo #feedc{margin-right:14px;width:min(calc(100% - 14px),var(--dtf))}
+@media(max-width:1179px){
+html.dt .app.cmo:not(.open){grid-template-columns:calc(var(--navw) + 74px) minmax(340px,1fr) calc(var(--cmw) + 12px)}
+html.dt .app.cmo:not(.open):has(#list[data-t="chats"]) .side :is(.ph,#sqw,#chips){display:none}
+html.dt .app.cmo:not(.open):has(#list[data-t="chats"]) #list :is(.mid,.dot,.hint,.sec,.actrow){display:none}
+html.dt .app.cmo:not(.open):has(#list[data-t="chats"]) #list .item{margin:6px 0;padding:0;border:0;background:none;border-radius:0;justify-content:center;max-width:100%;box-sizing:border-box}
+html.dt .app.cmo:not(.open):has(#list[data-t="chats"]) #list .item .av{width:60px;height:60px}
+html.dt .app.cmo:not(.open):has(#list[data-t="chats"]) #list .item.on .av{box-shadow:0 0 0 3px var(--accent,#7c3aed)}
+html.dt .app.cmo:not(.open):has(#list[data-t="chats"]) .side{padding-left:calc(var(--navw) + 4px)}
+html.dt .app.cmo:not(.open):has(#list[data-t="chats"]) #list{overflow-x:hidden;scrollbar-width:none;-ms-overflow-style:none}
+html.dt .app.cmo:not(.open):has(#list[data-t="chats"]) #list *{scrollbar-width:none}
+html.dt .app.cmo:not(.open):has(#list[data-t="chats"]) #list::-webkit-scrollbar,html.dt .app.cmo:not(.open):has(#list[data-t="chats"]) #list *::-webkit-scrollbar{display:none;width:0;height:0}
+/* People / Notifications have no avatar-rail form: while the comments panel is open on a narrow window their list is simply tucked away */
+html.dt .app.cmo:not(.open):has(#list:not([data-t="chats"])) .side>:not(.tabs){display:none}
+}
+html.dt .sheetbg.cmside{inset:auto;top:76px;bottom:0;left:auto;right:12px;width:var(--cmw);display:block;background:none;pointer-events:none;z-index:70}
 html.dt .sheetbg.cmside .sheet{pointer-events:auto;height:calc(100% - 12px);max-height:none;border-radius:16px;border:1px solid var(--line);box-shadow:0 8px 28px rgba(0,0,0,.4)}
 
 /* ===== MESSAGE REACTIONS / REPLY (DM, group, Global) ===== */
@@ -894,7 +918,7 @@ html.dt .story-activity-panel{max-width:none}
 </head>
 <body>
 <style>
-#boot{background:#000;z-index:9999}
+#boot{background:var(--bg,#000);z-index:9999}
 #boot .bt-svg{width:166px;height:auto;overflow:visible}html.dt #boot .bt-svg{width:124px}
 #boot .bt-svg *{transform-box:fill-box;transform-origin:center}
 #boot .bt-p{animation:btperson 1.8s ease-in-out infinite}
@@ -1107,79 +1131,178 @@ html:not(.dt) .side .tabs{margin:0 12px calc(10px + env(safe-area-inset-bottom,0
 :is(#list,#feedc)[data-t="notifs"] .item .dot{width:10px;height:10px;background:var(--accent,#7c3aed);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent,#7c3aed) 22%,transparent)}
 :is(#list,#feedc)[data-t="notifs"] .item .prow button{border-radius:999px}
 </style>
-<div id="boot"><svg id="bt-logo" class="bt-svg" viewBox="60 60 1130 1130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Chatter loading">
-<defs>
- <linearGradient id="bt-eg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--accent)"/><stop offset=".35" stop-opacity="0" style="stop-color:var(--accent)"/><stop offset=".65" stop-opacity="0" style="stop-color:var(--accent)"/><stop offset="1" style="stop-color:var(--accent)"/></linearGradient>
- <linearGradient id="bt-cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".6" stop-color="#e9e9ee"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--accent) 60%,#fff)"/></linearGradient>
- <linearGradient id="bt-sw" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:var(--accent)"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--accent) 60%,#fff)"/></linearGradient>
- <radialGradient id="bt-glowR" cx=".5" cy=".5" r=".5"><stop offset="0" stop-opacity=".5" style="stop-color:var(--accent)"/><stop offset="1" stop-opacity="0" style="stop-color:var(--accent)"/></radialGradient>
- <filter id="bt-blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9"/></filter>
-</defs>
-
-<rect x="80" y="80" width="1090" height="1095" rx="240" fill="#0b0b0d"/>
-<rect class="bt-edge" x="86" y="86" width="1078" height="1083" rx="234" fill="none" stroke="url(#bt-eg)" stroke-width="16" filter="url(#bt-blur)"/>
+<style id="sv2">
+/* DESKTOP story viewer: slim avatar rail, one big card with everything overlaid, blurred ambient backdrop */
+html.dt .sv{inset:0;left:0;right:0;top:0;bottom:0;width:auto;z-index:90;display:grid;grid-template-columns:104px minmax(0,1fr);grid-template-rows:minmax(0,1fr);padding:20px 0 20px;background:var(--bg);color:var(--tx);overflow:hidden;--stw:min(460px,calc(100vw - 104px - 220px))}
+html.dt .sv .svamb{position:absolute;inset:-80px;z-index:0;background:linear-gradient(135deg,var(--accent,#7c3aed),var(--accent-deep,#4f46e5)) center/cover;filter:blur(70px) saturate(1.5);opacity:.4;pointer-events:none}
+html.dt .sv .svside{grid-column:1;grid-row:1;z-index:3;display:flex;flex-direction:column;align-items:center;gap:12px;padding:0 0 20px;overflow-y:auto;background:transparent;border:0;scrollbar-width:none}
+html.dt .sv .svside::-webkit-scrollbar{display:none}
+html.dt .sv .smd,html.dt .sv .sb,html.dt .sv .st,html.dt .sv .story-foot{grid-column:2;grid-row:1;justify-self:center;width:var(--stw);margin:0}
+html.dt .sv .smd{z-index:1;align-self:stretch;height:100%;border-radius:38px;background:#222326;box-shadow:0 0 0 1px color-mix(in srgb,var(--accent,#7c3aed) 45%,#ffffff1f),0 30px 80px color-mix(in srgb,var(--accent,#7c3aed) 35%,#0008)}
+html.dt .sv .smd::before,html.dt .sv .smd::after{content:"";position:absolute;left:0;right:0;z-index:1;pointer-events:none}
+html.dt .sv .smd::before{top:0;height:150px;background:linear-gradient(#000b,transparent)}
+html.dt .sv .smd::after{bottom:0;height:170px;background:linear-gradient(transparent,#000c)}
+html.dt .sv .smd img,html.dt .sv .smd video{object-fit:contain;background:transparent}
+html.dt .sv .sb{z-index:3;align-self:start;margin-top:18px;width:calc(var(--stw) - 40px);padding:0;gap:5px}
+html.dt .sv .sb .sg{height:4px;border-radius:4px;background:#ffffff40}
+html.dt .sv .sb .sg i{background:#fff}
+html.dt .sv .st{z-index:3;align-self:start;margin-top:34px;width:calc(var(--stw) - 40px);padding:6px 0;color:#fff}
+html.dt .sv .st .t1{color:#fff;text-shadow:0 1px 6px #0009}
+html.dt .sv .st .t2{color:#ffffffcc;text-shadow:0 1px 6px #0009}
+html.dt .sv .st .av{border:2px solid #fff;width:44px;height:44px}
+html.dt .sv .story-menu{color:#fff}
+html.dt .sv .story-foot{z-index:3;align-self:end;width:calc(var(--stw) - 32px);margin-bottom:16px;display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:0;min-height:0;background:transparent;color:#fff}
+html.dt .sv .story-foot .story-owner-foot{grid-column:1/-1;padding:6px 8px}
+html.dt .sv .story-reply{height:50px;padding:0 22px;border:1px solid #ffffff47;border-radius:25px;background:#ffffff24;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);color:#fff}
+html.dt .sv .story-reply::placeholder{color:#ffffffc7}
+html.dt .sv .story-action{width:50px;height:50px;padding:0;border-radius:50%;background:#ffffff24;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);color:#fff}
+html.dt .sv .story-action svg{width:24px;height:24px}
+html.dt .sv .story-heart.on{background:#ff3b5c33}
+html.dt .sv .story-activity,html.dt .sv .story-activity-label,html.dt .sv .story-add-wrap span{color:#fff}
+html.dt .sv .story-add{background:#ffffff24;color:#fff;border-color:#ffffff47}
+html.dt .sv .story-activity-layer{position:absolute;inset:auto;top:20px;bottom:20px;right:auto;left:calc(104px + (100% - 104px - var(--stw))/2);width:var(--stw);border-radius:38px;overflow:hidden;z-index:20}
+html.dt .sv .story-activity-panel{max-width:none;max-height:70%}
+html.dt .sv .svnav{position:absolute;top:50%;margin-top:-22px;width:44px;height:44px;padding:0;border-radius:50%;background:var(--bg2);border:1px solid var(--line);color:var(--tx);font-size:26px;line-height:1;z-index:5;box-shadow:0 6px 18px #0003}
+html.dt .sv .svnav:hover{background:color-mix(in srgb,var(--accent,#7c3aed) 22%,var(--bg2))}
+html.dt .sv .svnav.l{left:calc(104px + (100vw - 104px - var(--stw))/2 - 66px)}
+html.dt .sv .svnav.r{left:calc(104px + (100vw - 104px - var(--stw))/2 + var(--stw) + 22px)}
+.svs-top{display:flex;flex-direction:column;align-items:center;gap:12px;padding:2px 0 10px;border-bottom:1px solid var(--line);width:56px}
+.svs-x{width:46px;height:46px;padding:0;border-radius:16px;background:var(--oth);color:var(--tx);font-size:18px}
+.svs-logo{display:block;line-height:0}
+.svs-logo svg{width:46px;height:46px;display:block;overflow:visible}
+.svs-title,.svs-sec,.svs-inf,.svs-row small{display:none}
+.svs-add,.svs-row{display:flex;align-items:center;justify-content:center;width:56px;height:56px;padding:0;margin:0;border-radius:19px;background:none;color:var(--tx);flex:none;position:relative}
+.svs-add{border:1.5px dashed color-mix(in srgb,var(--accent,#7c3aed) 65%,transparent);background:color-mix(in srgb,var(--accent,#7c3aed) 12%,transparent)}
+.svs-plus{display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:17px;background:none;color:var(--accent,#7c3aed);font-size:26px;font-weight:700}
+.svs-row .av{width:56px;height:56px;border-radius:19px!important;box-shadow:0 0 0 2px var(--bg),0 0 0 4px color-mix(in srgb,var(--accent,#7c3aed) 55%,transparent);flex:none}
+.svs-row:hover .av{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent,#7c3aed)}
+.svs-row.on{background:none;box-shadow:none}
+.svs-row.on .av{box-shadow:0 0 0 2px var(--bg),0 0 0 5px var(--accent,#7c3aed),0 8px 22px color-mix(in srgb,var(--accent,#7c3aed) 55%,transparent)}
+.svs-row.on::before{content:"";position:absolute;left:-14px;top:14px;bottom:14px;width:5px;border-radius:0 5px 5px 0;background:var(--accent,#7c3aed)}
+html.stv #dtbar{z-index:95}
+html.stv #dtbar .dtl,html.stv #dtbar #dtcol{visibility:hidden}
+html.stv #dtdd{z-index:96}
+/* follow the dark / light theme everywhere in the viewer (phone + desktop) */
+.sv{background:var(--bg);color:var(--tx)}
+.sv .sg{background:color-mix(in srgb,var(--tx) 22%,transparent)}
+.sv .sg i{background:var(--tx)}
+.sv .st .t1{color:var(--tx)}
+.sv .st .t2{color:var(--mut)}
+.sv .st .av{border-color:var(--line)}
+.sv .story-menu{color:var(--tx)}
+.sv .smd{background:var(--bg2)}
+.sv .smd img,.sv .smd video{background:var(--bg2)}
+.sv .story-foot{background:var(--bg2)}
+.sv .story-reply{color:var(--tx);border-color:var(--line)}
+.sv .story-reply::placeholder{color:var(--mut)}
+.sv .story-action{color:var(--tx)}
+.sv .story-activity,.sv .story-activity-label,.sv .story-add-wrap span{color:var(--tx)}
+.sv .story-add{background:var(--oth);color:var(--tx);border-color:var(--line)}
+.sv .story-viewer-faces .av,.sv .story-viewer-more{border-color:var(--bg2)}
+.sv .story-viewer-more{background:var(--oth);color:var(--tx)}
+.sv-sheet,.sv-dlg{background:var(--bg2);color:var(--tx)}
+.sv-item{color:var(--tx)}
+.sv-item:active{background:var(--oth)}
+.sv-dlga button{color:var(--accent,#7c3aed)}
+html.dt .sv .story-foot{background:transparent}
+</style>
+<style id="cv2">
+/* Chatterverse icon colours: follow the accent colour and the dark / light theme */
+.cv-bg{fill:var(--bg,#000)}
+.cv-a{stop-color:var(--accent,#7c3aed)}
+.cv-af{fill:var(--accent,#7c3aed)}
+.cv-as{stroke:var(--accent,#7c3aed)}
+.cv-o0{stop-color:color-mix(in srgb,var(--accent,#7c3aed) 55%,#fff)}
+.cv-o2{stop-color:color-mix(in srgb,var(--accent,#7c3aed) 30%,#000)}
+.cv-land{fill:color-mix(in srgb,var(--accent,#7c3aed) 45%,#fff)}
+.cv-desert{fill:color-mix(in srgb,var(--accent,#7c3aed) 22%,#fff)}
+.cv-track{stroke:color-mix(in srgb,var(--accent,#7c3aed) 18%,var(--bg,#000))}
+.cv-tail{fill:color-mix(in srgb,var(--accent,#7c3aed) 70%,#fff)}
+.cv-t{fill:var(--tx,#fff)}
+.cv-ts{stroke:var(--tx,#fff)}
+.cv-tile{fill:color-mix(in srgb,var(--accent,#7c3aed) 22%,var(--bg,#000));stroke:var(--accent,#7c3aed);stroke-opacity:.6}
+.cv-r1{stroke:color-mix(in srgb,var(--accent,#7c3aed) 14%,var(--tx,#fff))}
+.cv-r2{stroke:color-mix(in srgb,var(--accent,#7c3aed) 24%,var(--tx,#fff))}
+.cv-r3{stroke:color-mix(in srgb,var(--accent,#7c3aed) 48%,var(--tx,#fff))}
+.cv-r4{stroke:color-mix(in srgb,var(--accent,#7c3aed) 72%,var(--tx,#fff))}
+.cv-r5{stroke:var(--accent,#7c3aed)}
+</style>
+<style id="snd2">
+.csnd-list{padding:0 14px 8px}
+.csnd{display:flex;align-items:center;gap:12px;margin:0 0 8px;padding:12px 14px;border:1px solid var(--line);border-radius:22px;background:var(--cd,var(--bg2))}
+.csnd .sn-i{flex:none;width:44px;height:44px;border-radius:15px;background:color-mix(in srgb,var(--accent,#7c3aed) 14%,var(--cd2,var(--bg2)));display:flex;align-items:center;justify-content:center;font-size:20px}
+.csnd .sn-m{flex:1;min-width:0;text-align:left}
+.csnd .sn-n{font-weight:700;font-size:15px}
+.csnd .sn-s{margin-top:2px;font-size:12.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.csnd.cust .sn-s{color:var(--accent,#7c3aed);font-weight:600}
+.csnd .sn-b{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;flex:none;max-width:150px}
+.csnd .sn-b button{border-radius:999px;position:relative;z-index:1}
+.csnd .sn-b .sn-pv{width:40px;height:40px;padding:0!important;border-radius:50%!important;font-size:15px;line-height:1;background:color-mix(in srgb,var(--accent,#7c3aed) 14%,var(--cd2,var(--bg2)))!important;color:var(--accent,#7c3aed)!important;border:1px solid color-mix(in srgb,var(--accent,#7c3aed) 40%,transparent)!important;cursor:pointer}
+</style>
+<div id="boot"><svg id="bt-logo" class="bt-svg" viewBox="60 60 1130 1130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Chatterverse"><defs>
+<linearGradient id="bt-eg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" class="cv-a"/><stop offset=".35" class="cv-a" stop-opacity="0"/><stop offset=".65" class="cv-a" stop-opacity="0"/><stop offset="1" class="cv-a"/></linearGradient>
+<radialGradient id="bt-gl" cx=".5" cy=".5" r=".5"><stop offset="0" class="cv-a" stop-opacity=".45"/><stop offset="1" class="cv-a" stop-opacity="0"/></radialGradient>
+<filter id="bt-bl" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9"/></filter>
+<clipPath id="bt-back"><rect x="-700" y="-700" width="1400" height="700"/></clipPath><clipPath id="bt-front"><rect x="-700" y="0" width="1400" height="700"/></clipPath>
+<linearGradient id="bt-rshade" gradientUnits="userSpaceOnUse" x1="-400" y1="0" x2="400" y2="0"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset=".3" stop-color="#000" stop-opacity="0"/><stop offset=".7" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".4"/></linearGradient>
+<radialGradient id="bt-light" gradientUnits="userSpaceOnUse" cx="570" cy="540" r="290" fx="465" fy="410"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".3" stop-color="#fff" stop-opacity=".06"/><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset=".82" stop-color="#000" stop-opacity=".38"/><stop offset="1" stop-color="#000" stop-opacity=".8"/></radialGradient>
+<linearGradient id="bt-ocean" gradientUnits="userSpaceOnUse" x1="300" y1="250" x2="820" y2="800"><stop offset="0" class="cv-o0"/><stop offset=".5" class="cv-a"/><stop offset="1" class="cv-o2"/></linearGradient>
+<filter id="bt-land" x="230" y="230" width="680" height="640" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.0055 0.0075" numOctaves="4" seed="11"/><feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  9 0 0 0 -4.8"/></filter>
+<filter id="bt-desert" x="230" y="230" width="680" height="640" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.0055 0.0075" numOctaves="4" seed="11"/><feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  9 0 0 0 -5.5"/></filter>
+<filter id="bt-cloud" x="230" y="230" width="680" height="640" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.02 0.05" numOctaves="4" seed="4"/><feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  5.5 0 0 0 -2.95"/></filter>
+<mask id="bt-mland" maskUnits="userSpaceOnUse" x="230" y="230" width="680" height="640"><rect x="230" y="230" width="680" height="640" filter="url(#bt-land)"/></mask>
+<mask id="bt-mdes" maskUnits="userSpaceOnUse" x="230" y="230" width="680" height="640"><rect x="230" y="230" width="680" height="640" filter="url(#bt-desert)"/></mask>
+<mask id="bt-mcl" maskUnits="userSpaceOnUse" x="230" y="230" width="680" height="640"><rect x="230" y="230" width="680" height="640" filter="url(#bt-cloud)"/></mask>
+<pattern id="bt-earth" patternUnits="userSpaceOnUse" x="0" y="0" width="1254" height="1254">
+ <rect x="230" y="230" width="680" height="640" fill="url(#bt-ocean)"/>
+ <rect x="230" y="230" width="680" height="640" class="cv-land" mask="url(#bt-mland)"/>
+ <rect x="230" y="230" width="680" height="640" class="cv-desert" mask="url(#bt-mdes)"/>
+ <rect x="230" y="230" width="680" height="640" fill="#fff" fill-opacity=".5" mask="url(#bt-mcl)"/>
+</pattern></defs>
+<rect class="cv-bg" x="80" y="80" width="1090" height="1095" rx="240"/>
+<rect class="bt-edge" x="86" y="86" width="1078" height="1083" rx="234" fill="none" stroke="url(#bt-eg)" stroke-width="16" filter="url(#bt-bl)"/>
 <rect class="bt-edge" x="86" y="86" width="1078" height="1083" rx="234" fill="none" stroke="url(#bt-eg)" stroke-width="8"/>
-<circle id="bt-flash" cx="570" cy="540" r="330" fill="url(#bt-glowR)"/>
-
-<!-- C: dim track + progress fill -->
-<path d="M734.7 401.8 A215 215 0 1 0 756.2 647.5" fill="none" stroke="#232327" stroke-width="130"/>
-<path id="bt-cfill" d="M734.7 401.8 A215 215 0 1 0 756.2 647.5" fill="none" stroke="url(#bt-cg)" stroke-width="130" pathLength="1000" stroke-dasharray="1000" stroke-dashoffset="1000"/>
-<polygon id="bt-tail" points="790,715 806,822 712,772" style="fill:color-mix(in srgb,var(--accent) 70%,#fff)"/>
-
-<!-- people -->
-<g fill="#fff">
- <g class="bt-p bt-p2"><circle cx="527" cy="497" r="28"/><path d="M480 585Q480 540 520 540Q548 540 550 585Z"/></g>
- <g class="bt-p bt-p3"><circle cx="672" cy="497" r="28"/><path d="M722 585Q722 540 682 540Q654 540 652 585Z"/></g>
- <g class="bt-p"><circle cx="601" cy="475" r="36"/><path d="M543 585Q543 515 601 515Q659 515 659 585Z"/></g>
-</g>
-
-<!-- orbiting swoosh -->
-<g transform="rotate(-12 560 575)">
- <ellipse cx="560" cy="575" rx="370" ry="108" fill="none" stroke-opacity=".22" stroke-width="6" style="stroke:var(--accent)"/>
- <ellipse class="bt-orbit" cx="560" cy="575" rx="370" ry="108" fill="none" stroke="url(#bt-sw)" stroke-width="16" stroke-linecap="round" pathLength="1000" stroke-dasharray="260 740" style="filter:drop-shadow(0 0 12px var(--accent))"/>
-</g>
-
-<!-- sparks -->
-<g stroke-width="16" stroke-linecap="round" style="stroke:var(--accent)">
- <line class="bt-sp" x1="770" y1="205" x2="760" y2="252"/>
- <line class="bt-sp bt-s2" x1="855" y1="236" x2="820" y2="268"/>
- <line class="bt-sp bt-s3" x1="885" y1="312" x2="840" y2="308"/>
-</g>
-
-<!-- media tiles -->
-<g transform="translate(1008 335) rotate(14)"><g class="bt-tile">
- <rect x="-65" y="-65" width="130" height="130" rx="30" stroke-opacity=".5" stroke-width="3" style="fill:color-mix(in srgb,var(--accent) 22%,#000);stroke:color-mix(in srgb,var(--accent) 60%,#fff)"/>
- <rect x="-30" y="-25" width="60" height="50" rx="5" fill="none" stroke="#fff" stroke-width="6"/>
- <path d="M-22 18L-6 0L4 10L12 2L24 18Z" fill="#fff"/><circle cx="14" cy="-10" r="5" fill="#fff"/></g></g>
-<g transform="translate(915 483) rotate(-10)"><g class="bt-tile bt-t2">
- <rect x="-65" y="-65" width="130" height="130" rx="30" stroke-opacity=".6" stroke-width="3" style="fill:color-mix(in srgb,var(--accent) 28%,#000);stroke:color-mix(in srgb,var(--accent) 60%,#fff)"/>
- <path d="M-16 -28L28 0L-16 28Z" fill="#fff"/></g></g>
-<g transform="translate(1012 605) rotate(14)"><g class="bt-tile bt-t3">
- <rect x="-65" y="-65" width="130" height="130" rx="30" stroke-opacity=".6" stroke-width="3" style="fill:color-mix(in srgb,var(--accent) 28%,#000);stroke:color-mix(in srgb,var(--accent) 60%,#fff)"/>
- <path d="M0 26C-44 -6-30 -36-12 -32C-4 -30 0 -22 0 -18C0 -22 4 -30 12 -32C30 -36 44 -6 0 26Z" fill="#fff"/></g></g>
-
-<!-- wordmark -->
-<g font-family="'Poppins','Nunito','Segoe UI',system-ui,sans-serif" font-weight="800" font-style="italic" font-size="200" fill="#fff">
- <text x="225" y="985" textLength="800" lengthAdjust="spacingAndGlyphs">
-  <tspan>Chatt</tspan><tspan id="bt-er" style="fill:var(--accent)">er</tspan></text>
-</g>
-<path d="M390 1060Q640 1000 870 1030Q600 1022 390 1070Z" style="fill:var(--accent)"/>
-</svg></div>
+<circle id="bt-flash" cx="570" cy="540" r="330" fill="url(#bt-gl)" opacity="0"/>
+<g transform="translate(560 575) rotate(-12)"><g clip-path="url(#bt-back)" opacity=".7" style="filter:drop-shadow(0 0 16px color-mix(in srgb,var(--accent,#7c3aed) 40%,transparent))"><g transform="scale(1,.3)" fill="none"><circle r="262.0" class="cv-r1" stroke-opacity="0.22" stroke-width="3.2"/><circle r="265.4" class="cv-r1" stroke-opacity="0.10" stroke-width="4"/><circle r="268.8" class="cv-r5" stroke-opacity="0.10" stroke-width="3.2"/><circle r="274.0" class="cv-r2" stroke-opacity="0.19" stroke-width="4"/><circle r="277.4" class="cv-r1" stroke-opacity="0.25" stroke-width="4"/><circle r="281.4" class="cv-r5" stroke-opacity="0.21" stroke-width="3.2"/><circle r="286.0" class="cv-r5" stroke-opacity="0.25" stroke-width="3.2"/><circle r="290.0" class="cv-r5" stroke-opacity="0.22" stroke-width="3.2"/><circle r="293.4" class="cv-r3" stroke-opacity="0.92" stroke-width="5.4"/><circle r="298.6" class="cv-r2" stroke-opacity="0.92" stroke-width="4.6"/><circle r="302.6" class="cv-r5" stroke-opacity="0.94" stroke-width="4.6"/><circle r="307.8" class="cv-r5" stroke-opacity="0.98" stroke-width="4.6"/><circle r="311.2" class="cv-r2" stroke-opacity="0.82" stroke-width="4.6"/><circle r="316.4" class="cv-r5" stroke-opacity="0.88" stroke-width="3.2"/><circle r="321.0" class="cv-r5" stroke-opacity="0.87" stroke-width="5.4"/><circle r="326.2" class="cv-r4" stroke-opacity="0.37" stroke-width="4.6"/><circle r="329.6" class="cv-r3" stroke-opacity="0.81" stroke-width="5.4"/><circle r="334.8" class="cv-r3" stroke-opacity="0.98" stroke-width="5.4"/><circle r="338.8" class="cv-r3" stroke-opacity="0.80" stroke-width="4"/><circle r="342.8" class="cv-r1" stroke-opacity="0.83" stroke-width="5.4"/><circle r="346.8" class="cv-r4" stroke-opacity="0.76" stroke-width="4"/><circle r="351.4" class="cv-r2" stroke-opacity="0.04" stroke-width="4.6"/><circle r="356.6" class="cv-r1" stroke-opacity="0.04" stroke-width="4"/><circle r="360.6" class="cv-r1" stroke-opacity="0.04" stroke-width="4"/><circle r="365.8" class="cv-r1" stroke-opacity="0.71" stroke-width="4.6"/><circle r="369.8" class="cv-r2" stroke-opacity="0.60" stroke-width="4.6"/><circle r="373.2" class="cv-r4" stroke-opacity="0.61" stroke-width="5.4"/><circle r="378.4" class="cv-r2" stroke-opacity="0.06" stroke-width="5.4"/><circle r="383.6" class="cv-r4" stroke-opacity="0.19" stroke-width="4"/><circle r="323" stroke="url(#bt-rshade)" stroke-width="130"/></g></g></g>
+<polygon id="bt-tail" class="cv-tail" points="782,709 806,822 707,764"/>
+<path d="M734.7 401.8 A215 215 0 1 0 756.2 647.5" fill="none" class="cv-track" stroke-width="130"/>
+<path id="bt-catm" d="M734.7 401.8 A215 215 0 1 0 756.2 647.5" fill="none" class="cv-as" stroke-opacity=".75" stroke-width="146" filter="url(#bt-bl)" pathLength="1000" stroke-dasharray="1000" stroke-dashoffset="1000"/><path id="bt-cfill" d="M734.7 401.8 A215 215 0 1 0 756.2 647.5" fill="none" stroke="url(#bt-earth)" stroke-width="130" pathLength="1000" stroke-dasharray="1000" stroke-dashoffset="1000"/><path id="bt-cshade" d="M734.7 401.8 A215 215 0 1 0 756.2 647.5" fill="none" stroke="url(#bt-light)" stroke-width="130" pathLength="1000" stroke-dasharray="1000" stroke-dashoffset="1000"/>
+<g transform="translate(560 585) rotate(-12)"><g transform="scale(1,.3)"><path d="M250 0A250 250 0 0 1 -250 0" fill="none" stroke="#000" stroke-opacity=".5" stroke-width="130" stroke-linecap="round" filter="url(#bt-bl)"/></g></g>
+<g class="cv-t"><g class="bt-p bt-p2"><circle cx="527" cy="497" r="28"/><path d="M480 585Q480 540 520 540Q548 540 550 585Z"/></g><g class="bt-p bt-p3"><circle cx="672" cy="497" r="28"/><path d="M722 585Q722 540 682 540Q654 540 652 585Z"/></g><g class="bt-p"><circle cx="601" cy="475" r="36"/><path d="M543 585Q543 515 601 515Q659 515 659 585Z"/></g></g>
+<g transform="translate(560 575) rotate(-12)"><g clip-path="url(#bt-front)" style="filter:drop-shadow(0 0 16px color-mix(in srgb,var(--accent,#7c3aed) 40%,transparent))"><g transform="scale(1,.3)" fill="none"><circle r="262.0" class="cv-r1" stroke-opacity="0.22" stroke-width="3.2"/><circle r="265.4" class="cv-r1" stroke-opacity="0.10" stroke-width="4"/><circle r="268.8" class="cv-r5" stroke-opacity="0.10" stroke-width="3.2"/><circle r="274.0" class="cv-r2" stroke-opacity="0.19" stroke-width="4"/><circle r="277.4" class="cv-r1" stroke-opacity="0.25" stroke-width="4"/><circle r="281.4" class="cv-r5" stroke-opacity="0.21" stroke-width="3.2"/><circle r="286.0" class="cv-r5" stroke-opacity="0.25" stroke-width="3.2"/><circle r="290.0" class="cv-r5" stroke-opacity="0.22" stroke-width="3.2"/><circle r="293.4" class="cv-r3" stroke-opacity="0.92" stroke-width="5.4"/><circle r="298.6" class="cv-r2" stroke-opacity="0.92" stroke-width="4.6"/><circle r="302.6" class="cv-r5" stroke-opacity="0.94" stroke-width="4.6"/><circle r="307.8" class="cv-r5" stroke-opacity="0.98" stroke-width="4.6"/><circle r="311.2" class="cv-r2" stroke-opacity="0.82" stroke-width="4.6"/><circle r="316.4" class="cv-r5" stroke-opacity="0.88" stroke-width="3.2"/><circle r="321.0" class="cv-r5" stroke-opacity="0.87" stroke-width="5.4"/><circle r="326.2" class="cv-r4" stroke-opacity="0.37" stroke-width="4.6"/><circle r="329.6" class="cv-r3" stroke-opacity="0.81" stroke-width="5.4"/><circle r="334.8" class="cv-r3" stroke-opacity="0.98" stroke-width="5.4"/><circle r="338.8" class="cv-r3" stroke-opacity="0.80" stroke-width="4"/><circle r="342.8" class="cv-r1" stroke-opacity="0.83" stroke-width="5.4"/><circle r="346.8" class="cv-r4" stroke-opacity="0.76" stroke-width="4"/><circle r="351.4" class="cv-r2" stroke-opacity="0.04" stroke-width="4.6"/><circle r="356.6" class="cv-r1" stroke-opacity="0.04" stroke-width="4"/><circle r="360.6" class="cv-r1" stroke-opacity="0.04" stroke-width="4"/><circle r="365.8" class="cv-r1" stroke-opacity="0.71" stroke-width="4.6"/><circle r="369.8" class="cv-r2" stroke-opacity="0.60" stroke-width="4.6"/><circle r="373.2" class="cv-r4" stroke-opacity="0.61" stroke-width="5.4"/><circle r="378.4" class="cv-r2" stroke-opacity="0.06" stroke-width="5.4"/><circle r="383.6" class="cv-r4" stroke-opacity="0.19" stroke-width="4"/><circle r="323" stroke="url(#bt-rshade)" stroke-width="130"/><circle class="bt-orbit" r="320" stroke="#fff" stroke-opacity=".22" stroke-width="110" pathLength="1000" stroke-dasharray="120 880"/></g></g></g>
+<g class="cv-as" stroke-width="16" stroke-linecap="round"><line class="bt-sp" x1="770" y1="205" x2="760" y2="252"/><line class="bt-sp bt-s2" x1="855" y1="236" x2="820" y2="268"/><line class="bt-sp bt-s3" x1="885" y1="312" x2="840" y2="308"/></g>
+<g transform="translate(1008 335) rotate(14)"><g class="bt-tile"><rect class="cv-tile" x="-65" y="-65" width="130" height="130" rx="30" stroke-width="3"/><rect class="cv-ts" x="-30" y="-25" width="60" height="50" rx="5" fill="none" stroke-width="6"/><path class="cv-t" d="M-22 18L-6 0L4 10L12 2L24 18Z"/><circle class="cv-t" cx="14" cy="-10" r="5"/></g></g><g transform="translate(915 483) rotate(-10)"><g class="bt-tile bt-t2"><rect class="cv-tile" x="-65" y="-65" width="130" height="130" rx="30" stroke-width="3"/><path class="cv-t cv-ts" d="M-16 -26L26 0L-16 26Z" stroke-width="6" stroke-linejoin="round"/></g></g><g transform="translate(1012 605) rotate(14)"><g class="bt-tile bt-t3"><rect class="cv-tile" x="-65" y="-65" width="130" height="130" rx="30" stroke-width="3"/><path class="cv-t" d="M0 26C-44 -6-30 -36-12 -32C-4 -30 0 -22 0 -18C0 -22 4 -30 12 -32C30 -36 44 -6 0 26Z"/></g></g>
+<g font-family="'Poppins','Nunito','Segoe UI',system-ui,sans-serif" font-weight="800" font-style="italic" font-size="150"><text x="190" y="985" textLength="880" lengthAdjust="spacingAndGlyphs"><tspan class="cv-t">Chatter</tspan><tspan id="bt-er" class="cv-af">verse</tspan></text></g>
+<path class="cv-af" d="M350 1060Q640 1000 910 1030Q620 1022 350 1070Z"/></svg></div>
 <script>try{var _n=localStorage.getItem("chatter_accent"),_M={purple:["#7c3aed","#4f46e5"],blue:["#2563eb","#1d4ed8"],pink:["#ec4899","#be185d"],red:["#ef4444","#b91c1c"],orange:["#f97316","#c2410c"],green:["#22a06b","#15803d"],teal:["#14b8a6","#0f766e"],gold:["#eab308","#a16207"]};if(_M[_n]){document.documentElement.style.setProperty("--accent",_M[_n][0]);document.documentElement.style.setProperty("--accent-deep",_M[_n][1])}}catch(e){}
-(function(){var f=document.getElementById("bt-cfill"),s=document.getElementById("bt-logo"),T=3600,t0=null,q=[],fin=false;if(!f||!s)return;
+(function(){var f=document.getElementById("bt-cfill"),P=["bt-cfill","bt-catm","bt-cshade"].map(function(i){return document.getElementById(i)}).filter(Boolean),s=document.getElementById("bt-logo"),T=3600,t0=null,q=[],fin=false;if(!f||!s)return;
 function e(x){return 1-Math.pow(1-x,2.2)}
 // app calls this when it is ready; cb runs only after the C finished filling
 window.__btWait=function(cb){if(fin)setTimeout(cb,150);else q.push(cb)};
 function k(t){if(!s.isConnected)return;if(t0===null)t0=t;var c=((t-t0)%T)/T,v=c<.78?e(c/.78):1;
-f.setAttribute("stroke-dashoffset",c>=.95?1000:(1-v)*1000);
+var o=c>=.95?1000:(1-v)*1000;P.forEach(function(n){n.setAttribute("stroke-dashoffset",o)});
 s.classList.toggle("bt-done",c>.78&&c<.95);
 if(c>=.78&&c<.95){fin=true;if(q.length){var a=q.splice(0);setTimeout(function(){a.forEach(function(x){x()})},450)}}else fin=false;
 requestAnimationFrame(k)}
 requestAnimationFrame(k)})()</script>
+<script>(function(){
+  // keep the collapse-sidebar button right after the logo (+ wordmark when the sidebar is expanded)
+  function place(){
+    var d=document.querySelector("#dtbar .dtl"),b=document.getElementById("dtcol"); if(!d||!b) return;
+    var r=d.getBoundingClientRect(); if(!r.width) return;
+    b.style.left=Math.round(r.right+8)+"px";
+  }
+  window.__placeCol=place;
+  function watch(){ var app=document.getElementById("app"); if(app&&window.MutationObserver) new MutationObserver(place).observe(app,{attributes:true,attributeFilter:["class"]}); place(); }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",watch); else watch();
+  window.addEventListener("resize",place);
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(place);
+  setTimeout(place,300); setTimeout(place,1500);
+})();</script>
 <script>setTimeout(function(){var b=document.getElementById("boot");if(b)b.classList.add("off")},15000)</script>
 <div id="auth" class="hide">
  <form id="af">
-  <h1>💬 Chatter</h1>
+  <h1>💬 Chatterverse</h1>
   <input id="em" type="text" placeholder="Email" required autocomplete="username">
   <input id="pw" type="password" placeholder="Password" required minlength="6" autocomplete="current-password">
   <button id="ab">Log in</button>
@@ -1201,28 +1324,31 @@ requestAnimationFrame(k)})()</script>
 <div id="st" class="hide"></div>
 <div class="app hide" id="app">
  <div id="ng" class="hide"></div>
- <div id="dtbar"><div class="dtl"><span class="dlw"><svg class="dlsvg" viewBox="60 60 1130 1130" xmlns="http://www.w3.org/2000/svg" aria-label="Chatter"><defs>
-<linearGradient id="dl-eg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" class="dl-a"/><stop offset=".35" class="dl-a" stop-opacity="0"/><stop offset=".65" class="dl-a" stop-opacity="0"/><stop offset="1" class="dl-a"/></linearGradient>
-<linearGradient id="dl-cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="dl-s0"/><stop offset=".6" class="dl-s1"/><stop offset="1" class="dl-s2"/></linearGradient>
-<linearGradient id="dl-sw" x1="0" y1="0" x2="1" y2="0"><stop offset="0" class="dl-a"/><stop offset="1" class="dl-s2"/></linearGradient>
-<radialGradient id="dl-gl" cx=".5" cy=".5" r=".5"><stop offset="0" class="dl-a" stop-opacity=".45"/><stop offset="1" class="dl-a" stop-opacity="0"/></radialGradient>
-<filter id="dl-bl" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="12"/></filter></defs>
-<rect class="dl-bg" x="80" y="80" width="1090" height="1095" rx="240"/>
-<rect x="86" y="86" width="1078" height="1083" rx="234" fill="none" stroke="url(#dl-eg)" stroke-width="22" filter="url(#dl-bl)"/>
-<rect x="86" y="86" width="1078" height="1083" rx="234" fill="none" stroke="url(#dl-eg)" stroke-width="10"/>
-<circle cx="570" cy="540" r="300" fill="url(#dl-gl)"/>
-<path d="M734.7 401.8 A215 215 0 1 0 756.2 647.5" fill="none" stroke="url(#dl-cg)" stroke-width="130"/>
-<polygon class="dl-s2f" points="790,715 806,822 712,772"/>
-<g class="dl-t"><circle cx="527" cy="497" r="28"/><path d="M480 585Q480 540 520 540Q548 540 550 585Z"/><circle cx="672" cy="497" r="28"/><path d="M722 585Q722 540 682 540Q654 540 652 585Z"/><circle cx="601" cy="475" r="36"/><path d="M543 585Q543 515 601 515Q659 515 659 585Z"/></g>
-<g transform="rotate(-12 560 575)" fill="none"><ellipse cx="560" cy="575" rx="370" ry="108" class="dl-as" stroke-opacity=".22" stroke-width="6"/><ellipse cx="560" cy="575" rx="370" ry="108" stroke="url(#dl-sw)" stroke-width="22" stroke-linecap="round" pathLength="1000" stroke-dasharray="400 600" stroke-dashoffset="-300"/></g>
-<g class="dl-as" stroke-width="16" stroke-linecap="round"><line x1="770" y1="205" x2="760" y2="252"/><line x1="855" y1="236" x2="820" y2="268"/><line x1="885" y1="312" x2="840" y2="308"/></g>
-<g transform="translate(1008 335) rotate(14)"><rect class="dl-tile" x="-65" y="-65" width="130" height="130" rx="30" stroke-width="3"/><rect class="dl-ts" x="-30" y="-25" width="60" height="50" rx="5" fill="none" stroke-width="6"/><path class="dl-t" d="M-22 18L-6 0L4 10L12 2L24 18Z"/><circle class="dl-t" cx="14" cy="-10" r="5"/></g>
-<g transform="translate(915 483) rotate(-10)"><rect class="dl-tile" x="-65" y="-65" width="130" height="130" rx="30" stroke-width="3"/><path class="dl-t" d="M-16 -28L28 0L-16 28Z"/></g>
-<g transform="translate(1012 605) rotate(14)"><rect class="dl-tile" x="-65" y="-65" width="130" height="130" rx="30" stroke-width="3"/><path class="dl-t" d="M0 26C-44 -6-30 -36-12 -32C-4 -30 0 -22 0 -18C0 -22 4 -30 12 -32C30 -36 44 -6 0 26Z"/></g>
-<g font-family="Poppins,Nunito,'Segoe UI',system-ui,sans-serif" font-weight="800" font-style="italic" font-size="200"><text x="225" y="985" textLength="800" lengthAdjust="spacingAndGlyphs"><tspan class="dl-t">Chatt</tspan><tspan class="dl-af">er</tspan></text></g>
-<path class="dl-af" d="M390 1060Q640 1000 870 1030Q600 1022 390 1070Z"/></svg></span><span>Chatter</span></div><button type="button" id="dtcol" title="Collapse sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg></button><button type="button" id="dtme"></button><div id="dtdd" class="hide"></div></div>
+ <div id="dtbar"><div class="dtl"><span class="dlw"><svg class="dlsvg" viewBox="60 60 1130 1130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Chatterverse"><defs>
+<linearGradient id="dl-eg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" class="cv-a"/><stop offset=".35" class="cv-a" stop-opacity="0"/><stop offset=".65" class="cv-a" stop-opacity="0"/><stop offset="1" class="cv-a"/></linearGradient>
+<radialGradient id="dl-gl" cx=".5" cy=".5" r=".5"><stop offset="0" class="cv-a" stop-opacity=".45"/><stop offset="1" class="cv-a" stop-opacity="0"/></radialGradient>
+<filter id="dl-bl" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="12"/></filter>
+<clipPath id="dl-back"><rect x="-700" y="-700" width="1400" height="700"/></clipPath><clipPath id="dl-front"><rect x="-700" y="0" width="1400" height="700"/></clipPath>
+<linearGradient id="dl-rshade" gradientUnits="userSpaceOnUse" x1="-400" y1="0" x2="400" y2="0"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset=".3" stop-color="#000" stop-opacity="0"/><stop offset=".7" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".4"/></linearGradient>
+<radialGradient id="dl-light" gradientUnits="userSpaceOnUse" cx="570" cy="540" r="290" fx="465" fy="410"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".3" stop-color="#fff" stop-opacity=".06"/><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset=".82" stop-color="#000" stop-opacity=".38"/><stop offset="1" stop-color="#000" stop-opacity=".8"/></radialGradient>
+<linearGradient id="dl-ocean" gradientUnits="userSpaceOnUse" x1="300" y1="250" x2="820" y2="800"><stop offset="0" class="cv-o0"/><stop offset=".5" class="cv-a"/><stop offset="1" class="cv-o2"/></linearGradient></defs>
+<rect class="cv-bg" x="80" y="80" width="1090" height="1095" rx="240"/>
+<rect x="86" y="86" width="1078" height="1083" rx="234" fill="none" stroke="url(#dl-eg)" stroke-width="16" filter="url(#dl-bl)"/>
+<rect x="86" y="86" width="1078" height="1083" rx="234" fill="none" stroke="url(#dl-eg)" stroke-width="8"/>
+<circle id="dl-flash" cx="570" cy="540" r="300" fill="url(#dl-gl)" opacity="1"/>
+<g transform="translate(560 575) rotate(-12)"><g clip-path="url(#dl-back)" opacity=".7" style="filter:drop-shadow(0 0 16px color-mix(in srgb,var(--accent,#7c3aed) 40%,transparent))"><g transform="scale(1,.3)" fill="none"><circle r="262.0" class="cv-r1" stroke-opacity="0.22" stroke-width="3.2"/><circle r="293.4" class="cv-r3" stroke-opacity="0.92" stroke-width="5.4"/><circle r="302.6" class="cv-r5" stroke-opacity="0.94" stroke-width="4.6"/><circle r="321.0" class="cv-r5" stroke-opacity="0.87" stroke-width="5.4"/><circle r="334.8" class="cv-r3" stroke-opacity="0.98" stroke-width="5.4"/><circle r="342.8" class="cv-r1" stroke-opacity="0.83" stroke-width="5.4"/><circle r="365.8" class="cv-r1" stroke-opacity="0.71" stroke-width="4.6"/><circle r="373.2" class="cv-r4" stroke-opacity="0.61" stroke-width="5.4"/><circle r="323" stroke="url(#dl-rshade)" stroke-width="130"/></g></g></g>
+<polygon id="dl-tail" class="cv-tail" points="782,709 806,822 707,764"/>
+<path d="M734.7 401.8 A215 215 0 1 0 756.2 647.5" fill="none" class="cv-track" stroke-width="130"/>
+<path id="dl-cfill" d="M734.7 401.8 A215 215 0 1 0 756.2 647.5" fill="none" stroke="url(#dl-ocean)" stroke-width="130"/><path id="dl-cshade" d="M734.7 401.8 A215 215 0 1 0 756.2 647.5" fill="none" stroke="url(#dl-light)" stroke-width="130"/>
+<g transform="translate(560 585) rotate(-12)"><g transform="scale(1,.3)"><path d="M250 0A250 250 0 0 1 -250 0" fill="none" stroke="#000" stroke-opacity=".5" stroke-width="130" stroke-linecap="round" filter="url(#dl-bl)"/></g></g>
+<g class="cv-t"><g><circle cx="527" cy="497" r="28"/><path d="M480 585Q480 540 520 540Q548 540 550 585Z"/></g><g><circle cx="672" cy="497" r="28"/><path d="M722 585Q722 540 682 540Q654 540 652 585Z"/></g><g><circle cx="601" cy="475" r="36"/><path d="M543 585Q543 515 601 515Q659 515 659 585Z"/></g></g>
+<g transform="translate(560 575) rotate(-12)"><g clip-path="url(#dl-front)" style="filter:drop-shadow(0 0 16px color-mix(in srgb,var(--accent,#7c3aed) 40%,transparent))"><g transform="scale(1,.3)" fill="none"><circle r="262.0" class="cv-r1" stroke-opacity="0.22" stroke-width="3.2"/><circle r="293.4" class="cv-r3" stroke-opacity="0.92" stroke-width="5.4"/><circle r="302.6" class="cv-r5" stroke-opacity="0.94" stroke-width="4.6"/><circle r="321.0" class="cv-r5" stroke-opacity="0.87" stroke-width="5.4"/><circle r="334.8" class="cv-r3" stroke-opacity="0.98" stroke-width="5.4"/><circle r="342.8" class="cv-r1" stroke-opacity="0.83" stroke-width="5.4"/><circle r="365.8" class="cv-r1" stroke-opacity="0.71" stroke-width="4.6"/><circle r="373.2" class="cv-r4" stroke-opacity="0.61" stroke-width="5.4"/><circle r="323" stroke="url(#dl-rshade)" stroke-width="130"/></g></g></g>
+<g class="cv-as" stroke-width="16" stroke-linecap="round"><line x1="770" y1="205" x2="760" y2="252"/><line x1="855" y1="236" x2="820" y2="268"/><line x1="885" y1="312" x2="840" y2="308"/></g>
+<g transform="translate(1008 335) rotate(14)"><g><rect class="cv-tile" x="-65" y="-65" width="130" height="130" rx="30" stroke-width="3"/><rect class="cv-ts" x="-30" y="-25" width="60" height="50" rx="5" fill="none" stroke-width="6"/><path class="cv-t" d="M-22 18L-6 0L4 10L12 2L24 18Z"/><circle class="cv-t" cx="14" cy="-10" r="5"/></g></g><g transform="translate(915 483) rotate(-10)"><g><rect class="cv-tile" x="-65" y="-65" width="130" height="130" rx="30" stroke-width="3"/><path class="cv-t cv-ts" d="M-16 -26L26 0L-16 26Z" stroke-width="6" stroke-linejoin="round"/></g></g><g transform="translate(1012 605) rotate(14)"><g><rect class="cv-tile" x="-65" y="-65" width="130" height="130" rx="30" stroke-width="3"/><path class="cv-t" d="M0 26C-44 -6-30 -36-12 -32C-4 -30 0 -22 0 -18C0 -22 4 -30 12 -32C30 -36 44 -6 0 26Z"/></g></g>
+<g font-family="'Poppins','Nunito','Segoe UI',system-ui,sans-serif" font-weight="800" font-style="italic" font-size="150"><text x="190" y="985" textLength="880" lengthAdjust="spacingAndGlyphs"><tspan class="cv-t">Chatter</tspan><tspan id="dl-er" class="cv-af">verse</tspan></text></g>
+<path class="cv-af" d="M350 1060Q640 1000 910 1030Q620 1022 350 1070Z"/></svg></span><span>Chatterverse</span></div><button type="button" id="dtcol" title="Collapse sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg></button><button type="button" id="dtme"></button><div id="dtdd" class="hide"></div></div>
  <aside class="side">
-  <div class="ph"><button type="button" class="ic" id="ham" title="Menu"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><h1 id="ptitle">Chatter</h1><button type="button" class="ic" id="newg" title="New group"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button></div>
+  <div class="ph"><button type="button" class="ic" id="ham" title="Menu"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><h1 id="ptitle">Chatterverse</h1><button type="button" class="ic" id="newg" title="New group"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button></div>
   <div class="sw" id="sqw"><input id="sq" style="width:100%" maxlength="30"></div>
   <div class="chips" id="chips">
    <button class="chip on" data-f="all">All</button><button class="chip" data-f="unread">Unread</button><button class="chip" data-f="global">Global</button><button class="chip" data-f="groups">Groups</button>
@@ -1663,7 +1789,7 @@ function setTab(t) {
   }
   if (tab === "notifs") { try { localStorage.setItem("nseen", Date.now()); } catch (e) {} } tab = t; results = null; query = ""; $("#sq").value = "";
   document.querySelectorAll(".tab").forEach(b => b.classList.toggle("on", b.dataset.t === t));
-  $("#ptitle").textContent = {chats: DT() ? "Messages" : "Chatter", people: "People", notifs: "Notifications", menu: "Profile", feed: "Newsfeed"}[t];
+  $("#ptitle").textContent = {chats: DT() ? "Messages" : "Chatterverse", people: "People", notifs: "Notifications", menu: "Profile", feed: "Newsfeed"}[t];
   $("#newg").classList.toggle("hide", t === "notifs" || t === "menu" || t === "feed");
   document.querySelector(".side .ph").classList.toggle("hide", t === "feed");
   $("#sqw").classList.toggle("hide", t === "notifs" || t === "menu" || t === "feed");
@@ -1808,7 +1934,7 @@ function render() {
 let act = [], actMine = new Set(), actT = null, pov = null, actErr = "", actSoundPrimed = false, actSeenIds = new Set();
 function primeNotificationSound() { actSoundPrimed = true; }
 function playNotificationSound() {
-  if (S.n_sound === false || !actSoundPrimed) return;
+  if (S.n_sound === false || !actSoundPrimed || MUTED.notif) return;
   try {
     const Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return;
     const ctx = new Ctx(), osc = ctx.createOscillator(), gain = ctx.createGain();
@@ -1936,10 +2062,12 @@ const FI = {
   cmt: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>'
 };
 async function loadStories() {
-  const {data, error} = await sb.from("posts").select("*").eq("kind", "story").gte("created_at", new Date(Date.now() - 864e5).toISOString()).order("created_at", {ascending: false}).limit(80);
-  if (error) { fstories = []; return; }
   const accepted = new Set(fr.filter(f => f.status === "accepted").map(f => f.requester === me.id ? f.addressee : f.requester));
-  fstories = (data || []).filter(s => s.user_id === me.id || accepted.has(s.user_id));
+  const following = new Set(fr.filter(f => f.status === "pending" && f.requester === me.id).map(f => f.addressee));
+  const {data, error} = await sb.from("posts").select("*").eq("kind", "story").in("user_id", [me.id, ...accepted, ...following]).gte("created_at", new Date(Date.now() - 864e5).toISOString()).order("created_at", {ascending: false}).limit(120);
+  if (error) { fstories = []; return; }
+  // friends (mutual follows): all stories they share with you. Followed users who do not follow back: public stories only.
+  fstories = (data || []).filter(s => s.user_id === me.id || accepted.has(s.user_id) || (following.has(s.user_id) && (s.visibility || "public") === "public"));
   await ensureNames(fstories.map(s => s.user_id));
   const seenU = new Set();
   await Promise.all(fstories.filter(s => !seenU.has(s.user_id) && seenU.add(s.user_id)).map(async s => { if (s.media_path) s.url = await imgUrl(s.media_path); }));
@@ -2089,6 +2217,10 @@ function storyCard(s) {
   c.append(t, av, el("div", "cn", u === me.id ? "Your story" : nm));
   c.onclick = () => openStory(u); return c;
 }
+function storyUsers() {
+  const seen = new Set(), L = []; fstories.forEach(s => { if (!seen.has(s.user_id)) { seen.add(s.user_id); L.push(s.user_id); } });
+  return L.sort((x, y) => (y === me.id) - (x === me.id));
+}
 async function openStory(u, custom) {
   const L = custom ? custom.list.slice() : fstories.filter(s => s.user_id === u).reverse();
   if (!L.length) return;
@@ -2098,9 +2230,16 @@ async function openStory(u, custom) {
     nm = el("div", "t1", u === me.id ? "Your story" : (names[u] || "Someone")),
     tm = el("div", "t2"), mid = el("div", "mid"), foot = el("div", "story-foot"),
     reply = el("input", "story-reply"), heart = el("button", "story-action story-heart", "♡"), share = el("button", "story-action story-share", "▷");
-  const close = () => { clearTimeout(t); const vv = ov.querySelector("video"); if (vv) vv.pause(); ov.remove(); };
+  const close = () => { clearTimeout(t); const vv = ov.querySelector("video"); if (vv) vv.pause(); ov.remove(); document.documentElement.classList.remove("stv"); };
   ov.__close = close;
-  const go = d => { i += d; if (i < 0) i = 0; if (i >= L.length) return close(); show(); };
+  const go = d => {
+    i += d;
+    if (!custom && (i < 0 || i >= L.length)) {   // auto-next: continue with the next (or previous) person's stories
+      const us = storyUsers(), k = us.indexOf(u), nu = us[k + (d > 0 ? 1 : -1)];
+      if (k >= 0 && nu) { close(); return openStory(nu); }
+    }
+    if (i < 0) i = 0; if (i >= L.length) return close(); show();
+  };
   mid.append(nm, tm); mid.style.cursor = "pointer"; mid.onclick = () => { close(); openProfile(u); };
   const menu = el("button", "story-menu", "⋯"); menu.type = "button";
   const resumeStory = () => {
@@ -2235,13 +2374,16 @@ async function openStory(u, custom) {
     }
   }
   async function openStoryActivity(story) {
+    ov.querySelectorAll(".story-activity-layer").forEach(n => n.remove());
+    clearTimeout(t); const pm = box.querySelector("video"); if (pm) pm.pause();
     const layer = el("div", "story-activity-layer"), panel = el("div", "story-activity-panel");
+    const shut = () => { if (!layer.isConnected) return; layer.remove(); resumeStory(); };
     const head = el("div", "story-activity-head"), title = el("b", "", "Viewers"), x = el("button", "", "×");
-    x.type = "button"; x.onclick = () => layer.remove();
+    x.type = "button"; x.onclick = shut;
     head.append(title, x);
     const list = el("div", "story-activity-list");
-    panel.append(head, list); layer.append(panel); document.body.append(layer);
-    layer.addEventListener("click", e => { if (e.target === layer) layer.remove(); });
+    panel.append(head, list); layer.append(panel); ov.append(layer);
+    layer.addEventListener("click", e => { if (e.target === layer) shut(); });
     try {
       const { data, error } = await sb.from("story_views").select("viewer_id,viewed_at").eq("story_id", story.id).order("viewed_at", {ascending:false});
       if (error) throw error;
@@ -2251,7 +2393,7 @@ async function openStory(u, custom) {
       if (!ids.length) list.append(el("div", "story-activity-empty", "No views yet"));
       ids.forEach(id => {
         const row = el("div", "story-viewer-row"), av = avatar(id, (names[id] || "?")[0].toUpperCase());
-        const info = el("div", "mid"), name = el("div", "t1", names[id] || "Chatter user");
+        const info = el("div", "mid"), name = el("div", "t1", names[id] || "Chatterverse user");
         const seen = (data || []).find(x => x.viewer_id === id);
         info.append(name, el("div", "t2", seen ? agoS(seen.viewed_at) : ""));
         row.append(av, info); if (liked.has(id)) { const hb = el("div", "", "❤️"); hb.style.cssText = "margin-left:auto;font-size:20px"; row.append(hb); } list.append(row);
@@ -2261,6 +2403,7 @@ async function openStory(u, custom) {
     }
   }
   function show() {
+    ov.querySelectorAll(".story-activity-layer").forEach(n => n.remove());
     clearTimeout(t); const s = L[i], vid = s.media_type === "video";
     if (!isOwnStory) { heart.classList.remove("on"); sb.from("post_likes").select("post_id").eq("post_id", s.id).eq("user_id", me.id).limit(1).then(({data}) => { if (L[i] === s) heart.classList.toggle("on", !!(data && data.length)); }); }
     if (isOwnStory) refreshOwnActivity(s);
@@ -2276,8 +2419,40 @@ async function openStory(u, custom) {
       t = setTimeout(() => go(1), 15000);
     } else { m = el("img"); m.src = s.url; t = setTimeout(() => go(1), 5000); }
     box.append(m, zl, zr);
+    if (ov.__amb) ov.__amb.style.backgroundImage = vid ? "" : 'url("' + s.url + '")';
   }
-  ov.append(bars, hd, box, foot); document.body.append(ov); show();
+  function desktopStory() {
+    document.documentElement.classList.add("stv"); ov.classList.add("svd");
+    const amb = el("div", "svamb"); ov.__amb = amb; ov.prepend(amb);
+    const side = el("div", "svside"), top = el("div", "svs-top"), cx = el("button", "svs-x", "✕"), lg = el("span", "svs-logo");
+    cx.type = "button"; cx.setAttribute("aria-label", "Close"); cx.title = "Close"; cx.onclick = close;
+    const src = document.querySelector("#dtbar .dlw"); if (src) lg.innerHTML = src.innerHTML.replace(/id="dl-/g, 'id="sv-').replace(/url\(#dl-/g, "url(#sv-");
+    top.append(cx, lg, el("div", "svs-title", "Stories")); side.append(top, el("div", "svs-sec", "Your story"));
+    const add = el("button", "svs-add"); add.type = "button"; add.innerHTML = '<span class="svs-plus">＋</span><span class="svs-inf"><b>Add story</b><small>Share a photo or video</small></span>';
+    add.title = "Add story"; add.onclick = () => { close(); pickStory(); }; side.append(add);
+    if (!custom) {
+      const users = storyUsers();
+      side.append(el("div", "svs-sec", "All stories"));
+      users.forEach(x => {
+        const mine = fstories.filter(s => s.user_id === x), r = el("button", "svs-row" + (x === u ? " on" : "")), inf = el("span", "svs-inf");
+        r.type = "button"; inf.append(el("b", "", x === me.id ? "Your story" : (names[x] || "Someone")), el("small", "", mine.length + (mine.length === 1 ? " story" : " stories") + " · " + agoS(mine[0].created_at)));
+        r.title = (x === me.id ? "Your story" : (names[x] || "Someone")) + " · " + mine.length + (mine.length === 1 ? " story" : " stories"); r.append(avatar(x, (names[x] || "?")[0].toUpperCase(), "sm"), inf);
+        r.onclick = () => { if (x === u) return; close(); openStory(x); }; side.append(r);
+      });
+    }
+    const pv = el("button", "svnav l", "‹"), nx = el("button", "svnav r", "›"); pv.type = nx.type = "button"; pv.setAttribute("aria-label", "Previous"); nx.setAttribute("aria-label", "Next");
+    pv.onclick = () => go(-1); nx.onclick = () => go(1);
+    ov.append(side, pv, nx);
+    const key = e => {
+      if (!ov.isConnected) return document.removeEventListener("keydown", key);
+      if (/INPUT|TEXTAREA/.test((e.target || {}).tagName || "")) return;
+      if (e.key === "Escape") close(); else if (e.key === "ArrowRight") go(1); else if (e.key === "ArrowLeft") go(-1);
+    };
+    document.addEventListener("keydown", key);
+  }
+  ov.append(bars, hd, box, foot); document.body.append(ov);
+  if (document.documentElement.classList.contains("dt")) desktopStory();
+  show();
 }
 // ----- posts -----
 async function toggleLike(p) {
@@ -2402,6 +2577,7 @@ async function toggleCL(c, redraw) {
 async function openCmts(p, onChange) {
   const {sh, t, body} = sheet(""), bar = el("div", "sbar"), rb = el("div", "t2"), inp = el("input"), snd = el("button", "sm", "Send");
   inp.placeholder = "Add comment…"; inp.maxLength = 500; snd.type = "button"; rb.style.cssText = "padding:6px 14px 0;display:none;cursor:pointer";
+  if (DT() && !dtFitsBoth() && $("#app").classList.contains("open")) $("#back").click();
   if (DT()) { sh.parentNode.classList.add("cmside"); $("#app").classList.add("cmo"); }
   let reply = null;
   const all = () => fcm[p.id] || [], kids = id => all().filter(r => String(r.parent_id) === String(id));
@@ -2441,8 +2617,8 @@ async function openCmts(p, onChange) {
 }
 const SHI = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 4l7 7-7 7v-4.2c-5 0-8.5 1.4-11 5.2.8-5.2 4-9.8 11-10.8V4z"/></svg>';
 async function shareClip(p) {
-  const url = location.origin + location.pathname, text = (names[p.user_id] || "Someone") + (p.body ? ": " + p.body : " shared a clip") + " — on Chatter";
-  try { if (navigator.share) { await navigator.share({title: "Chatter", text, url}); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+  const url = location.origin + location.pathname, text = (names[p.user_id] || "Someone") + (p.body ? ": " + p.body : " shared a clip") + " — on Chatterverse";
+  try { if (navigator.share) { await navigator.share({title: "Chatterverse", text, url}); return; } } catch (e) { if (e && e.name === "AbortError") return; }
   try { await navigator.clipboard.writeText(text + "\n" + url); toast("Link copied"); } catch (e) { prompt("Copy this link:", url); }
 }
 async function toggleSave(p, b) {
@@ -3206,9 +3382,16 @@ function dtDD() {
 $("#dtme").onclick = e => { e.stopPropagation(); const d = $("#dtdd"); if (d.classList.contains("hide")) { dtDD(); d.classList.remove("hide"); } else dtClose(); };
 document.addEventListener("click", e => { if (!e.target.closest("#dtdd,#dtme")) dtClose(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") dtClose(); });
-const dtCollSet = c => { $("#app").classList.toggle("coll", c); $("#dtcol").title = c ? "Expand sidebar" : "Collapse sidebar"; try { localStorage.setItem("dtcoll", c ? "1" : ""); } catch (e) {} dtSync(); };
+const dtCollSet = c => { $("#app").classList.toggle("coll", c); $("#dtcol").title = c ? "Expand sidebar" : "Collapse sidebar"; try { localStorage.setItem("dtcoll", c ? "1" : ""); } catch (e) {} dtSync(); if (window.__placeCol) window.__placeCol(); };
 $("#dtcol").onclick = () => dtCollSet(!$("#app").classList.contains("coll"));
 try { dtCollSet(!!localStorage.getItem("dtcoll")); } catch (e) {}
+{
+  let narrow = innerWidth < 1100;
+  const setColl = c => { $("#app").classList.toggle("coll", c); $("#dtcol").title = c ? "Expand sidebar" : "Collapse sidebar"; dtSync(); if (window.__placeCol) window.__placeCol(); };
+  const saved = () => { try { return !!localStorage.getItem("dtcoll"); } catch (e) { return false; } };
+  if (narrow) setColl(true);
+  addEventListener("resize", () => { const n = innerWidth < 1100; if (n === narrow) return; narrow = n; if (DT()) setColl(n ? true : saved()); });
+}
 document.querySelectorAll(".tab").forEach(b => b.title = b.textContent.trim());
 function dtSync() {
   const f = $("#feedc"); if (!f || !DT()) return;
@@ -3219,6 +3402,7 @@ function dtSync() {
 try {
   addEventListener("resize", dtSync);
   new MutationObserver(dtSync).observe($("#app"), {attributes: true, attributeFilter: ["class"]});
+  new MutationObserver(dtSync).observe($("#list"), {attributes: true, attributeFilter: ["data-t"]});
   window.addEventListener("dtchange", () => { if (!me) return; feedDirty = true; if (DT()) loadFeed(); render(); dtSync(); });
 } catch (e) {}
 
@@ -3268,31 +3452,31 @@ const ST = {
   "Account Basics": ["Name", "Username", "Contact Information", "Password and safety", "Language and Region", "Deactivate or delete", "Account control"],
   "Privacy Settings": ["Who can see your new posts?", "Review your posts and tags", "Who can follow you?", "Who can view your friends?", "Can people find you by your email?", "Can people find you by your phone number?", "Should your profile show up in search engines?", "Who can comment on your public posts?", "Who can see your profile information?"],
   "Security & Sign-in": ["Change password", "Active sessions", "Sign out of devices", "Remember this device", "Two-factor authentication", "Alerts for new sign-ins", "Trusted devices", "Recovery contact"],
-  "Notifications": ["Sounds", "Comments", "Likes", "Replies to comments", "Tags", "Mentions", "Messages", "Reminders", "New followers", "New friends", "Suggested people", "Birthdays", "Group activity", "Profile activity", "Clips", "Push notifications", "Email notifications", "In-app notifications", "Notification sounds"],
+  "Notifications": ["Sounds", "Custom sounds", "Comments", "Likes", "Replies to comments", "Tags", "Mentions", "Messages", "Reminders", "New followers", "New friends", "Suggested people", "Birthdays", "Group activity", "Profile activity", "Clips", "Push notifications", "Email notifications", "In-app notifications", "Notification sounds"],
   "Audience & Tags": ["Who sees posts you're tagged in?", "Approve tags before they show on your profile", "Who can reply to your stories?", "Public post notifications"],
   "Blocking": ["Blocked accounts", "Limited accounts", "Block messages from strangers", "App invites", "Event invites"],
   "Stories and Clips": ["Who can see your stories?", "Allow story replies", "Save stories to archive", "Autoplay clips"],
-  "Your Chatter Data": ["Activity summary", "Download your Chatter data", "Account activity and history"],
+  "Your Chatterverse Data": ["Activity summary", "Download your Chatterverse data", "Account activity and history"],
   "Integrations": ["Connected apps and websites", "Active integrations", "Remove app access"],
   "Display & accessibility": ["Theme", "Accent color", "Text size", "Autoplay media", "Reduce motion"],
   "Help & Feedback": ["Help Center", "Report a problem", "Community Guidelines"]
 };
-const INFO = {"Who can view your friends?": "Your friends list is private: friendship records can only be read by you and the other person.", "Can people find you by your email?": "People can only search by name or @username, so nobody can look you up by your email.", "Can people find you by your phone number?": "People can only search by name or @username, so nobody can look you up by your phone number.", "Should your profile show up in search engines?": "No. Chatter profiles are only visible to people who are logged in, so search engines can't list them.", "Recovery contact": "Your recovery methods are managed by Supabase Authentication. Use Contact Information to update your email or phone number.", "Limited accounts": "Restricted-list behavior is not implemented separately yet. Use Blocked accounts to manage accounts you have blocked.", "Connected apps and websites": "Third-party app connections are not currently managed from this Chatter build.", "Active integrations": "No integration management screen is connected in this build.", "Remove app access": "Third-party access revocation is not available in this build.", "Activity summary": "Activity summary currently summarizes only activity supported by the app. A full cross-account activity log is not available yet.", "Account activity and history": "Recent sign-in time is available under Security & Sign-in. A complete account-wide history is not available yet.", "Help Center": "For help, use the app owner or project support channel configured for this Chatter deployment.", "Report a problem": "Please include the screen, what you were doing, and any error message when reporting a problem.", "Community Guidelines": "Be respectful, protect private information, and do not share harmful or abusive content."};
+const INFO = {"Who can view your friends?": "Your friends list is private: friendship records can only be read by you and the other person.", "Can people find you by your email?": "People can only search by name or @username, so nobody can look you up by your email.", "Can people find you by your phone number?": "People can only search by name or @username, so nobody can look you up by your phone number.", "Should your profile show up in search engines?": "No. Chatterverse profiles are only visible to people who are logged in, so search engines can't list them.", "Recovery contact": "Your recovery methods are managed by Supabase Authentication. Use Contact Information to update your email or phone number.", "Limited accounts": "Restricted-list behavior is not implemented separately yet. Use Blocked accounts to manage accounts you have blocked.", "Connected apps and websites": "Third-party app connections are not currently managed from this Chatterverse build.", "Active integrations": "No integration management screen is connected in this build.", "Remove app access": "Third-party access revocation is not available in this build.", "Activity summary": "Activity summary currently summarizes only activity supported by the app. A full cross-account activity log is not available yet.", "Account activity and history": "Recent sign-in time is available under Security & Sign-in. A complete account-wide history is not available yet.", "Help Center": "For help, use the app owner or project support channel configured for this Chatterverse deployment.", "Report a problem": "Please include the screen, what you were doing, and any error message when reporting a problem.", "Community Guidelines": "Be respectful, protect private information, and do not share harmful or abusive content."};
 const OPT = {
   "Who can see your new posts?": ["post_vis", [["public", "🌐 Public"], ["friends", "👥 Friends"]], "public", "Used as the default audience when you create a post."],
   "Who can follow you?": ["friend_req", [["everyone", "Everyone"], ["nobody", "Nobody"]], "everyone", "To enforce this setting on the server, run chatter_settings_privacy_upgrade.sql in Supabase."],
   "Who can comment on your public posts?": ["public_comments", [["everyone", "Everyone"], ["friends", "Friends"], ["nobody", "No one"]], "everyone", "To enforce this setting on the server, run chatter_settings_privacy_upgrade.sql in Supabase."],
-  "Who can see your profile information?": ["profile_audience", [["public", "Everyone on Chatter"], ["friends", "Friends"], ["private", "Only me"]], "public", "Saved preference only; profile fields are not yet consistently hidden by this choice."],
-  "Who sees posts you're tagged in?": ["tagged_audience", [["public", "Everyone on Chatter"], ["friends", "Friends"], ["private", "Only me"]], "friends", "Saved as your tagged-post audience preference."],
+  "Who can see your profile information?": ["profile_audience", [["public", "Everyone on Chatterverse"], ["friends", "Friends"], ["private", "Only me"]], "public", "Saved preference only; profile fields are not yet consistently hidden by this choice."],
+  "Who sees posts you're tagged in?": ["tagged_audience", [["public", "Everyone on Chatterverse"], ["friends", "Friends"], ["private", "Only me"]], "friends", "Saved as your tagged-post audience preference."],
   "Who can reply to your stories?": ["story_replies", [["everyone", "Everyone"], ["friends", "Friends"], ["off", "No one"]], "friends", "Saved as your story reply preference."],
-  "Who can see your stories?": ["story_audience", [["public", "Everyone on Chatter"], ["friends", "Friends"]], "friends", "Controls story visibility using the app's supported Public and Friends audiences."],
+  "Who can see your stories?": ["story_audience", [["public", "Everyone on Chatterverse"], ["friends", "Friends"]], "friends", "Controls story visibility using the app's supported Public and Friends audiences."],
   "Public post notifications": ["public_post_notifications", [["everyone", "Everyone"], ["friends", "Friends"], ["off", "Off"]], "everyone", "Saved as your public-post notification preference."],
   "Theme": ["display_theme", [["system", "Use device setting"], ["light", "Light"], ["dark", "Dark"]], "system", "Changes the appearance on this device and saves the preference to your account."],
   "Text size": ["text_size", [["small", "Small"], ["medium", "Default"], ["large", "Large"]], "medium", "Changes the base text size in this browser."],
   "Language and Region": ["language_region", [["en", "English"], ["fil", "Filipino"]], "en", "Saves your preferred language. Some app labels may remain in English until translations are added."]
 };
 const TOG = {"Sounds": ["sounds", true, "Plays sounds for messages, likes, notifications and calls."], "Remember this device": ["save_login", true, "When off, you're signed out when you close the app or tab."], "Alerts for new sign-ins": ["alert_login", true, "This preference is saved; security alert emails are not sent by this build."],
-  "Comments": ["n_comments", true, "Hides comment notifications in the activity list."], "Likes": ["n_likes", true, "Controls notifications when someone likes your post."], "Replies to comments": ["n_replies", true, "Preference is saved, but this build does not generate separate reply-to-comment notification events yet."], "Tags": ["n_tags", true, "Shows or hides tag notifications."], "Mentions": ["n_mentions", true, "Preference is saved, but mention notifications are not generated separately in this build yet."], "Messages": ["n_messages", true, "Shows or hides recent incoming direct-message notifications in the Notifications tab."], "Reminders": ["n_rem", true, "Shows or hides unread-chat reminders."], "New followers": ["n_fr", true, "Shows or hides new-follower notifications."], "New friends": ["n_friend_accept", true, "Saves your preference for notifications when someone you follow follows you back and you become friends."], "Suggested people": ["n_pymk", true, "Turn off to hide Suggested people."], "Birthdays": ["n_bday", true, "Shows or hides birthday notifications."], "Group activity": ["n_groups", true, "Preference is saved, but a separate group-activity notification feed is not implemented yet."], "Profile activity": ["n_profile", true, "Saves your preference for profile activity notifications."], "Clips": ["n_clips", true, "Hides clip notifications in the activity list."], "Push notifications": ["n_push", true, "Enable this and register this browser/device for Web Push. HTTPS, a service worker, and server-side VAPID configuration are required."], "Email notifications": ["n_email", true, "Email delivery requires the deployed chatter-notify Edge Function and a verified Resend sender."], "In-app notifications": ["n_inapp", true, "Saves your in-app notification preference."], "Notification sounds": ["n_sound", true, "Plays a short original tone for newly detected in-app activity after you interact with Chatter. Browser audio rules apply."], "Approve tags before they show on your profile": ["tag_review", false, "When enabled, the app records pending approvals and shows a review queue. Hiding tagged posts across every profile/feed query still requires server-side enforcement."], "Allow story replies": ["story_reply_enabled", true, "Saves your story reply preference."], "Save stories to archive": ["story_archive", true, "Saves the preference; automatic story archiving is not implemented yet."], "Autoplay clips": ["autoplay_clips", true, "Saves your autoplay preference."], "Block messages from strangers": ["block_strangers", false, "When enabled, the companion SQL migration blocks incoming direct messages from people who are not accepted friends. Existing rooms may remain visible."], "App invites": ["block_app_invites", true, "Saves your preference; app invitations are not currently supported."], "Event invites": ["block_event_invites", true, "Saves your preference; event invitations are not currently supported."], "Autoplay media": ["autoplay_media", true, "Saves your media autoplay preference."], "Reduce motion": ["reduce_motion", false, "Saves your reduced-motion preference; some animations may remain." ]};
+  "Comments": ["n_comments", true, "Hides comment notifications in the activity list."], "Likes": ["n_likes", true, "Controls notifications when someone likes your post."], "Replies to comments": ["n_replies", true, "Preference is saved, but this build does not generate separate reply-to-comment notification events yet."], "Tags": ["n_tags", true, "Shows or hides tag notifications."], "Mentions": ["n_mentions", true, "Preference is saved, but mention notifications are not generated separately in this build yet."], "Messages": ["n_messages", true, "Shows or hides recent incoming direct-message notifications in the Notifications tab."], "Reminders": ["n_rem", true, "Shows or hides unread-chat reminders."], "New followers": ["n_fr", true, "Shows or hides new-follower notifications."], "New friends": ["n_friend_accept", true, "Saves your preference for notifications when someone you follow follows you back and you become friends."], "Suggested people": ["n_pymk", true, "Turn off to hide Suggested people."], "Birthdays": ["n_bday", true, "Shows or hides birthday notifications."], "Group activity": ["n_groups", true, "Preference is saved, but a separate group-activity notification feed is not implemented yet."], "Profile activity": ["n_profile", true, "Saves your preference for profile activity notifications."], "Clips": ["n_clips", true, "Hides clip notifications in the activity list."], "Push notifications": ["n_push", true, "Enable this and register this browser/device for Web Push. HTTPS, a service worker, and server-side VAPID configuration are required."], "Email notifications": ["n_email", true, "Email delivery requires the deployed chatter-notify Edge Function and a verified Resend sender."], "In-app notifications": ["n_inapp", true, "Saves your in-app notification preference."], "Notification sounds": ["n_sound", true, "Plays a short original tone for newly detected in-app activity after you interact with Chatterverse. Browser audio rules apply."], "Approve tags before they show on your profile": ["tag_review", false, "When enabled, the app records pending approvals and shows a review queue. Hiding tagged posts across every profile/feed query still requires server-side enforcement."], "Allow story replies": ["story_reply_enabled", true, "Saves your story reply preference."], "Save stories to archive": ["story_archive", true, "Saves the preference; automatic story archiving is not implemented yet."], "Autoplay clips": ["autoplay_clips", true, "Saves your autoplay preference."], "Block messages from strangers": ["block_strangers", false, "When enabled, the companion SQL migration blocks incoming direct messages from people who are not accepted friends. Existing rooms may remain visible."], "App invites": ["block_app_invites", true, "Saves your preference; app invitations are not currently supported."], "Event invites": ["block_event_invites", true, "Saves your preference; event invitations are not currently supported."], "Autoplay media": ["autoplay_media", true, "Saves your media autoplay preference."], "Reduce motion": ["reduce_motion", false, "Saves your reduced-motion preference; some animations may remain." ]};
 function chatterBase64UrlBytes(base64url) {
   const pad = "=".repeat((4 - base64url.length % 4) % 4);
   const raw = atob((base64url + pad).replace(/-/g, "+").replace(/_/g, "/"));
@@ -3356,7 +3540,7 @@ const CATI = {
   "Audience & Tags": ci('<path d="M3.5 12.2V4.8a1.3 1.3 0 0 1 1.3-1.3h7.4l8.3 8.3a1.5 1.5 0 0 1 0 2.1l-6.4 6.4a1.5 1.5 0 0 1-2.1 0z"/><circle cx="8.4" cy="8.4" r="1.4"/>'),
   "Blocking": ci('<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>'),
   "Stories and Clips": ci('<rect x="3" y="4.5" width="18" height="15" rx="3.2"/><path d="M10.2 9.2l4.6 2.8-4.6 2.8z"/>'),
-  "Your Chatter Data": ci('<path d="M6.5 3h8l4 4v13a1.5 1.5 0 0 1-1.5 1.5H6.5A1.5 1.5 0 0 1 5 20V4.5A1.5 1.5 0 0 1 6.5 3z"/><path d="M14.5 3v4h4"/><path d="M8.5 12h7M8.5 15.5h7"/>'),
+  "Your Chatterverse Data": ci('<path d="M6.5 3h8l4 4v13a1.5 1.5 0 0 1-1.5 1.5H6.5A1.5 1.5 0 0 1 5 20V4.5A1.5 1.5 0 0 1 6.5 3z"/><path d="M14.5 3v4h4"/><path d="M8.5 12h7M8.5 15.5h7"/>'),
   "Integrations": ci('<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.8 2.9 2.8 15.1 0 18M12 3c-2.8 2.9-2.8 15.1 0 18"/>')
 };
 const openSettings = () => { dtClearCenter("st"); stCat = stItem = null; $("#st").classList.remove("hide"); drawSet(); };
@@ -3378,14 +3562,16 @@ function setDetail(it, row) {
   const d = el("div", "stp"), cap = t => d.append(el("div", "cap", t)), msg = el("div", "cap"), inp = (ph, type, v) => { const i = el("input"); i.placeholder = ph; i.type = type || "text"; i.value = v || ""; return i; };
   const btn = (t, fn, cls) => { const b = el("button", cls || "", t); b.onclick = () => fn(b); return b; };
   const phone = x => { const dg = x.replace(/\D/g, ""); return x.trim().startsWith("+") ? "+" + dg : dg.startsWith("09") && dg.length === 11 ? "+63" + dg.slice(1) : dg.startsWith("9") && dg.length === 10 ? "+63" + dg : null; };
-  if (it === "Help Center") {
-    d.append(el("div", "help-intro", "Find answers to common questions about using Chatter."));
+  if (it === "Custom sounds") {
+    renderCustomSounds(d);
+  } else if (it === "Help Center") {
+    d.append(el("div", "help-intro", "Find answers to common questions about using Chatterverse."));
     const search = inp("Search help articles", "search"); search.className = "help-search"; search.setAttribute("aria-label", "Search help articles");
     const faqBox = el("div", "help-faq-list");
     const faqs = [
       ["How do I update my profile?", "Open your profile from the Menu, then use the profile edit controls to update the information available to you."],
       ["Why can't I send someone a message?", "Some conversations are limited to friends. If the other person only accepts messages from friends, you may need to become friends before sending a message."],
-      ["How do I manage who can see my posts?", "Open Settings, then Privacy Settings or Audience & Tags to review the audience choices available in this version of Chatter."],
+      ["How do I manage who can see my posts?", "Open Settings, then Privacy Settings or Audience & Tags to review the audience choices available in this version of Chatterverse."],
       ["How do I block or unblock someone?", "Open Settings, then Blocking. From Blocked accounts, you can review accounts you have blocked and unblock them."],
       ["How do I change dark mode?", "Open Settings, then Display & accessibility, then Theme. Choose Light, Dark, or Use device setting."],
       ["What should I include in a problem report?", "Describe what you were doing, what you expected, what happened instead, and any steps that reliably reproduce the problem. Do not include your password or verification codes."]
@@ -3415,29 +3601,29 @@ function setDetail(it, row) {
       try {
         const {error} = await sb.from("support_reports").insert({user_id: me.id, category: category.value, description: text, screen: "Settings > Help & Feedback > Report a problem", user_agent: navigator.userAgent});
         if (error) {
-          console.error("Chatter support report submission failed:", error);
+          console.error("Chatterverse support report submission failed:", error);
           status.textContent = /support_reports|relation|schema cache|does not exist/i.test(error.message || "") ? "Report submission is not set up yet. Run the supplied chatter_support_reports.sql in Supabase, then try again." : "We couldn't submit the report. Please check your connection and try again.";
         } else {
-          description.value = ""; status.textContent = "Report submitted. Thank you for helping improve Chatter."; toast("Problem report submitted");
+          description.value = ""; status.textContent = "Report submitted. Thank you for helping improve Chatterverse."; toast("Problem report submitted");
         }
-      } catch (e) { console.error("Chatter support report failed:", e); status.textContent = "We couldn't submit the report. Please check your connection and try again."; }
+      } catch (e) { console.error("Chatterverse support report failed:", e); status.textContent = "We couldn't submit the report. Please check your connection and try again."; }
       finally { b.disabled = false; b.textContent = "Submit report"; }
     });
     submit.type = "button"; submit.style.cssText = "border-radius:12px;padding:13px 16px";
     d.append(categoryLabel, descLabel, submit, status);
   } else if (it === "Community Guidelines") {
-    d.append(el("div", "help-intro", "Help make Chatter a welcoming and safer place for everyone. These guidelines describe the behavior expected from people using the app."));
+    d.append(el("div", "help-intro", "Help make Chatterverse a welcoming and safer place for everyone. These guidelines describe the behavior expected from people using the app."));
     const guidelines = [
       ["Be respectful", "Treat other people with respect. Do not threaten, bully, harass, or target someone with abusive behavior."],
       ["Protect privacy", "Do not post another person's private information, private conversations, or images without appropriate permission."],
       ["Keep accounts safe", "Never share passwords or verification codes. Be careful with suspicious links and requests for personal information."],
-      ["Avoid spam and scams", "Do not send repetitive unwanted messages, impersonate others, or use Chatter to deceive people."],
+      ["Avoid spam and scams", "Do not send repetitive unwanted messages, impersonate others, or use Chatterverse to deceive people."],
       ["Share responsibly", "Do not upload illegal, exploitative, or threatening content. Respect other people's boundaries and applicable laws."],
       ["Report problems", "Use Report a problem to tell the app team about bugs, abuse, or safety concerns. Include useful details but leave out passwords and security codes."]
     ];
     guidelines.forEach(([title, body]) => { const item = el("section", "help-guideline"); item.append(el("b", null, title), el("p", null, body)); d.append(item); });
   } else if (it === "Accent color") {
-    cap("Choose a color for Chatter's buttons, highlights, selected tabs, and gradient accents. This preference is saved to your account.");
+    cap("Choose a color for Chatterverse's buttons, highlights, selected tabs, and gradient accents. This preference is saved to your account.");
     const palette = el("div", "accent-palette");
     const current = S.accent_color || "purple";
     Object.entries(ACCENT_COLORS).forEach(([key, c]) => {
@@ -3565,7 +3751,7 @@ function setDetail(it, row) {
     }));
   } else if (it === "Two-factor authentication") { fillMfa(d);
   } else if (it === "Activity summary" || it === "Account activity and history") {
-    cap("Recent activity Chatter can retrieve for your signed-in account. This is not a complete server audit log and may omit events the app does not store.");
+    cap("Recent activity Chatterverse can retrieve for your signed-in account. This is not a complete server audit log and may omit events the app does not store.");
     const log = el("div"), status = el("div", "cap", "Loading activity…"); d.append(status, log);
     (async () => {
       const entries = [], notes = [];
@@ -3613,10 +3799,10 @@ function setDetail(it, row) {
   } else if (it === "Blocked accounts") {
     cap("Accounts you blocked. Unblocking restores the ability to find or contact each other, subject to other privacy controls.");
     if (!blocked.size) d.append(mfaCap("You haven't blocked anyone."));
-    [...blocked].forEach(u => { const r = el("div", "mrow"), mid = el("span", "mt", names[u] || "Chatter user"), b = btn("Unblock", async () => { await doUnblock(u); drawSet(); }, "sm gray"); r.append(avatar(u, (names[u] || "?")[0].toUpperCase(), "md"), mid, b); d.append(r); });
-  } else if (it === "Download your Chatter data") {
+    [...blocked].forEach(u => { const r = el("div", "mrow"), mid = el("span", "mt", names[u] || "Chatterverse user"), b = btn("Unblock", async () => { await doUnblock(u); drawSet(); }, "sm gray"); r.append(avatar(u, (names[u] || "?")[0].toUpperCase(), "md"), mid, b); d.append(r); });
+  } else if (it === "Download your Chatterverse data") {
     cap("Downloads a JSON export of account data available to your signed-in account, including profile, posts, friendships, comments, likes, saved posts, accessible chat messages, and settings. Uploaded media files themselves are not embedded; media paths/URLs may be included.");
-    d.append(btn("Download my Chatter data (JSON)", async b => {
+    d.append(btn("Download my Chatterverse data (JSON)", async b => {
       b.disabled = true; b.textContent = "Preparing export…"; msg.textContent = "Collecting data available to this account…";
       const payload = {exported_at: new Date().toISOString(), account: {id: me.id, email: me.email || null, phone: me.phone || null, created_at: me.created_at || null, last_sign_in_at: me.last_sign_in_at || null}, profile: null, posts: [], friendships: [], comments: [], likes: [], saved_posts: [], messages: [], settings: S, export_notes: []};
       const safe = async (label, query, target) => { try { const r = await query; if (r.error) { payload.export_notes.push(label + ": " + r.error.message); return; } payload[target] = r.data || []; } catch (e) { payload.export_notes.push(label + ": " + (e.message || e)); } };
@@ -3634,15 +3820,15 @@ function setDetail(it, row) {
       const blob = new Blob([JSON.stringify(payload, null, 2)], {type: "application/json"}), url = URL.createObjectURL(blob), a = el("a");
       a.href = url; a.download = "chatter-data-export.json"; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
       msg.textContent = payload.export_notes.length ? "Export downloaded with notes for data that could not be retrieved. Check export_notes in the JSON file." : "Export downloaded.";
-      b.disabled = false; b.textContent = "Download my Chatter data (JSON)";
+      b.disabled = false; b.textContent = "Download my Chatterverse data (JSON)";
     }, ""), msg);
   } else if (it === "Theme") {
-    cap("Choose how Chatter looks on this device.");
+    cap("Choose how Chatterverse looks on this device.");
     ["system", "light", "dark"].forEach(v => d.append(row(({system:"Use device setting",light:"Light",dark:"Dark"})[v], () => { setTheme(v); saveS("display_theme", v).then(drawSet); }, getTheme() === v)));
   } else if (it === "Language and Region") {
     cap("Choose a preferred language. Some interface text may remain in English until translations are available.");
     [["en","English"],["fil","Filipino"]].forEach(([v,l]) => d.append(row(l, () => { saveS("language_region", v).then(drawSet); }, (S.language_region || "en") === v)));
-  } else cap({"Memorialization Settings": "Memorialization and legacy contacts are not supported by this Chatter build.", "Account control": "You control your account details and saved preferences here. Use Deactivate or delete for account actions."}[it] || INFO[it] || "This setting is listed for reference, but its full behavior is not implemented in this Chatter build yet.");
+  } else cap({"Memorialization Settings": "Memorialization and legacy contacts are not supported by this Chatterverse build.", "Account control": "You control your account details and saved preferences here. Use Deactivate or delete for account actions."}[it] || INFO[it] || "This setting is listed for reference, but its full behavior is not implemented in this Chatterverse build yet.");
   return d;
 }
 
@@ -3684,7 +3870,7 @@ async function fillMfa(d) {
     mk("Turn off", async () => { if (!confirm("Turn off two-factor authentication?")) return; const r = await sb.auth.mfa.unenroll({factorId: on[0].id}); if (r.error) msg.textContent = r.error.message; else fillMfa(d); }, "gray"));
   d.append(mfaCap("Use an authenticator app (Google Authenticator, Authy, Microsoft Authenticator) to get a 6-digit code every time you log in."), msg,
     mk("Set up", async () => {
-      const r = await sb.auth.mfa.enroll({factorType: "totp", friendlyName: "Chatter " + Date.now()}); if (r.error) return msg.textContent = r.error.message;
+      const r = await sb.auth.mfa.enroll({factorType: "totp", friendlyName: "Chatterverse " + Date.now()}); if (r.error) return msg.textContent = r.error.message;
       const f = r.data, img = el("img"), key = mfaCap("Can't scan? Enter this key: " + f.totp.secret), c = el("input");
       img.src = f.totp.qr_code; img.style.cssText = "width:200px;background:#fff;padding:8px;border-radius:12px;align-self:center"; key.style.userSelect = "all"; c.placeholder = "6-digit code"; c.inputMode = "numeric"; c.maxLength = 6;
       d.replaceChildren(mfaCap("1. Scan this QR code with your authenticator app."), img, key, mfaCap("2. Enter the 6-digit code it shows."), c, msg,
@@ -3742,7 +3928,10 @@ async function openDM(uid) {
   if (!rooms.find(r => r.id === data)) await loadChats();
   setTab("chats"); openRoom(data);
 }
+// desktop: chat + feed + comments only fit side by side on wider windows; otherwise the one opened last wins and the other closes
+const dtFitsBoth = () => { const w = innerWidth, cm = Math.min(400, Math.max(280, w * .27)); return w >= 76 + 74 + 350 + 320 + cm + 24; };
 async function openRoom(id) {
+  if (DT() && !dtFitsBoth() && document.querySelector(".sheetbg.cmside")) closeSheet();
   dtClearCenter();
   cur = id; seen = new Set(); lastUid = null; lastTs = 0; closeInfo(); $("#sbar").classList.add("hide"); $("#sbi").value = "";
   const r = rooms.find(x => x.id === id); if (!r) return;
@@ -4719,10 +4908,105 @@ async function dropPush() { if (pushTok) { try { await sb.rpc("unregister_device
 // ---------- SOUNDS (files in the sounds/ folder) ----------
 const SFX = {msg: "01_New_Message", sent: "02_Message_Sent", recv: "03_Message_Received", notif: "04_Notification", like: "05_Like_Reaction", heart: "06_Heart_Reaction", reply: "07_Reply", mention: "08_Mention", ring: "09_Incoming_Call", vring: "10_Video_Call_Incoming", conn: "11_Call_Connecting", err: "12_Message_Error"}, SND = {};
 let actMax = null;
-const sfxGet = k => SND[k] || (SND[k] = Object.assign(new Audio("sounds/" + SFX[k] + ".mp3"), {preload: "auto"}));
-function sfx(k, loop) { if (S.sounds === false) return null; try { const a = sfxGet(k); a.loop = !!loop; a.currentTime = 0; a.play().catch(() => {}); return a; } catch (e) { return null; } }
+const sfxGet = k => SND[k] || (SND[k] = Object.assign(new Audio(CSND[k] ? CSND[k].url : "sounds/" + SFX[k] + ".mp3"), {preload: "auto"}));
+function sfx(k, loop) { if (S.sounds === false || MUTED[k]) return null; try { const a = sfxGet(k); a.loop = !!loop; a.currentTime = 0; a.play().catch(() => { if (!CSND[k]) synthSfx(k); }); return a; } catch (e) { return null; } }
 function sfxStop(k) { const a = SND[k]; if (a) { a.pause(); a.currentTime = 0; a.loop = false; } }
 document.addEventListener("pointerdown", () => Object.keys(SFX).forEach(sfxGet), {once: true});
+
+// ---------- CUSTOM SOUNDS (saved on this device, no upload) ----------
+const SFX_LABELS = {msg: ["💬", "New message"], sent: ["📤", "Message sent"], recv: ["📥", "Message received"], notif: ["🔔", "Notification"], like: ["👍", "Like"], heart: ["❤️", "Heart reaction"], reply: ["↩️", "Reply"], mention: ["@", "Mention"], ring: ["📞", "Incoming call ringtone"], vring: ["📹", "Incoming video call ringtone"], conn: ["🔗", "Call connecting"], err: ["⚠️", "Message error"]};
+const CSND = {}, MUTED = {};
+const sndDB = () => new Promise((res, rej) => { const r = indexedDB.open("chatterverse_sounds", 1); r.onupgradeneeded = () => r.result.createObjectStore("s"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+async function sndPut(k, v) { const db = await sndDB(); return new Promise((res, rej) => { const t = db.transaction("s", "readwrite"); t.objectStore("s").put(v, k); t.oncomplete = () => res(); t.onerror = () => rej(t.error); }); }
+async function sndDel(k) { const db = await sndDB(); return new Promise((res, rej) => { const t = db.transaction("s", "readwrite"); t.objectStore("s").delete(k); t.oncomplete = () => res(); t.onerror = () => rej(t.error); }); }
+async function loadCustomSounds() {
+  try {
+    const db = await sndDB();
+    await new Promise(res => {
+      const t = db.transaction("s", "readonly"), rq = t.objectStore("s").openCursor();
+      rq.onsuccess = () => { const c = rq.result; if (c) { if (SFX[c.key] && c.value && c.value.muted) MUTED[c.key] = true; else if (SFX[c.key] && c.value && c.value.blob) CSND[c.key] = {name: c.value.name, url: URL.createObjectURL(c.value.blob)}; c.continue(); } };
+      t.oncomplete = () => res(); t.onerror = () => res();
+    });
+  } catch (e) {}
+}
+function sndDrop(k) { const a = SND[k]; if (a) { try { a.pause(); } catch (e) {} delete SND[k]; } }
+async function setCustomSound(k, file) {
+  const ring = k === "ring" || k === "vring";
+  if (!file || !/^audio\//.test(file.type || "") && !/\.(mp3|wav|ogg|m4a|aac|webm|opus)$/i.test(file.name || "")) throw new Error("Please choose an audio file (MP3, WAV, OGG or M4A).");
+  if (file.size > (ring ? 6 : 2) * 1048576) throw new Error("That file is too big. The limit is " + (ring ? "6" : "2") + " MB.");
+  const url = URL.createObjectURL(file);
+  try {
+    const dur = await new Promise((res, rej) => { const a = new Audio(); a.preload = "metadata"; a.onloadedmetadata = () => res(a.duration); a.onerror = () => rej(new Error("This file could not be played. Try an MP3 or WAV.")); a.src = url; });
+    if (isFinite(dur) && dur > (ring ? 40 : 8)) throw new Error("That sound is too long. The limit is " + (ring ? "40" : "8") + " seconds.");
+  } catch (e) { URL.revokeObjectURL(url); throw e; }
+  await sndPut(k, {name: file.name, blob: file});
+  if (CSND[k]) URL.revokeObjectURL(CSND[k].url);
+  CSND[k] = {name: file.name, url}; delete MUTED[k]; sndDrop(k);
+}
+async function muteSound(k) { await sndPut(k, {muted: true}); if (CSND[k]) { URL.revokeObjectURL(CSND[k].url); delete CSND[k]; } MUTED[k] = true; sndDrop(k); }
+async function resetCustomSound(k) { await sndDel(k); if (CSND[k]) URL.revokeObjectURL(CSND[k].url); delete CSND[k]; delete MUTED[k]; sndDrop(k); }
+// built-in tones: used when the default sound file (sounds/*.mp3) is missing or can't load
+let _sx = null;
+function synthSfx(k) {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return 0;
+    const ctx = _sx || (_sx = new Ctx()); if (ctx.state === "suspended") ctx.resume();
+    const N = {msg: [[880, 0], [1175, .12]], sent: [[660, 0], [990, .09]], recv: [[990, 0], [660, .09]], notif: [[880, 0], [660, .1]], like: [[700, 0], [1050, .08]], heart: [[523, 0], [659, .1], [784, .2]], reply: [[740, 0], [880, .08], [988, .16]], mention: [[988, 0], [1319, .1]], ring: [[800, 0], [600, .25], [800, .5], [600, .75]], vring: [[700, 0], [900, .2], [700, .4], [900, .6]], conn: [[500, 0], [600, .15], [700, .3]], err: [[300, 0], [220, .15]]}[k] || [[880, 0]];
+    const len = (k === "ring" || k === "vring") ? .22 : .14, t0 = ctx.currentTime + .02; let end = 0;
+    N.forEach(([f, t]) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = k === "err" ? "square" : "sine"; o.frequency.setValueAtTime(f, t0 + t);
+      g.gain.setValueAtTime(.0001, t0 + t); g.gain.exponentialRampToValueAtTime(.18, t0 + t + .015); g.gain.exponentialRampToValueAtTime(.0001, t0 + t + len);
+      o.connect(g); g.connect(ctx.destination); o.start(t0 + t); o.stop(t0 + t + len + .02);
+      end = Math.max(end, t + len);
+    });
+    return end + .05;
+  } catch (e) { return 0; }
+}
+function previewSound(k, btn) {
+  if (MUTED[k]) return toast("This sound is off");
+  try {
+    if (window.__prev) { try { window.__prev.pause(); } catch (e) {} if (window.__prevBtn) window.__prevBtn.textContent = "▶"; const same = window.__prev.__k === k; window.__prev = null; if (same && btn) return; }
+    const a = new Audio(CSND[k] ? CSND[k].url : "sounds/" + SFX[k] + ".mp3"); a.__k = k; window.__prev = a; window.__prevBtn = btn;
+    let failed = false;
+    const done = () => { if (btn) btn.textContent = "▶"; if (window.__prev === a) window.__prev = null; };
+    // default sound file missing -> play the built-in tone instead; a broken custom file still shows the error
+    const fail = () => {
+      if (failed) return; failed = true; done();
+      if (CSND[k]) return toast("Can't play this sound");
+      const sec = synthSfx(k); if (!sec) return toast("Can't play this sound");
+      if (btn) { btn.textContent = "■"; setTimeout(() => { if (btn.textContent === "■" && !window.__prev) btn.textContent = "▶"; }, sec * 1000); }
+    };
+    a.onended = done; a.onerror = fail;
+    if (btn) btn.textContent = "■";
+    a.play().catch(fail);
+    if (k === "ring" || k === "vring") setTimeout(() => { try { a.pause(); } catch (e) {} if (!failed) done(); }, 5000);
+  } catch (e) { toast("Can't play this sound"); }
+}
+function renderCustomSounds(d) {
+  d.append(el("div", "cap", "Choose your own sound for each action. Sounds are saved on this device only, and play while Chatterverse is open. Push notifications from your phone keep their own sound."));
+  if (S.sounds === false) d.append(el("div", "cap", "Sounds are turned off in Settings › Notifications › Sounds."));
+  const list = el("div", "csnd-list"), paint = () => {
+    list.replaceChildren();
+    Object.keys(SFX).forEach(k => {
+      const c = CSND[k], row = el("div", "csnd" + (c || MUTED[k] ? " cust" : "")), ic = el("span", "sn-i", SFX_LABELS[k][0]), m = el("div", "sn-m"), bs = el("div", "sn-b");
+      m.append(el("div", "sn-n", SFX_LABELS[k][1]), el("div", "sn-s", MUTED[k] ? "No sound" : c ? c.name : "Default sound"));
+      const pv = el("button", "sm gray", "▶"), ch = el("button", "sm", c ? "Change" : "Choose"), fi = el("input"); pv.type = ch.type = "button"; pv.title = "Preview"; pv.className = "sn-pv"; pv.onclick = ev => { ev.stopPropagation(); previewSound(k, pv); };
+      fi.type = "file"; fi.accept = "audio/*,.mp3,.wav,.ogg,.m4a"; fi.style.display = "none";
+      ch.onclick = () => fi.click();
+      fi.onchange = async () => { const f = fi.files && fi.files[0]; fi.value = ""; if (!f) return; ch.disabled = true; ch.textContent = "…"; try { await setCustomSound(k, f); toast("Sound saved"); previewSound(k); } catch (e) { alert(e.message || "Could not use that file."); } paint(); };
+      bs.append(pv, ch);
+      if (!MUTED[k]) { const mu = el("button", "sm gray", "No sound"); mu.type = "button"; mu.onclick = async () => { try { await muteSound(k); toast("Sound turned off"); } catch (e) { toast("Couldn't turn it off"); } paint(); }; bs.append(mu); }
+      if (c || MUTED[k]) { const rs = el("button", "sm gray", "Reset"); rs.type = "button"; rs.onclick = async () => { await resetCustomSound(k); toast("Back to the default sound"); paint(); }; bs.append(rs); }
+      row.append(ic, m, bs, fi); list.append(row);
+    });
+  };
+  paint(); d.append(list);
+  const all = el("button", "sm gray", "Reset all to default"); all.type = "button"; all.style.margin = "4px 14px 24px";
+  all.onclick = async () => { if (!Object.keys(CSND).length && !Object.keys(MUTED).length) return; if (!confirm("Go back to the default sounds?")) return; for (const k of new Set([...Object.keys(CSND), ...Object.keys(MUTED)])) await resetCustomSound(k); toast("All sounds reset"); paint(); };
+  d.append(all);
+}
+loadCustomSounds();
 
 // ringtone for incoming calls
 function ringStart() { try { ringTone = {a: sfx(ringIn && ringIn.video ? "vring" : "ring", true)}; } catch (e) {} }
