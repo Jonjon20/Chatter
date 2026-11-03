@@ -190,10 +190,29 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .sz{position:absolute;top:0;bottom:0}.sz.l{left:0;width:30%}.sz.r{right:0;width:70%}
 .pc{border-top:6px solid var(--fsep);padding-top:12px}
 .pc .ph1{display:flex;gap:10px;align-items:center;padding:0 8px 8px 14px}
+.pc .l1.sysu{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.3}.pc .l1.sysu .mut{font-weight:400}
 .pc .pn{flex:1;min-width:0}.pc .l1{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pc .l1 b{font-weight:600}
 .pc .l1 .dot{color:var(--mut);margin:0 5px}.pc .l1 .fl{color:var(--bl);font-weight:600;cursor:pointer}.pc .l1 .fl.mut{color:var(--mut);cursor:default}
 .pc .l2{color:var(--mut);font-size:14px;display:flex;align-items:center;gap:4px}.pc .l2 span{display:inline-flex;align-items:center}
 .pc .hx{background:none;color:var(--tx);padding:6px;line-height:0}
+.pmgrp{background:var(--cd2,var(--bg2));border-radius:20px;margin:0 0 12px;overflow:hidden}
+.pmrow{display:flex;align-items:center;gap:18px;width:100%;box-sizing:border-box;background:none;border:0;border-radius:0;color:var(--tx);padding:17px 18px;font-size:17px;font-weight:500;text-align:left;cursor:pointer}
+.pmrow svg{flex:none}.pmrow.red{color:#f02849}.pmrow:hover{background:#ffffff0d}
+.pmrow .pmtx{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}.pmrow small{color:var(--mut);font-weight:400;font-size:13.5px}.pmrow .pmck{margin-left:auto;color:var(--accent,#7c3aed);font-size:20px;font-weight:700}
+.pmta{width:100%;box-sizing:border-box;min-height:140px;resize:vertical;border-radius:16px;padding:14px;background:var(--cd2,var(--bg2));color:var(--tx);border:1px solid var(--line);font:inherit;font-size:16px}
+.pmsave{width:100%;margin-top:12px;padding:14px;border-radius:16px;border:0;background:var(--accent,#7c3aed);color:#fff;font-weight:700;font-size:16px;cursor:pointer}.pmsave:disabled{opacity:.6}
+.pmitem{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.pmitem .pmth{width:56px;height:56px;border-radius:12px;overflow:hidden;background:var(--cd2,var(--bg2));flex:none;display:flex;align-items:center;justify-content:center;font-size:22px}.pmitem .pmth img{width:100%;height:100%;object-fit:cover}
+.pmitem .pmtx{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.pmitem .pmtx b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pmitem small{color:var(--mut)}
+.pmitem .pmbt{display:flex;flex-direction:column;gap:6px;flex:none}.pmitem .red{color:#f02849}
+.pop.pmpop{min-width:340px;max-width:92vw;padding:8px;border-radius:16px;border:1px solid var(--line);z-index:96}
+.pmpop .pmgrp{border-radius:12px;margin:0 0 6px}.pmpop .pmgrp:last-child{margin:0}
+.pmpop .pmrow{padding:12px 14px;font-size:15px;gap:14px}.pmpop .pmrow svg{width:24px;height:24px}
+/* desktop: New group is a small centered card, not a full-window page */
+html.dt #ng{inset:auto;top:50%;left:50%;transform:translate(-50%,-50%);width:min(520px,92vw);max-height:84vh;border-radius:22px;border:1px solid var(--line);box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:96;padding-top:0}
+html.dt .sheetbg.pmdt{align-items:center;justify-content:center;background:transparent}
+html.dt .sheetbg.pmdt .sheet{width:min(440px,92vw);max-height:80vh;border-radius:20px;border:1px solid var(--line);box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.pc .hidp{padding:2px 0 8px}.pc .hidr{display:flex;align-items:center;gap:22px;width:100%;box-sizing:border-box;background:none;border:0;border-radius:0;color:var(--tx);padding:18px 20px;font-size:17px;font-weight:500;text-align:left;cursor:pointer}.pc .hidr:disabled{opacity:.55;cursor:default}.pc .hidr svg{flex:none}
 .pc .pb{padding:4px 14px 12px;font-size:17px;white-space:pre-wrap;overflow-wrap:anywhere}
 .pc>img,.pc>video{width:100%;max-height:78vh;object-fit:contain;background:#000;display:block}
 .pc .cn{display:flex;justify-content:space-between;padding:8px 14px 2px;color:var(--mut);font-size:14px}
@@ -738,9 +757,9 @@ button:not(.danger):not(.gray):not(.ghost):not(.mlog):not(.att):not(.end){--butt
 #dtbar,#feedc{display:none}
 html.dt #dtbar{display:block}
 html.dt #feedc{display:block}
-html.dt .app{--navw:190px;grid-template-columns:minmax(300px,calc(var(--navw) + 374px)) minmax(380px,505px) minmax(0,1fr);grid-template-rows:minmax(0,1fr);column-gap:50px}
+html.dt .app{--navw:190px;--dtg:clamp(16px,2.2vw,48px);--dtl:clamp(340px,30vw,460px);--dtf:clamp(380px,38vw,680px);grid-template-columns:minmax(340px,calc(var(--navw) + var(--dtl))) minmax(340px,var(--dtf)) minmax(0,1fr);grid-template-rows:minmax(0,1fr);column-gap:var(--dtg)}
 html.dt .app.coll,html.dt .app.cmo{--navw:76px}
-html.dt .app.open{grid-template-columns:calc(var(--navw) + 74px) 350px minmax(380px,505px) minmax(0,1fr);column-gap:0}
+html.dt .app.open{grid-template-columns:calc(var(--navw) + 74px) 350px minmax(340px,var(--dtf)) minmax(0,1fr);column-gap:0}
 html.dt .side{grid-column:1;grid-row:1;box-sizing:border-box;padding:84px 0 0 calc(var(--navw) + 8px)}
 html.dt .main{display:none;grid-column:2;grid-row:1}
 html.dt .app.open .main{display:flex}
@@ -773,7 +792,8 @@ html.dt .app.coll #dtbar .dtl span:last-child,html.dt .app.cmo #dtbar .dtl span:
 html.dt .app.coll #dtcol,html.dt .app.cmo #dtcol{left:76px}
 html.dt #dtcol{position:absolute;left:200px;top:24px;width:30px;height:30px;padding:4px;background:none;color:var(--mut);line-height:0}
 html.dt #dtcol svg{width:22px;height:22px}
-html.dt #dtme{position:absolute;right:15px;top:14px;display:flex;align-items:center;gap:10px;padding:5px 6px 5px 18px;border-radius:30px;background:var(--bg2);color:var(--tx);font-size:19px;font-weight:600;max-width:340px}
+html.dt #dtme{position:absolute;right:15px;top:14px;display:flex;align-items:center;gap:10px;padding:5px 6px 5px 18px;border-radius:30px;background:var(--bg2);color:var(--tx);font-size:clamp(14px,1.45vw,19px);font-weight:600;max-width:clamp(150px,15vw,340px)}
+@media(max-width:1279px){html.dt #dtme{padding:5px}html.dt #dtme .dtn{display:none}}
 html.dt #dtme .dtn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 html.dt #dtme .av{width:38px;height:38px;font-size:16px;flex:none;box-shadow:0 0 0 2px var(--bg2),0 0 0 4px var(--accent,#7c3aed)}
 html.dt #dtdd{position:absolute;right:15px;top:68px;width:215px;padding:6px;border-radius:12px;background:var(--bg2);box-shadow:0 8px 28px rgba(0,0,0,.45);display:flex;flex-direction:column;gap:5px}
@@ -785,7 +805,30 @@ html.dt #dtdd .dlo{width:100%;padding:11px;border-radius:10px;background:var(--c
 html.dt #pfv,html.dt #st{inset:auto;top:0;bottom:0;right:auto;left:var(--fcx,500px);width:var(--fcw,505px)}
 html.dt #st{z-index:66}
 /* comments (Clips + Newsfeed): side panel to the right of the video */
-html.dt .sheetbg.cmside{inset:auto;top:76px;bottom:0;left:auto;right:12px;width:max(340px,min(400px,calc(100vw - var(--fcx,500px) - var(--fcw,505px) - 24px)));display:block;background:none;pointer-events:none;z-index:70}
+html.dt{--cmw:clamp(280px,27vw,400px)}
+/* Newsfeed tab: the left list is empty, so the feed sits in the middle of the window */
+html.dt .app:not(.open):not(.cmo):has(#list[data-t="none"]){column-gap:0;grid-template-columns:minmax(calc(var(--navw) + 16px),1fr) minmax(340px,var(--dtf)) minmax(calc(var(--navw) + 16px),1fr)}
+/* comments panel open: the feed gives up just enough width for the panel; Messages / chat never get squeezed.
+   On narrow windows the Messages list turns into the avatar rail (same look as when a chat is open). */
+html.dt .app.cmo{column-gap:14px;grid-template-columns:minmax(340px,calc(var(--navw) + var(--dtl))) minmax(340px,1fr) calc(var(--cmw) + 12px)}
+html.dt .app.open.cmo{column-gap:0;grid-template-columns:calc(var(--navw) + 74px) 350px minmax(320px,1fr) calc(var(--cmw) + 12px)}
+html.dt .app.cmo #feedc{justify-self:end;width:min(100%,var(--dtf))}
+html.dt .app.open.cmo #feedc{margin-right:14px;width:min(calc(100% - 14px),var(--dtf))}
+@media(max-width:1179px){
+html.dt .app.cmo:not(.open){grid-template-columns:calc(var(--navw) + 74px) minmax(340px,1fr) calc(var(--cmw) + 12px)}
+html.dt .app.cmo:not(.open):has(#list[data-t="chats"]) .side :is(.ph,#sqw,#chips){display:none}
+html.dt .app.cmo:not(.open):has(#list[data-t="chats"]) #list :is(.mid,.dot,.hint,.sec,.actrow){display:none}
+html.dt .app.cmo:not(.open):has(#list[data-t="chats"]) #list .item{margin:6px 0;padding:0;border:0;background:none;border-radius:0;justify-content:center;max-width:100%;box-sizing:border-box}
+html.dt .app.cmo:not(.open):has(#list[data-t="chats"]) #list .item .av{width:60px;height:60px}
+html.dt .app.cmo:not(.open):has(#list[data-t="chats"]) #list .item.on .av{box-shadow:0 0 0 3px var(--accent,#7c3aed)}
+html.dt .app.cmo:not(.open):has(#list[data-t="chats"]) .side{padding-left:calc(var(--navw) + 4px)}
+html.dt .app.cmo:not(.open):has(#list[data-t="chats"]) #list{overflow-x:hidden;scrollbar-width:none;-ms-overflow-style:none}
+html.dt .app.cmo:not(.open):has(#list[data-t="chats"]) #list *{scrollbar-width:none}
+html.dt .app.cmo:not(.open):has(#list[data-t="chats"]) #list::-webkit-scrollbar,html.dt .app.cmo:not(.open):has(#list[data-t="chats"]) #list *::-webkit-scrollbar{display:none;width:0;height:0}
+/* People / Notifications have no avatar-rail form: while the comments panel is open on a narrow window their list is simply tucked away */
+html.dt .app.cmo:not(.open):has(#list:not([data-t="chats"])) .side>:not(.tabs){display:none}
+}
+html.dt .sheetbg.cmside{inset:auto;top:76px;bottom:0;left:auto;right:12px;width:var(--cmw);display:block;background:none;pointer-events:none;z-index:70}
 html.dt .sheetbg.cmside .sheet{pointer-events:auto;height:calc(100% - 12px);max-height:none;border-radius:16px;border:1px solid var(--line);box-shadow:0 8px 28px rgba(0,0,0,.4)}
 
 /* ===== MESSAGE REACTIONS / REPLY (DM, group, Global) ===== */
@@ -1114,11 +1157,11 @@ html.dt .sv .svamb{position:absolute;inset:-80px;z-index:0;background:linear-gra
 html.dt .sv .svside{grid-column:1;grid-row:1;z-index:3;display:flex;flex-direction:column;align-items:center;gap:12px;padding:0 0 20px;overflow-y:auto;background:transparent;border:0;scrollbar-width:none}
 html.dt .sv .svside::-webkit-scrollbar{display:none}
 html.dt .sv .smd,html.dt .sv .sb,html.dt .sv .st,html.dt .sv .story-foot{grid-column:2;grid-row:1;justify-self:center;width:var(--stw);margin:0}
-html.dt .sv .smd{z-index:1;align-self:stretch;height:100%;border-radius:38px;background:#000;box-shadow:0 0 0 1px color-mix(in srgb,var(--accent,#7c3aed) 45%,#ffffff1f),0 30px 80px color-mix(in srgb,var(--accent,#7c3aed) 35%,#0008)}
+html.dt .sv .smd{z-index:1;align-self:stretch;height:100%;border-radius:38px;background:#222326;box-shadow:0 0 0 1px color-mix(in srgb,var(--accent,#7c3aed) 45%,#ffffff1f),0 30px 80px color-mix(in srgb,var(--accent,#7c3aed) 35%,#0008)}
 html.dt .sv .smd::before,html.dt .sv .smd::after{content:"";position:absolute;left:0;right:0;z-index:1;pointer-events:none}
 html.dt .sv .smd::before{top:0;height:150px;background:linear-gradient(#000b,transparent)}
 html.dt .sv .smd::after{bottom:0;height:170px;background:linear-gradient(transparent,#000c)}
-html.dt .sv .smd img,html.dt .sv .smd video{object-fit:cover;background:#000}
+html.dt .sv .smd img,html.dt .sv .smd video{object-fit:contain;background:transparent}
 html.dt .sv .sb{z-index:3;align-self:start;margin-top:18px;width:calc(var(--stw) - 40px);padding:0;gap:5px}
 html.dt .sv .sb .sg{height:4px;border-radius:4px;background:#ffffff40}
 html.dt .sv .sb .sg i{background:#fff}
@@ -1136,6 +1179,8 @@ html.dt .sv .story-action svg{width:24px;height:24px}
 html.dt .sv .story-heart.on{background:#ff3b5c33}
 html.dt .sv .story-activity,html.dt .sv .story-activity-label,html.dt .sv .story-add-wrap span{color:#fff}
 html.dt .sv .story-add{background:#ffffff24;color:#fff;border-color:#ffffff47}
+html.dt .sv .story-activity-layer{position:absolute;inset:auto;top:20px;bottom:20px;right:auto;left:calc(104px + (100% - 104px - var(--stw))/2);width:var(--stw);border-radius:38px;overflow:hidden;z-index:20}
+html.dt .sv .story-activity-panel{max-width:none;max-height:70%}
 html.dt .sv .svnav{position:absolute;top:50%;margin-top:-22px;width:44px;height:44px;padding:0;border-radius:50%;background:var(--bg2);border:1px solid var(--line);color:var(--tx);font-size:26px;line-height:1;z-index:5;box-shadow:0 6px 18px #0003}
 html.dt .sv .svnav:hover{background:color-mix(in srgb,var(--accent,#7c3aed) 22%,var(--bg2))}
 html.dt .sv .svnav.l{left:calc(104px + (100vw - 104px - var(--stw))/2 - 66px)}
@@ -1209,7 +1254,7 @@ html.dt .sv .story-foot{background:transparent}
 .csnd .sn-n{font-weight:700;font-size:15px}
 .csnd .sn-s{margin-top:2px;font-size:12.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .csnd.cust .sn-s{color:var(--accent,#7c3aed);font-weight:600}
-.csnd .sn-b{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;flex:none;max-width:132px}
+.csnd .sn-b{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;flex:none;max-width:150px}
 .csnd .sn-b button{border-radius:999px;position:relative;z-index:1}
 .csnd .sn-b .sn-pv{width:40px;height:40px;padding:0!important;border-radius:50%!important;font-size:15px;line-height:1;background:color-mix(in srgb,var(--accent,#7c3aed) 14%,var(--cd2,var(--bg2)))!important;color:var(--accent,#7c3aed)!important;border:1px solid color-mix(in srgb,var(--accent,#7c3aed) 40%,transparent)!important;cursor:pointer}
 </style>
@@ -1742,7 +1787,7 @@ function fcMine() {
   return {followers: A + I, following: A + O};
 }
 function openFollowList(kind) {
-  const {body} = sheet(kind === "followers" ? "Followers" : "Following");
+  const {body} = pmSheet(kind === "followers" ? "Followers" : "Following");
   const L = fr.filter(f => f.status === "accepted" || (f.status === "pending" && (kind === "followers" ? f.addressee === me.id : f.requester === me.id))).map(f => f.requester === me.id ? f.addressee : f.requester);
   if (!L.length) body.append(el("div", "hint", kind === "followers" ? "No followers yet." : "You are not following anyone yet."));
   L.forEach(u => userRow(body, u));
@@ -1757,7 +1802,7 @@ const ARC_ICON = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" st
 const pinTs = r => (S.chat_pins && S.chat_pins[r.id]) || 0;
 const isLimitedUid = u => Array.isArray(S.restricted) && S.restricted.includes(u);
 const roomLimited = r => !!r && !!r.is_dm && isLimitedUid(other(r));
-const isArch = r => !!(S.chat_arch && S.chat_arch[r.id] && stamp(r) <= S.chat_arch[r.id]);
+const isArch = r => !!r && (r.is_dm || r.is_group) && !!(S.chat_arch && S.chat_arch[r.id] && stamp(r) <= S.chat_arch[r.id]);
 async function togglePin(r) {
   const p = Object.assign({}, S.chat_pins || {});
   if (p[r.id]) delete p[r.id]; else { if (Object.keys(p).length >= 5) return toast("You can pin up to 5 chats."); p[r.id] = Date.now(); }
@@ -1790,7 +1835,7 @@ function openChatMenu(r, ev) {
   const u = r.is_dm ? other(r) : null, items = [];
   const add = (icon, label, fn, cls) => items.push({icon, label, fn, cls});
   add("📌", pinTs(r) ? "Unpin" : "Pin", () => togglePin(r));
-  add("🗄️", isArch(r) ? "Unarchive" : "Archive", () => toggleArchive(r));
+  if (r.is_dm || r.is_group) add("🗄️", isArch(r) ? "Unarchive" : "Archive", () => toggleArchive(r));
   add(pref.mute[r.id] ? "🔔" : "🔕", pref.mute[r.id] ? "Unmute" : "Mute", () => toggleMute(r.id));
   if (r.is_dm) add("👥", "Start a group with " + title(r), () => { gdraft.sel.add(u); $("#app").classList.remove("open"); openNewGroup(); });
   add("✉️", hasUnread(r) ? "Mark as read" : "Mark as unread", () => toggleUnreadMark(r));
@@ -2070,7 +2115,7 @@ function render() {
 let act = [], actMine = new Set(), actT = null, pov = null, actErr = "", actSoundPrimed = false, actSeenIds = new Set();
 function primeNotificationSound() { actSoundPrimed = true; }
 function playNotificationSound() {
-  if (S.n_sound === false || !actSoundPrimed) return;
+  if (S.n_sound === false || !actSoundPrimed || MUTED.notif) return;
   try {
     const Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return;
     const ctx = new Ctx(), osc = ctx.createOscillator(), gain = ctx.createGain();
@@ -2215,7 +2260,7 @@ async function loadFeed() {
   const {data, error} = await sb.from("posts").select("*").eq("kind", mode).order("created_at", {ascending: false}).limit(40);
   if (my !== fseq) return;
   if (error) { floading = false; fposts = []; fb().textContent = "Newsfeed isn't set up yet (" + error.message + "). Run upgrade6.sql in Supabase."; return; }
-  const L0 = data || []; const ids = L0.map(p => p.id); flikes = {}; fcm = {}; fposts = L0;
+  const L0 = liveP(data); const ids = L0.map(p => p.id); flikes = {}; fcm = {}; fposts = L0;
   if (ids.length) {
     const [l, c] = await Promise.all([sb.from("post_likes").select("*").in("post_id", ids), sb.from("post_comments").select("*").in("post_id", ids).order("created_at").limit(500)]);
     (l.data || []).forEach(x => (flikes[x.post_id] = flikes[x.post_id] || []).push(x.user_id));
@@ -2272,7 +2317,7 @@ function feedRender() {
     r.append(sel, no, go); d.append(r); top.append(d);
   }
   if (fmode === "post") box.append(storiesRow());
-  const vis = fposts.filter(p => !fhide.has(p.id));
+  const vis = fposts.filter(p => !fhide.has(p.id) && !isGone(p));
   if (!vis.length) box.append(floading ? spinEl() : el("div", "hint", fmode === "clip" ? "No clips yet. Add the first one!" : "No posts yet. Follow people or post something."));
   if (fmode === "clip") { box.style.setProperty("--ftop", top.offsetHeight + "px"); vis.forEach(p => reel(p)); watchReels(); return; }
   vis.forEach(p => box.append(postCard(p)));
@@ -2510,13 +2555,16 @@ async function openStory(u, custom) {
     }
   }
   async function openStoryActivity(story) {
+    ov.querySelectorAll(".story-activity-layer").forEach(n => n.remove());
+    clearTimeout(t); const pm = box.querySelector("video"); if (pm) pm.pause();
     const layer = el("div", "story-activity-layer"), panel = el("div", "story-activity-panel");
+    const shut = () => { if (!layer.isConnected) return; layer.remove(); resumeStory(); };
     const head = el("div", "story-activity-head"), title = el("b", "", "Viewers"), x = el("button", "", "×");
-    x.type = "button"; x.onclick = () => layer.remove();
+    x.type = "button"; x.onclick = shut;
     head.append(title, x);
     const list = el("div", "story-activity-list");
-    panel.append(head, list); layer.append(panel); document.body.append(layer);
-    layer.addEventListener("click", e => { if (e.target === layer) layer.remove(); });
+    panel.append(head, list); layer.append(panel); ov.append(layer);
+    layer.addEventListener("click", e => { if (e.target === layer) shut(); });
     try {
       const { data, error } = await sb.from("story_views").select("viewer_id,viewed_at").eq("story_id", story.id).order("viewed_at", {ascending:false});
       if (error) throw error;
@@ -2536,6 +2584,7 @@ async function openStory(u, custom) {
     }
   }
   function show() {
+    ov.querySelectorAll(".story-activity-layer").forEach(n => n.remove());
     clearTimeout(t); const s = L[i], vid = s.media_type === "video";
     if (!isOwnStory) { heart.classList.remove("on"); sb.from("post_likes").select("post_id").eq("post_id", s.id).eq("user_id", me.id).limit(1).then(({data}) => { if (L[i] === s) heart.classList.toggle("on", !!(data && data.length)); }); }
     if (isOwnStory) refreshOwnActivity(s);
@@ -2607,11 +2656,154 @@ async function setVis(p) {
   if (error) return alert(error.message); p.visibility = v; fkeep(() => {});
 }
 function hidePost(p) { fhide.add(p.id); try { localStorage.setItem("fhide", JSON.stringify([...fhide].slice(-300))); } catch (e) {} fkeep(() => {}); }
+const HP_ICON = {
+  rep: '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9.5L4 20.5V16.5H5a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2z"/><path d="M12 7.5v3.6M12 13.7v.1"/></svg>',
+  un: '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L4 9l5 5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>'
+};
+// X on a post: the post folds into two options, like Facebook: Report post / Unhide post
+function hidePostPanel(c, p) {
+  const kids = [...c.childNodes];
+  fhide.add(p.id); try { localStorage.setItem("fhide", JSON.stringify([...fhide].slice(-300))); } catch (e) {}
+  const box = el("div", "hidp");
+  const row = (icon, label, fn) => { const b = el("button", "hidr"); b.type = "button"; b.innerHTML = icon; b.append(el("span", null, label)); b.onclick = fn; return b; };
+  const rp = row(HP_ICON.rep, "Report post", async () => {
+    if (rp.disabled) return; rp.disabled = true;
+    if (await reportPost(p, "Hidden post")) rp.lastChild.textContent = "Reported"; else rp.disabled = false;
+  });
+  const un = row(HP_ICON.un, "Unhide post", () => {
+    fhide.delete(p.id); try { localStorage.setItem("fhide", JSON.stringify([...fhide].slice(-300))); } catch (e) {}
+    c.replaceChildren(...kids);
+  });
+  box.append(rp, un); c.replaceChildren(box);
+}
+// ---------- 3-dot menu of a post ----------
+const isGone = p => !!(p && (p.archived_at || p.trashed_at));            // archived / in trash: hidden from every feed
+const liveP = L => (L || []).filter(p => !isGone(p));
+const pmI = d => '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>';
+const PM = {
+  plus: pmI('<circle cx="12" cy="12" r="9.5"/><path d="M12 7.5v9M7.5 12h9"/>'),
+  minus: pmI('<circle cx="12" cy="12" r="9.5"/><path d="M7.5 12h9"/>'),
+  report: HP_ICON.rep,
+  globe: pmI('<circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.6 3.9 5.8 3.9 9.5s-1.3 6.9-3.9 9.5c-2.6-2.6-3.9-5.8-3.9-9.5S9.4 5.1 12 2.5z"/>'),
+  edit: pmI('<path d="M4 20h4L19.5 8.5a2.8 2.8 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>'),
+  archive: pmI('<rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9M10 13h4"/>'),
+  trash: pmI('<path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v5M14 11v5"/>'),
+  msg: pmI('<path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9.5L5 20.5V17H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/>')
+};
+const DBSETUP = "Archive and trash aren't set up yet. Run chatter_post_archive.sql in the Supabase SQL Editor.";
+async function reportPost(p, where) {
+  try {
+    const {error} = await sb.from("support_reports").insert({user_id: me.id, category: "posts", description: "Reported post " + p.id + " by user " + p.user_id + (p.body ? ": " + String(p.body).slice(0, 200) : ""), screen: "Newsfeed > " + (where || "Post menu") + " > Report post", user_agent: navigator.userAgent});
+    if (error) throw error;
+    toast("Post reported. Thank you."); return true;
+  } catch (e) { toast("Couldn't send the report. Please try again."); return false; }
+}
+// desktop: a small centered card with no dimming (the phone keeps the bottom sheet)
+function pmSheet(title) { const r = sheet(title); if (DT()) r.sh.parentNode.classList.add("pmdt"); return r; }
+function postMenu(p, c, inProfile, after, anchor) {
+  const mine = p.user_id === me.id, nm = names[p.user_id] || "Someone", dt = DT() && anchor;
+  let body;
+  if (dt) { closePop(); body = el("div", "pop pmpop"); body.id = "pop"; } else body = sheet("Post options").body;
+  const grp = rows => {
+    const g = el("div", "pmgrp");
+    rows.forEach(([ic, label, fn, cls]) => { const b = el("button", "pmrow" + (cls ? " " + cls : "")); b.type = "button"; b.innerHTML = ic; b.append(el("span", null, label)); b.onclick = e => { e.stopPropagation(); if (dt) closePop(); else closeSheet(); fn(); }; g.append(b); });
+    body.append(g);
+  };
+  if (mine) {
+    grp([[PM.globe, "Edit privacy", () => editPrivacy(p, after)], [PM.edit, "Edit post", () => editPost(p, after)]]);
+    grp([[PM.archive, "Move to archive", () => archivePost(p, after)], [PM.trash, "Move to trash", () => trashPost(p, after), "red"]]);
+  } else {
+    if (!inProfile) grp([[PM.plus, "Interested", () => { try { const k = new Set(JSON.parse(localStorage.getItem("finterest") || "[]")); k.add(p.id); localStorage.setItem("finterest", JSON.stringify([...k].slice(-300))); } catch (e) {} toast("Marked as interested."); }], [PM.minus, "Not interested", () => hidePostPanel(c, p)]]);
+    grp([[PM.report, "Report post", () => reportPost(p)], [PM.msg, "Message " + nm, () => { closeProfile(); closePov(); openDM(p.user_id); }]]);
+  }
+  if (dt) {
+    document.body.append(body);
+    const a = anchor.getBoundingClientRect(), w = body.offsetWidth, h = body.offsetHeight;
+    const x = Math.min(Math.max(8, a.right - w), innerWidth - w - 8); let y = a.bottom + 6; if (y + h > innerHeight - 8) y = Math.max(8, a.top - h - 6);
+    body.style.left = x + "px"; body.style.top = y + "px";
+  }
+}
+function editPrivacy(p, after) {
+  const {body} = pmSheet("Who can see this post?");
+  [["public", "Public", "Anyone on Chatterverse"], ["friends", "Friends", "Only your friends"]].forEach(([v, t, sub]) => {
+    const cur = (p.visibility || "public") === v, b = el("button", "pmrow" + (cur ? " on" : "")), tx = el("span", "pmtx");
+    b.type = "button"; b.innerHTML = PM.globe; tx.append(el("b", null, t), el("small", null, sub)); b.append(tx); if (cur) b.append(el("span", "pmck", "✓"));
+    b.onclick = async () => {
+      if (cur) return closeSheet();
+      const {error} = await sb.from("posts").update({visibility: v}).eq("id", p.id);
+      if (error) return toast(error.message);
+      p.visibility = v; closeSheet(); toast("Privacy updated"); fkeep(() => {}); if (pf.uid) pfLoad(pf.uid);
+    };
+    body.append(b);
+  });
+}
+function editPost(p, after) {
+  const {body} = pmSheet("Edit post"), ta = el("textarea", "pmta"), sv = el("button", "pmsave", "Save");
+  ta.value = p.body || ""; ta.maxLength = 5000; ta.placeholder = "Write something…"; sv.type = "button";
+  const hasMedia = !!(p.media_path || p.url || (typeof postPhotoUrls === "function" && postPhotoUrls(p).length));
+  sv.onclick = async () => {
+    const nb = ta.value.trim();
+    if (!nb && !hasMedia) return toast("A post needs text or a photo/video.");
+    sv.disabled = true;
+    const {error} = await sb.from("posts").update({body: nb || null}).eq("id", p.id);
+    if (error) { sv.disabled = false; return toast(error.message); }
+    p.body = nb || null; closeSheet(); toast("Post updated"); fkeep(() => {}); if (pf.uid) pfLoad(pf.uid);
+  };
+  body.append(ta, sv); setTimeout(() => ta.focus(), 50);
+}
+async function setPostState(p, col, val, okMsg, after) {
+  const {error} = await sb.from("posts").update({[col]: val}).eq("id", p.id);
+  if (error) return toast(/archived_at|trashed_at|column|schema cache/i.test(error.message || "") ? DBSETUP : error.message);
+  p[col] = val; fposts = fposts.filter(x => x.id !== p.id); toast(okMsg); if (after) after(); else fkeep(() => {});
+}
+function archivePost(p, after) { setPostState(p, "archived_at", new Date().toISOString(), "Moved to archive", after); }
+function trashPost(p, after) { if (!confirm("Move this post to trash?\n\nPosts in trash are deleted for good after 30 days.")) return; setPostState(p, "trashed_at", new Date().toISOString(), "Moved to trash", after); }
+async function purgeTrash() {
+  const cutoff = new Date(Date.now() - 30 * 864e5).toISOString();
+  const {data, error} = await sb.from("posts").select("*").eq("user_id", me.id).lt("trashed_at", cutoff).limit(50);
+  if (error || !data) return;
+  for (const x of data) { const ps = postAllPaths(x); if (ps.length) sb.storage.from("chat-images").remove(ps); await sb.from("posts").delete().eq("id", x.id); }
+}
+// Settings > Your Chatterverse Data > Post archive / Trash
+async function renderPostBox(d, kind) {
+  const trash = kind === "trash", col = trash ? "trashed_at" : "archived_at";
+  d.append(el("div", "cap", trash ? "Posts you move to trash are deleted for good after 30 days." : "Archived posts are hidden from everyone except you."));
+  const list = el("div", "pmlist", "Loading…"); d.append(list);
+  if (trash) { try { await purgeTrash(); } catch (e) {} }
+  let q = sb.from("posts").select("*").eq("user_id", me.id).in("kind", ["post", "clip"]).not(col, "is", null);
+  if (!trash) q = q.is("trashed_at", null);
+  const {data, error} = await q.order(col, {ascending: false}).limit(100);
+  if (error) { list.textContent = DBSETUP; return; }
+  const draw = () => {
+    list.replaceChildren();
+    if (!data.length) { list.append(el("div", "cap", trash ? "Your trash is empty." : "Nothing in your archive.")); return; }
+    data.forEach(x => {
+      const row = el("div", "pmitem"), th = el("div", "pmth"), tx = el("div", "pmtx"), bt = el("div", "pmbt");
+      const u = typeof postPhotoUrls === "function" ? postPhotoUrls(x)[0] : null;
+      if (u) { const im = el("img"); im.src = u; im.alt = ""; th.append(im); } else th.textContent = x.media_type === "video" || x.kind === "clip" ? "🎬" : "📝";
+      tx.append(el("b", null, String(x.body || (x.kind === "clip" ? "Clip" : "Photo post")).slice(0, 70)), el("small", null, (trash ? "Moved to trash " : "Archived ") + agoS(x[col]) + " ago"));
+      const back = el("button", "gray sm", "Restore"); back.type = "button";
+      back.onclick = async () => { const r = await sb.from("posts").update({[col]: null}).eq("id", x.id); if (r.error) return toast(r.error.message); data.splice(data.indexOf(x), 1); toast("Restored"); draw(); fkeep(() => {}); };
+      bt.append(back);
+      const more = el("button", "gray sm red", trash ? "Delete" : "Trash"); more.type = "button";
+      more.onclick = async () => {
+        if (trash) { if (!confirm("Delete this post for good? This can't be undone.")) return; const ps = postAllPaths(x); if (ps.length) sb.storage.from("chat-images").remove(ps); const r = await sb.from("posts").delete().eq("id", x.id); if (r.error) return toast(r.error.message); }
+        else { const r = await sb.from("posts").update({trashed_at: new Date().toISOString()}).eq("id", x.id); if (r.error) return toast(r.error.message); }
+        data.splice(data.indexOf(x), 1); toast(trash ? "Deleted" : "Moved to trash"); draw();
+      };
+      bt.append(more); row.append(th, tx, bt); list.append(row);
+    });
+  };
+  draw();
+}
 function postCard(p, inProfile, noRp, full) {
   const u = p.user_id, nm = names[u] || "Someone", c = el("div", "pc"), h = el("div", "ph1"), n = el("div", "pn"), cm = fcm[p.id] || [], L = flikes[p.id] || [], on = L.includes(me.id);
   const av = avatar(u, nm[0].toUpperCase(), "fa"); av.style.cursor = "pointer"; av.onclick = e => { e.stopPropagation(); openProfile(u); };
   const l1 = el("div", "l1"), r = u === me.id ? null : rel(u);
   const nb = el("b", null, nm); nb.style.cursor = "pointer"; nb.onclick = () => openProfile(u); l1.append(nb);
+  // "updated their profile picture / cover photo" posts read like Facebook: it goes right after the name, not as a caption under it
+  const sysM = /^updated (?:their|his|her) (profile picture|cover photo)\.$/.exec(p.body || "");
+  if (sysM) { l1.classList.add("sysu"); l1.append(el("span", "mut", " updated their " + sysM[1] + ".")); }
   if (p.tags && p.tags.length) l1.append(el("span", "mut", " is with " + p.tags.map(t => names[t] || "Someone").join(", ")));
   if (u !== me.id && !r) {
     const fl = el("span", "fl", "Follow"); fl.onclick = async () => { await followUser(u); fkeep(() => {}); };
@@ -2623,12 +2815,10 @@ function postCard(p, inProfile, noRp, full) {
   const l2 = el("div", "l2"), gl = el("span"); gl.innerHTML = p.visibility === "friends" ? FI.friends : FI.globe; gl.title = p.visibility === "friends" ? "Friends" : "Public"; l2.append(el("span", null, agoS(p.created_at) + " ·"), gl);
   n.append(l1, l2);
   const mb = el("button", "hx"), xb = el("button", "hx"); mb.type = xb.type = "button"; mb.innerHTML = FI.dots; xb.innerHTML = FI.x;
-  mb.onclick = e => { e.stopPropagation(); popMenu(mb, u === me.id
-    ? [[p.visibility === "friends" ? "Make public" : "Make friends only", () => setVis(p)], ["Delete post", async () => { if (!confirm("Delete this post?")) return; const ps = postAllPaths(p); if (ps.length) sb.storage.from("chat-images").remove(ps); await sb.from("posts").delete().eq("id", p.id); afterDelete(); }, "red"]]
-    : [["Message " + nm, () => { closeProfile(); closePov(); openDM(u); }], ...(inProfile ? [] : [["Hide post", () => hidePost(p)]])]); };
-  xb.onclick = () => hidePost(p);
+  mb.onclick = e => { e.stopPropagation(); postMenu(p, c, inProfile, afterDelete, mb); };
+  xb.onclick = () => hidePostPanel(c, p);
   h.append(av, n, mb); if (!inProfile) h.append(xb); c.append(h);
-  if (p.body) c.append(el("div", "pb", p.body));
+  if (p.body && !sysM) c.append(el("div", "pb", p.body));
   const phs = postPhotoUrls(p); let mediaNode = null;
   if (p.url && p.media_type === "video") { const m = el("video"); m.src = p.url; m.controls = true; m.playsInline = true; m.preload = "metadata"; mediaNode = m; }
   else if (phs.length) {
@@ -2709,6 +2899,7 @@ async function toggleCL(c, redraw) {
 async function openCmts(p, onChange) {
   const {sh, t, body} = sheet(""), bar = el("div", "sbar"), rb = el("div", "t2"), inp = el("input"), snd = el("button", "sm", "Send");
   inp.placeholder = "Add comment…"; inp.maxLength = 500; snd.type = "button"; rb.style.cssText = "padding:6px 14px 0;display:none;cursor:pointer";
+  if (DT() && !dtFitsBoth() && $("#app").classList.contains("open")) $("#back").click();
   if (DT()) { sh.parentNode.classList.add("cmside"); $("#app").classList.add("cmo"); }
   let reply = null;
   const all = () => fcm[p.id] || [], kids = id => all().filter(r => String(r.parent_id) === String(id));
@@ -3014,7 +3205,7 @@ async function loadReposts(mode) {
     if (seq !== fseq) return;
     (l.data || []).forEach(x => (flikes[x.post_id] = flikes[x.post_id] || []).push(x.user_id));
     (c.data || []).forEach(x => (fcm[x.post_id] = fcm[x.post_id] || []).push(x));
-    (rr.data || []).forEach(put); fposts = [...fposts, ...(pr.data || [])];
+    (rr.data || []).forEach(put); fposts = [...fposts, ...liveP(pr.data)];
   }
   await ensureNames([...new Set(Object.values(frep).flatMap(m => [...m.keys()]))]);
   if (seq !== fseq) return;
@@ -3140,7 +3331,7 @@ let pf = blankPf();
 async function pfLoad(uid) {
   const {data} = await sb.from("posts").select("*").eq("user_id", uid).in("kind", ["post", "clip"]).order("created_at", {ascending: false}).limit(80);
   if (pf.uid !== uid) return;
-  const L = data || [], ids = L.map(p => p.id);
+  const L = liveP(data), ids = L.map(p => p.id);
   if (ids.length) {
     const [l, c] = await Promise.all([sb.from("post_likes").select("*").in("post_id", ids), sb.from("post_comments").select("*").in("post_id", ids).order("created_at").limit(500)]);
     ids.forEach(i => { flikes[i] = []; fcm[i] = []; });
@@ -3329,7 +3520,7 @@ function drawAbout(box, mine, uid) {
   });
 }
 function openFriendList(uid) {
-  const {body} = sheet("Friends"), fl = pf.friends || [];
+  const {body} = pmSheet("Friends"), fl = pf.friends || [];
   body.append(el("div", "t2 rsub", fl.length + (fl.length === 1 ? " friend" : " friends")));
   fl.forEach(x => {
     const u = x.friend_id, nm = names[u] || "Someone", d = el("div", "fci2"), mid = el("div", "mid"); mid.append(el("div", "t1", nm)); if (x.mutual) mid.append(el("div", "t2", x.mutual + (x.mutual === 1 ? " mutual friend" : " mutual friends")));
@@ -3517,6 +3708,13 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") dtClose(); }
 const dtCollSet = c => { $("#app").classList.toggle("coll", c); $("#dtcol").title = c ? "Expand sidebar" : "Collapse sidebar"; try { localStorage.setItem("dtcoll", c ? "1" : ""); } catch (e) {} dtSync(); if (window.__placeCol) window.__placeCol(); };
 $("#dtcol").onclick = () => dtCollSet(!$("#app").classList.contains("coll"));
 try { dtCollSet(!!localStorage.getItem("dtcoll")); } catch (e) {}
+{
+  let narrow = innerWidth < 1100;
+  const setColl = c => { $("#app").classList.toggle("coll", c); $("#dtcol").title = c ? "Expand sidebar" : "Collapse sidebar"; dtSync(); if (window.__placeCol) window.__placeCol(); };
+  const saved = () => { try { return !!localStorage.getItem("dtcoll"); } catch (e) { return false; } };
+  if (narrow) setColl(true);
+  addEventListener("resize", () => { const n = innerWidth < 1100; if (n === narrow) return; narrow = n; if (DT()) setColl(n ? true : saved()); });
+}
 document.querySelectorAll(".tab").forEach(b => b.title = b.textContent.trim());
 function dtSync() {
   const f = $("#feedc"); if (!f || !DT()) return;
@@ -3527,6 +3725,7 @@ function dtSync() {
 try {
   addEventListener("resize", dtSync);
   new MutationObserver(dtSync).observe($("#app"), {attributes: true, attributeFilter: ["class"]});
+  new MutationObserver(dtSync).observe($("#list"), {attributes: true, attributeFilter: ["data-t"]});
   window.addEventListener("dtchange", () => { if (!me) return; feedDirty = true; if (DT()) loadFeed(); render(); dtSync(); });
 } catch (e) {}
 
@@ -3581,7 +3780,7 @@ const ST = {
   "Audience & Tags": ["Who sees posts you're tagged in?", "Approve tags before they show on your profile", "Who can reply to your stories?", "Public post notifications"],
   "Blocking": ["Blocked accounts", "Limited accounts", "Block messages from strangers", "App invites", "Event invites"],
   "Stories and Clips": ["Who can see your stories?", "Allow story replies", "Save stories to archive", "Autoplay clips"],
-  "Your Chatterverse Data": ["Activity summary", "Download your Chatterverse data", "Account activity and history"],
+  "Your Chatterverse Data": ["Activity summary", "Post archive", "Trash", "Download your Chatterverse data", "Account activity and history"],
   "Integrations": ["Connected apps and websites", "Active integrations", "Remove app access"],
   "Display & accessibility": ["Theme", "Accent color", "Text size", "Autoplay media", "Reduce motion"],
   "Help & Feedback": ["Help Center", "Report a problem", "Community Guidelines"]
@@ -3712,6 +3911,8 @@ function setDetail(it, row) {
       if (!count) faqBox.append(el("div", "help-intro", "No matching help articles. Try another search or use Report a problem."));
     };
     search.addEventListener("input", paintHelpFaqs); paintHelpFaqs(); d.append(search, faqBox);
+  } else if (it === "Post archive" || it === "Trash") {
+    renderPostBox(d, it === "Trash" ? "trash" : "archive");
   } else if (it === "Report a problem") {
     d.append(el("div", "help-intro", "Tell us what went wrong. Please do not include passwords, verification codes, or other sensitive information."));
     const categoryLabel = el("label", "help-field", "What is the problem about?");
@@ -3903,8 +4104,21 @@ function setDetail(it, row) {
       btn("Change mobile number", () => { const p = phone(c.value); p ? ask("phone", p) : msg.textContent = "Enter a valid mobile number."; }), code,
       btn("Confirm code", async () => { const r = await sb.auth.verifyOtp(ty === "email" ? {email: tg, token: code.value.trim(), type: "email_change"} : {phone: tg, token: code.value.trim(), type: "phone_change"}); msg.textContent = r.error ? r.error.message : "Updated."; }), msg);
   } else if (it === "Password and safety" || it === "Change password") {
-    const a = inp("New password (min. 6)", "password"), b = inp("Confirm new password", "password");
-    d.append(a, b, msg, btn("Change password", async () => { if (a.value.length < 6) return msg.textContent = "At least 6 characters."; if (a.value !== b.value) return msg.textContent = "Passwords don't match."; const {error} = await sb.auth.updateUser({password: a.value}); msg.textContent = error ? error.message : "Password changed."; if (!error) a.value = b.value = ""; }));
+    const cur = inp("Current password", "password"), a = inp("New password (min. 6)", "password"), b = inp("Confirm new password", "password");
+    cur.autocomplete = "current-password"; a.autocomplete = b.autocomplete = "new-password";
+    d.append(cur, a, b, msg, btn("Change password", async (bt) => {
+      if (!cur.value) return msg.textContent = "Enter your current password.";
+      if (a.value.length < 6) return msg.textContent = "At least 6 characters.";
+      if (a.value !== b.value) return msg.textContent = "Passwords don't match.";
+      if (a.value === cur.value) return msg.textContent = "New password must be different from the current one.";
+      bt.disabled = true; msg.textContent = "Checking…";
+      // the current password has to be right before anything is changed
+      const chk = await verifyPassword(cur.value);
+      if (chk.error) { bt.disabled = false; msg.textContent = "Current password is wrong."; cur.value = ""; cur.focus(); return; }
+      const {error} = await sb.auth.updateUser({password: a.value});
+      bt.disabled = false; msg.textContent = error ? error.message : "Password changed.";
+      if (!error) cur.value = a.value = b.value = "";
+    }));
     if (it === "Password and safety") { cap("Tip: use a password you don't use anywhere else."); d.append(btn("Log out of other devices", async () => { await sb.auth.signOut({scope: "others"}); msg.textContent = "Logged out of your other devices."; }, "gray")); }
   } else if (it === "Active sessions" || it === "Trusted devices") {
     cap("This device:"); d.append(el("div", "", (navigator.userAgent.match(/\(([^)]+)\)/) || [0, "Unknown device"])[1]), el("div", "cap", "Last sign-in: " + (me.last_sign_in_at ? new Date(me.last_sign_in_at).toLocaleString() : "—")));
@@ -3978,7 +4192,7 @@ function askPassword() {
     const go = async () => {
       if (!inp.value) return msg.textContent = "Enter your password.";
       yes.disabled = no.disabled = true; msg.textContent = "Checking…";
-      const {error} = await sb.auth.signInWithPassword({email: me.email, password: inp.value});
+      const {error} = await verifyPassword(inp.value);
       if (error) { yes.disabled = no.disabled = false; msg.textContent = "Wrong password."; inp.value = ""; inp.focus(); return; }
       done(true);
     };
@@ -3988,6 +4202,11 @@ function askPassword() {
 }
 
 // ---------- TWO-FACTOR AUTHENTICATION (authenticator app) ----------
+// checks a password on a separate, non-saved client: signing in on the main client would replace the session and drop it to aal1 when 2FA is on
+async function verifyPassword(pw) {
+  const t = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {auth: {persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, storageKey: "pwcheck"}});
+  return t.auth.signInWithPassword(me.email ? {email: me.email, password: pw} : {phone: me.phone, password: pw});
+}
 const mfaCap = t => { const d = el("div", null, t); d.style.cssText = "color:var(--mut);font-size:13px"; return d; };
 async function fillMfa(d) {
   const msg = mfaCap(""), mk = (t, fn, c) => { const b = el("button", c || "", t); b.onclick = fn; return b; };
@@ -4010,7 +4229,7 @@ async function mfaGate() {
   const fs = await sb.auth.mfa.listFactors(), f = fs.data && fs.data.totp[0]; if (!f) return true;
   return new Promise(res => {
     const o = el("div"), b = el("div"), i = el("input"), m = mfaCap(""), h = el("h2", null, "Two-factor authentication");
-    o.style.cssText = "position:fixed;inset:0;z-index:90;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px";
+    o.dataset.nb = "1"; o.style.cssText = "position:fixed;inset:0;z-index:90;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px";
     b.style.cssText = "width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px"; i.placeholder = "6-digit code"; i.inputMode = "numeric"; i.maxLength = 6; i.style.cssText = "text-align:center;font-size:26px";
     const go = el("button", "", "Confirm"), out = el("button", "gray", "Cancel");
     go.onclick = async () => { const r = await sb.auth.mfa.challengeAndVerify({factorId: f.id, code: i.value.trim()}); if (r.error) m.textContent = r.error.message; else { o.remove(); res(true); } };
@@ -4055,7 +4274,10 @@ async function openDM(uid) {
   if (!rooms.find(r => r.id === data)) await loadChats();
   setTab("chats"); openRoom(data);
 }
+// desktop: chat + feed + comments only fit side by side on wider windows; otherwise the one opened last wins and the other closes
+const dtFitsBoth = () => { const w = innerWidth, cm = Math.min(400, Math.max(280, w * .27)); return w >= 76 + 74 + 350 + 320 + cm + 24; };
 async function openRoom(id) {
+  if (DT() && !dtFitsBoth() && document.querySelector(".sheetbg.cmside")) closeSheet();
   dtClearCenter();
   cur = id; if (S.chat_unread && S.chat_unread[id]) { const mu = Object.assign({}, S.chat_unread); delete mu[id]; saveS("chat_unread", mu); } seen = new Set(); lastUid = null; lastTs = 0; closeInfo(); $("#sbar").classList.add("hide"); $("#sbi").value = "";
   const r = rooms.find(x => x.id === id); if (!r) return;
@@ -4991,6 +5213,76 @@ function listenInbox() {
     }).subscribe();
 }
 
+// ---------- BACK BUTTON ----------
+// The phone's Back button closes the top-most layer first (story, viewer, comments, settings, profile, chat, other tabs).
+// Only on the main chat list does it ask to press Back again before leaving the app.
+const backNav = (function () {
+  const hid = n => !n || n.classList.contains("hide");
+  const CLOSE = /^(✕|×|x|←|‹|close|cancel|back|no|not now)$/i;
+  const SKIP = new Set(["boot", "auth", "app", "st", "pfv", "mnu", "call", "ring", "info", "ng", "dtbar", "dtdd", "ptr", "stoast"]);
+  const clickClose = ov => {
+    if (ov.__close) { ov.__close(); return true; }
+    const b = [...ov.querySelectorAll("button")].find(x => CLOSE.test(x.textContent.trim()) || /close|cancel|back/i.test(x.getAttribute("aria-label") || ""));
+    if (b) { b.click(); return true; }
+    if (ov.id === "ng" || ov.id === "ep") return false;
+    ov.click(); return true;
+  };
+  // returns true when it closed / handled something, false when we're on the main screen
+  function step() {
+    if (document.querySelector("[data-nb]")) return true;                       // 2FA prompt: Back must not skip it
+    if (!hid($("#auth"))) { const w = $("#wback"); if (w && w.offsetParent && !hid(w)) { w.click(); return true; } return false; }
+    if (!hid($("#call")) || !hid($("#ring"))) return true;                       // never drop a call with Back
+    const lay = document.querySelector(".story-activity-layer"); if (lay) { lay.click(); return true; }
+    if (document.getElementById("mpop")) { closeMpop(); return true; }
+    if (document.getElementById("pop")) { closePop(); return true; }
+    const kids = [...document.body.children].reverse();
+    for (const n of kids) {
+      if (SKIP.has(n.id) || n.classList.contains("toast") || n.tagName === "SCRIPT" || n.tagName === "STYLE") continue;
+      if (getComputedStyle(n).position !== "fixed") continue;
+      const r = n.getBoundingClientRect(); if (r.width < innerWidth * .9 || r.height < innerHeight * .9) continue;
+      if (n.classList.contains("sv") || n.classList.contains("clipv")) { if (n.__close) n.__close(); else n.remove(); return true; }
+      if (n.classList.contains("pov")) { closePov(); return true; }
+      if (n.id === "mv") { closeViewer(); return true; }
+      if (n.id === "sheet") { closeSheet(); return true; }
+      if (clickClose(n)) return true;
+    }
+    if (!hid($("#ng"))) { closeNG(); return true; }
+    if (!hid($("#mnu"))) { closeMenu(); return true; }
+    if (!hid($("#st"))) { const b = $("#st .mtop button"); if (b) b.click(); else closeSet(); return true; }
+    if (!hid($("#pfv"))) { closeProfile(); return true; }
+    if (!hid($("#info"))) { closeInfo(); return true; }
+    if ($("#app").classList.contains("open") && cur) { $("#back").onclick(); return true; }
+    if (tab !== "chats") { const t = document.querySelector('.tab[data-t="chats"]'); if (t) { t.click(); return true; } }
+    return false;
+  }
+  let leaving = false, lastBack = 0;
+  const A = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+  if (A && A.addListener) {
+    // Android app (Capacitor): take over the hardware Back button directly, no history tricks needed
+    A.addListener("backButton", () => {
+      let used = false; try { used = step(); } catch (e) { console.error("back:", e); }
+      if (used) return;
+      if (Date.now() - lastBack < 2200) return A.exitApp();
+      lastBack = Date.now(); toast("Press back again to exit");
+    });
+    return step;
+  }
+  // Browser / PWA: use history entries. Chrome ignores entries a page adds before the user has touched it,
+  // so the guard entry is only added on the first touch/click.
+  let armed = false;
+  const arm = () => { if (armed) return; armed = true; history.replaceState({cv: 0}, ""); history.pushState({cv: 1}, ""); };
+  ["pointerdown", "touchstart", "click", "keydown"].forEach(ev => addEventListener(ev, arm, {capture: true, passive: true}));
+  addEventListener("popstate", () => {
+    if (leaving || !armed) return;
+    let used = false; try { used = step(); } catch (e) { console.error("back:", e); }
+    if (used) { history.pushState({cv: 1}, ""); return; }
+    const exit = () => { leaving = true; setTimeout(() => { leaving = false; }, 700); history.back(); };
+    if (DT() || Date.now() - lastBack < 2200) return exit();
+    lastBack = Date.now(); toast("Press back again to exit"); history.pushState({cv: 1}, "");
+  });
+  return step;
+})();
+
 // ---------- PUSH NOTIFICATIONS (Android app only; needs Firebase, see PUSH-SETUP.md) ----------
 let pushTok = null;
 async function initPush() {
@@ -5034,13 +5326,13 @@ async function dropPush() { if (pushTok) { try { await sb.rpc("unregister_device
 const SFX = {msg: "01_New_Message", sent: "02_Message_Sent", recv: "03_Message_Received", notif: "04_Notification", like: "05_Like_Reaction", heart: "06_Heart_Reaction", reply: "07_Reply", mention: "08_Mention", ring: "09_Incoming_Call", vring: "10_Video_Call_Incoming", conn: "11_Call_Connecting", err: "12_Message_Error"}, SND = {};
 let actMax = null;
 const sfxGet = k => SND[k] || (SND[k] = Object.assign(new Audio(CSND[k] ? CSND[k].url : "sounds/" + SFX[k] + ".mp3"), {preload: "auto"}));
-function sfx(k, loop) { if (S.sounds === false) return null; try { const a = sfxGet(k); a.loop = !!loop; a.currentTime = 0; a.play().catch(() => {}); return a; } catch (e) { return null; } }
+function sfx(k, loop) { if (S.sounds === false || MUTED[k]) return null; try { const a = sfxGet(k); a.loop = !!loop; a.currentTime = 0; a.play().catch(() => { if (!CSND[k]) synthSfx(k); }); return a; } catch (e) { return null; } }
 function sfxStop(k) { const a = SND[k]; if (a) { a.pause(); a.currentTime = 0; a.loop = false; } }
 document.addEventListener("pointerdown", () => Object.keys(SFX).forEach(sfxGet), {once: true});
 
 // ---------- CUSTOM SOUNDS (saved on this device, no upload) ----------
 const SFX_LABELS = {msg: ["💬", "New message"], sent: ["📤", "Message sent"], recv: ["📥", "Message received"], notif: ["🔔", "Notification"], like: ["👍", "Like"], heart: ["❤️", "Heart reaction"], reply: ["↩️", "Reply"], mention: ["@", "Mention"], ring: ["📞", "Incoming call ringtone"], vring: ["📹", "Incoming video call ringtone"], conn: ["🔗", "Call connecting"], err: ["⚠️", "Message error"]};
-const CSND = {};
+const CSND = {}, MUTED = {};
 const sndDB = () => new Promise((res, rej) => { const r = indexedDB.open("chatterverse_sounds", 1); r.onupgradeneeded = () => r.result.createObjectStore("s"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
 async function sndPut(k, v) { const db = await sndDB(); return new Promise((res, rej) => { const t = db.transaction("s", "readwrite"); t.objectStore("s").put(v, k); t.oncomplete = () => res(); t.onerror = () => rej(t.error); }); }
 async function sndDel(k) { const db = await sndDB(); return new Promise((res, rej) => { const t = db.transaction("s", "readwrite"); t.objectStore("s").delete(k); t.oncomplete = () => res(); t.onerror = () => rej(t.error); }); }
@@ -5049,7 +5341,7 @@ async function loadCustomSounds() {
     const db = await sndDB();
     await new Promise(res => {
       const t = db.transaction("s", "readonly"), rq = t.objectStore("s").openCursor();
-      rq.onsuccess = () => { const c = rq.result; if (c) { if (SFX[c.key] && c.value && c.value.blob) CSND[c.key] = {name: c.value.name, url: URL.createObjectURL(c.value.blob)}; c.continue(); } };
+      rq.onsuccess = () => { const c = rq.result; if (c) { if (SFX[c.key] && c.value && c.value.muted) MUTED[c.key] = true; else if (SFX[c.key] && c.value && c.value.blob) CSND[c.key] = {name: c.value.name, url: URL.createObjectURL(c.value.blob)}; c.continue(); } };
       t.oncomplete = () => res(); t.onerror = () => res();
     });
   } catch (e) {}
@@ -5066,18 +5358,46 @@ async function setCustomSound(k, file) {
   } catch (e) { URL.revokeObjectURL(url); throw e; }
   await sndPut(k, {name: file.name, blob: file});
   if (CSND[k]) URL.revokeObjectURL(CSND[k].url);
-  CSND[k] = {name: file.name, url}; sndDrop(k);
+  CSND[k] = {name: file.name, url}; delete MUTED[k]; sndDrop(k);
 }
-async function resetCustomSound(k) { await sndDel(k); if (CSND[k]) URL.revokeObjectURL(CSND[k].url); delete CSND[k]; sndDrop(k); }
+async function muteSound(k) { await sndPut(k, {muted: true}); if (CSND[k]) { URL.revokeObjectURL(CSND[k].url); delete CSND[k]; } MUTED[k] = true; sndDrop(k); }
+async function resetCustomSound(k) { await sndDel(k); if (CSND[k]) URL.revokeObjectURL(CSND[k].url); delete CSND[k]; delete MUTED[k]; sndDrop(k); }
+// built-in tones: used when the default sound file (sounds/*.mp3) is missing or can't load
+let _sx = null;
+function synthSfx(k) {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return 0;
+    const ctx = _sx || (_sx = new Ctx()); if (ctx.state === "suspended") ctx.resume();
+    const N = {msg: [[880, 0], [1175, .12]], sent: [[660, 0], [990, .09]], recv: [[990, 0], [660, .09]], notif: [[880, 0], [660, .1]], like: [[700, 0], [1050, .08]], heart: [[523, 0], [659, .1], [784, .2]], reply: [[740, 0], [880, .08], [988, .16]], mention: [[988, 0], [1319, .1]], ring: [[800, 0], [600, .25], [800, .5], [600, .75]], vring: [[700, 0], [900, .2], [700, .4], [900, .6]], conn: [[500, 0], [600, .15], [700, .3]], err: [[300, 0], [220, .15]]}[k] || [[880, 0]];
+    const len = (k === "ring" || k === "vring") ? .22 : .14, t0 = ctx.currentTime + .02; let end = 0;
+    N.forEach(([f, t]) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = k === "err" ? "square" : "sine"; o.frequency.setValueAtTime(f, t0 + t);
+      g.gain.setValueAtTime(.0001, t0 + t); g.gain.exponentialRampToValueAtTime(.18, t0 + t + .015); g.gain.exponentialRampToValueAtTime(.0001, t0 + t + len);
+      o.connect(g); g.connect(ctx.destination); o.start(t0 + t); o.stop(t0 + t + len + .02);
+      end = Math.max(end, t + len);
+    });
+    return end + .05;
+  } catch (e) { return 0; }
+}
 function previewSound(k, btn) {
+  if (MUTED[k]) return toast("This sound is off");
   try {
     if (window.__prev) { try { window.__prev.pause(); } catch (e) {} if (window.__prevBtn) window.__prevBtn.textContent = "▶"; const same = window.__prev.__k === k; window.__prev = null; if (same && btn) return; }
     const a = new Audio(CSND[k] ? CSND[k].url : "sounds/" + SFX[k] + ".mp3"); a.__k = k; window.__prev = a; window.__prevBtn = btn;
+    let failed = false;
     const done = () => { if (btn) btn.textContent = "▶"; if (window.__prev === a) window.__prev = null; };
-    a.onended = done; a.onerror = () => { done(); toast("Can't play this sound"); };
+    // default sound file missing -> play the built-in tone instead; a broken custom file still shows the error
+    const fail = () => {
+      if (failed) return; failed = true; done();
+      if (CSND[k]) return toast("Can't play this sound");
+      const sec = synthSfx(k); if (!sec) return toast("Can't play this sound");
+      if (btn) { btn.textContent = "■"; setTimeout(() => { if (btn.textContent === "■" && !window.__prev) btn.textContent = "▶"; }, sec * 1000); }
+    };
+    a.onended = done; a.onerror = fail;
     if (btn) btn.textContent = "■";
-    a.play().catch(() => { done(); toast("Can't play this sound"); });
-    if (k === "ring" || k === "vring") setTimeout(() => { try { a.pause(); } catch (e) {} done(); }, 5000);
+    a.play().catch(fail);
+    if (k === "ring" || k === "vring") setTimeout(() => { try { a.pause(); } catch (e) {} if (!failed) done(); }, 5000);
   } catch (e) { toast("Can't play this sound"); }
 }
 function renderCustomSounds(d) {
@@ -5086,20 +5406,21 @@ function renderCustomSounds(d) {
   const list = el("div", "csnd-list"), paint = () => {
     list.replaceChildren();
     Object.keys(SFX).forEach(k => {
-      const c = CSND[k], row = el("div", "csnd" + (c ? " cust" : "")), ic = el("span", "sn-i", SFX_LABELS[k][0]), m = el("div", "sn-m"), bs = el("div", "sn-b");
-      m.append(el("div", "sn-n", SFX_LABELS[k][1]), el("div", "sn-s", c ? c.name : "Default sound"));
+      const c = CSND[k], row = el("div", "csnd" + (c || MUTED[k] ? " cust" : "")), ic = el("span", "sn-i", SFX_LABELS[k][0]), m = el("div", "sn-m"), bs = el("div", "sn-b");
+      m.append(el("div", "sn-n", SFX_LABELS[k][1]), el("div", "sn-s", MUTED[k] ? "No sound" : c ? c.name : "Default sound"));
       const pv = el("button", "sm gray", "▶"), ch = el("button", "sm", c ? "Change" : "Choose"), fi = el("input"); pv.type = ch.type = "button"; pv.title = "Preview"; pv.className = "sn-pv"; pv.onclick = ev => { ev.stopPropagation(); previewSound(k, pv); };
       fi.type = "file"; fi.accept = "audio/*,.mp3,.wav,.ogg,.m4a"; fi.style.display = "none";
       ch.onclick = () => fi.click();
       fi.onchange = async () => { const f = fi.files && fi.files[0]; fi.value = ""; if (!f) return; ch.disabled = true; ch.textContent = "…"; try { await setCustomSound(k, f); toast("Sound saved"); previewSound(k); } catch (e) { alert(e.message || "Could not use that file."); } paint(); };
       bs.append(pv, ch);
-      if (c) { const rs = el("button", "sm gray", "Reset"); rs.type = "button"; rs.onclick = async () => { await resetCustomSound(k); toast("Back to the default sound"); paint(); }; bs.append(rs); }
+      if (!MUTED[k]) { const mu = el("button", "sm gray", "No sound"); mu.type = "button"; mu.onclick = async () => { try { await muteSound(k); toast("Sound turned off"); } catch (e) { toast("Couldn't turn it off"); } paint(); }; bs.append(mu); }
+      if (c || MUTED[k]) { const rs = el("button", "sm gray", "Reset"); rs.type = "button"; rs.onclick = async () => { await resetCustomSound(k); toast("Back to the default sound"); paint(); }; bs.append(rs); }
       row.append(ic, m, bs, fi); list.append(row);
     });
   };
   paint(); d.append(list);
   const all = el("button", "sm gray", "Reset all to default"); all.type = "button"; all.style.margin = "4px 14px 24px";
-  all.onclick = async () => { if (!Object.keys(CSND).length) return; if (!confirm("Go back to the default sounds?")) return; for (const k of Object.keys(CSND)) await resetCustomSound(k); toast("All sounds reset"); paint(); };
+  all.onclick = async () => { if (!Object.keys(CSND).length && !Object.keys(MUTED).length) return; if (!confirm("Go back to the default sounds?")) return; for (const k of new Set([...Object.keys(CSND), ...Object.keys(MUTED)])) await resetCustomSound(k); toast("All sounds reset"); paint(); };
   d.append(all);
 }
 loadCustomSounds();
