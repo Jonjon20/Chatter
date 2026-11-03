@@ -1274,8 +1274,8 @@ html.dt #ring .rb{width:100%;margin-top:22px;gap:14px}
 html.dt #ring .rb button{flex:1;min-height:54px;border-radius:20px;font-size:16px}
 html.dt #ring #rno{background:color-mix(in srgb,#ef4444 14%,var(--bg2));color:#ef4444;border:1px solid color-mix(in srgb,#ef4444 40%,transparent)}
 html.dt #ring #ryes{background:#16a34a;color:#fff;box-shadow:0 10px 26px rgba(22,163,74,.4)}
-html.dt #ring #rno::before{content:"✕  "}
-html.dt #ring #ryes::before{content:"✆  "}
+html.dt #ring #rno::before{content:none}
+html.dt #ring #ryes::before{content:none}
 html.dt #call{z-index:90;background:var(--bg);color:var(--tx);overflow:hidden}
 html.incall #dtbar{z-index:95}
 html.incall #dtbar .dtl,html.incall #dtbar #dtcol{visibility:hidden}
@@ -1320,6 +1320,18 @@ html.dt #self{z-index:4;left:28px;right:auto;bottom:28px;width:200px;height:136p
 .cpop .cml{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 html.dt .sheetbg.dtpanel{inset:auto;top:0;bottom:0;left:var(--fcx,500px);right:auto;width:var(--fcw,505px);display:block;background:var(--bg);z-index:68}
 html.dt .sheetbg.dtpanel .sheet{height:100%;max-height:none;border-radius:0}
+</style>
+<style id="icons2">
+.cmi svg,.cli svg,.sn-i svg,.cav-g svg{display:block}
+.cmi{color:var(--accent,#7c3aed)}
+.cmrow.red .cmi,.cpi.red .cmi{color:#f02849}
+.cc button svg{width:24px;height:24px;display:block;margin:auto}
+.cc button.end{color:#fff}
+#ring .rb button{display:flex;align-items:center;justify-content:center;gap:10px}
+#ring .rb button svg{flex:none;width:22px;height:22px}
+.cli{display:flex;align-items:center;justify-content:center;color:var(--accent,#7c3aed)}
+.sn-i{color:var(--accent,#7c3aed)}
+.cav-g{color:var(--tx)}
 </style>
 <div id="boot"><svg id="bt-logo" class="bt-svg" viewBox="60 60 1130 1130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Chatterverse"><defs>
 <linearGradient id="bt-eg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" class="cv-a"/><stop offset=".35" class="cv-a" stop-opacity="0"/><stop offset=".65" class="cv-a" stop-opacity="0"/><stop offset="1" class="cv-a"/></linearGradient>
@@ -1465,9 +1477,9 @@ requestAnimationFrame(k)})()</script>
  <div class="ch"><div id="cav"></div><div class="ct" id="ctitle"></div><div class="cs" id="cstat"></div></div>
  <div id="grid"></div>
  <div id="self" class="hide"><video id="selfv" autoplay playsinline muted></video></div>
- <div class="cc"><button type="button" id="cmute" title="Mute">🎤</button><button type="button" id="ccam" title="Camera">🎥</button><button type="button" id="cend" class="end" title="End call">📵</button></div>
+ <div class="cc"><button type="button" id="cmute" title="Mute"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v4"/></svg></button><button type="button" id="ccam" title="Camera"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2.5"/><path d="M16 10l6-3.5v11L16 14z"/></svg></button><button type="button" id="cend" class="end" title="End call"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><g transform="rotate(135 12 12)"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z"/></g></svg></button></div>
 </div>
-<div id="ring" class="hide"><div id="rav"></div><div class="rt" id="rtxt"></div><div class="rs" id="rsub"></div><div class="rb"><button type="button" class="gray" id="rno">Decline</button><button type="button" id="ryes">Accept</button></div></div>
+<div id="ring" class="hide"><div id="rav"></div><div class="rt" id="rtxt"></div><div class="rs" id="rsub"></div><div class="rb"><button type="button" class="gray" id="rno"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><g transform="rotate(135 12 12)"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z"/></g></svg><span>Decline</span></button><button type="button" id="ryes"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z"/></svg><span>Accept</span></button></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
@@ -1798,6 +1810,9 @@ const hasUnread = r => { if (pref.mute && pref.mute[r.id]) return false; if (roo
 const pin = r => ((!r.is_dm && !r.is_group && r.name === "General") ? 1 : 0) + (S.chat_pins && S.chat_pins[r.id] ? 2 : 0);
 const stamp = r => Date.parse(latest[r.id] ? latest[r.id].created_at : r.created_at) || 0;
 // ---------- CHAT ACTIONS: pin / archive / mute / mark unread / limit (saved in your account settings) ----------
+const IC_S = {"pin": "<path d=\"M9 3h6l-1.2 5.2L17 12v1.5H7V12l3.2-3.8z\"/><path d=\"M12 13.5V21\"/>", "archive": "<rect x=\"3\" y=\"4\" width=\"18\" height=\"4\" rx=\"1.2\"/><path d=\"M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8\"/><path d=\"M10 12h4\"/>", "bell": "<path d=\"M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9\"/><path d=\"M10.3 21a1.94 1.94 0 0 0 3.4 0\"/>", "bell-off": "<path d=\"M6 8a6 6 0 0 1 9.5-4.9M18 8c0 3.2.7 5.3 1.5 6.7M3 17s3-2 3-9\"/><path d=\"M10.3 21a1.94 1.94 0 0 0 3.4 0\"/><path d=\"M3 3l18 18\"/>", "users": "<path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/>", "mail": "<rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2\"/><path d=\"M3 7l9 6 9-6\"/>", "mail-open": "<path d=\"M3 10l9-6 9 6v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/><path d=\"M3 10l9 6 9-6\"/>", "user-limit": "<circle cx=\"9\" cy=\"8\" r=\"4\"/><path d=\"M2 21v-1a6 6 0 0 1 6-6h2\"/><circle cx=\"18\" cy=\"18\" r=\"4\"/><path d=\"M15.2 20.8l5.6-5.6\"/>", "ban": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M5.6 5.6l12.8 12.8\"/>", "trash": "<path d=\"M3 6h18\"/><path d=\"M8 6V4h8v2\"/><path d=\"M19 6l-1 14H6L5 6\"/><path d=\"M10 11v6M14 11v6\"/>", "logout": "<path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"/><path d=\"M16 17l5-5-5-5\"/><path d=\"M21 12H9\"/>", "mic": "<rect x=\"9\" y=\"2\" width=\"6\" height=\"12\" rx=\"3\"/><path d=\"M5 11a7 7 0 0 0 14 0\"/><path d=\"M12 18v4\"/>", "mic-off": "<path d=\"M9 9v2a3 3 0 0 0 5.1 2.1M15 9.3V5a3 3 0 0 0-5.9-.8\"/><path d=\"M5 11a7 7 0 0 0 11.7 5.2M19 11a7 7 0 0 1-.5 2.6\"/><path d=\"M12 18v4\"/><path d=\"M3 3l18 18\"/>", "video": "<rect x=\"2\" y=\"6\" width=\"14\" height=\"12\" rx=\"2.5\"/><path d=\"M16 10l6-3.5v11L16 14z\"/>", "video-off": "<path d=\"M16 16.5V18H4.5A2.5 2.5 0 0 1 2 15.5v-7A2.5 2.5 0 0 1 4.5 6H10\"/><path d=\"M16 10l6-3.5v11l-6-3.5z\"/><path d=\"M3 3l18 18\"/>", "msg": "<path d=\"M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z\"/>", "upload": "<path d=\"M12 16V4\"/><path d=\"M7 9l5-5 5 5\"/><path d=\"M4 20h16\"/>", "download": "<path d=\"M12 4v12\"/><path d=\"M7 11l5 5 5-5\"/><path d=\"M4 20h16\"/>", "heart": "<path d=\"M12 21s-8-5.5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.5-8 11-8 11z\"/>", "thumb": "<path d=\"M7 11v9H4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1z\"/><path d=\"M7 11l4-8a2.5 2.5 0 0 1 2.5 2.5V9H19a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 17.8 20H7\"/>", "reply": "<path d=\"M9 14L4 9l5-5\"/><path d=\"M4 9h10a6 6 0 0 1 6 6v3\"/>", "at": "<circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8\"/>", "link": "<path d=\"M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1\"/><path d=\"M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1\"/>", "alert": "<path d=\"M12 3l10 18H2z\"/><path d=\"M12 10v5\"/><path d=\"M12 18v.01\"/>"};
+const IC_F = {"phone": "<path d=\"M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z\"/>", "phone-end": "<g transform=\"rotate(135 12 12)\"><path d=\"M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z\"/></g>", "phone-off": "<g transform=\"rotate(135 12 12)\"><path d=\"M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z\"/></g>", "video-f": "<path d=\"M17 10.5V7.5A1.5 1.5 0 0 0 15.5 6h-11A1.5 1.5 0 0 0 3 7.5v9A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5v-3l4 3.5v-9z\"/>"};
+function icon(n, s) { s = s || 22; if (IC_F[n]) return '<svg viewBox="0 0 24 24" width="' + s + '" height="' + s + '" fill="currentColor">' + IC_F[n] + "</svg>"; return '<svg viewBox="0 0 24 24" width="' + s + '" height="' + s + '" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' + (IC_S[n] || "") + "</svg>"; }
 const ARC_ICON = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1.2"/><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>';
 const pinTs = r => (S.chat_pins && S.chat_pins[r.id]) || 0;
 const isLimitedUid = u => Array.isArray(S.restricted) && S.restricted.includes(u);
@@ -1834,14 +1849,14 @@ async function toggleLimit(u) {
 function openChatMenu(r, ev) {
   const u = r.is_dm ? other(r) : null, items = [];
   const add = (icon, label, fn, cls) => items.push({icon, label, fn, cls});
-  add("📌", pinTs(r) ? "Unpin" : "Pin", () => togglePin(r));
-  if (r.is_dm || r.is_group) add("🗄️", isArch(r) ? "Unarchive" : "Archive", () => toggleArchive(r));
-  add(pref.mute[r.id] ? "🔔" : "🔕", pref.mute[r.id] ? "Unmute" : "Mute", () => toggleMute(r.id));
-  if (r.is_dm) add("👥", "Start a group with " + title(r), () => { gdraft.sel.add(u); $("#app").classList.remove("open"); openNewGroup(); });
-  add("✉️", hasUnread(r) ? "Mark as read" : "Mark as unread", () => toggleUnreadMark(r));
-  if (r.is_dm) { add("🚷", isLimitedUid(u) ? "Remove limit" : "Limit account", () => toggleLimit(u)); add("⛔", "Block", () => doBlock(u)); }
-  if (r.is_dm) add("🗑", "Delete chat", () => deleteChat(r.id), "red");
-  else if (r.is_group) add("🚪", "Exit group", () => leaveGroup(r), "red");
+  add(icon("pin"), pinTs(r) ? "Unpin" : "Pin", () => togglePin(r));
+  if (r.is_dm || r.is_group) add(icon("archive"), isArch(r) ? "Unarchive" : "Archive", () => toggleArchive(r));
+  add(icon(pref.mute[r.id] ? "bell" : "bell-off"), pref.mute[r.id] ? "Unmute" : "Mute", () => toggleMute(r.id));
+  if (r.is_dm) add(icon("users"), "Start a group with " + title(r), () => { gdraft.sel.add(u); $("#app").classList.remove("open"); openNewGroup(); });
+  add(icon(hasUnread(r) ? "mail-open" : "mail"), hasUnread(r) ? "Mark as read" : "Mark as unread", () => toggleUnreadMark(r));
+  if (r.is_dm) { add(icon("user-limit"), isLimitedUid(u) ? "Remove limit" : "Limit account", () => toggleLimit(u)); add(icon("ban"), "Block", () => doBlock(u)); }
+  if (r.is_dm) add(icon("trash"), "Delete chat", () => deleteChat(r.id), "red");
+  else if (r.is_group) add(icon("logout"), "Exit group", () => leaveGroup(r), "red");
   if (DT()) {
     closePop(); const pop = el("div", "pop cpop"); pop.id = "pop";
     items.forEach(it => { const d = el("div", "cpi" + (it.cls ? " " + it.cls : "")); d.innerHTML = '<span class="cmi">' + it.icon + "</span>"; d.append(el("span", "cml", it.label)); d.onclick = e => { e.stopPropagation(); closePop(); it.fn(); }; pop.append(d); });
@@ -5331,7 +5346,7 @@ function sfxStop(k) { const a = SND[k]; if (a) { a.pause(); a.currentTime = 0; a
 document.addEventListener("pointerdown", () => Object.keys(SFX).forEach(sfxGet), {once: true});
 
 // ---------- CUSTOM SOUNDS (saved on this device, no upload) ----------
-const SFX_LABELS = {msg: ["💬", "New message"], sent: ["📤", "Message sent"], recv: ["📥", "Message received"], notif: ["🔔", "Notification"], like: ["👍", "Like"], heart: ["❤️", "Heart reaction"], reply: ["↩️", "Reply"], mention: ["@", "Mention"], ring: ["📞", "Incoming call ringtone"], vring: ["📹", "Incoming video call ringtone"], conn: ["🔗", "Call connecting"], err: ["⚠️", "Message error"]};
+const SFX_LABELS = {msg: ["msg", "New message"], sent: ["upload", "Message sent"], recv: ["download", "Message received"], notif: ["bell", "Notification"], like: ["thumb", "Like"], heart: ["heart", "Heart reaction"], reply: ["reply", "Reply"], mention: ["at", "Mention"], ring: ["phone", "Incoming call ringtone"], vring: ["video-f", "Incoming video call ringtone"], conn: ["link", "Call connecting"], err: ["alert", "Message error"]};
 const CSND = {}, MUTED = {};
 const sndDB = () => new Promise((res, rej) => { const r = indexedDB.open("chatterverse_sounds", 1); r.onupgradeneeded = () => r.result.createObjectStore("s"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
 async function sndPut(k, v) { const db = await sndDB(); return new Promise((res, rej) => { const t = db.transaction("s", "readwrite"); t.objectStore("s").put(v, k); t.oncomplete = () => res(); t.onerror = () => rej(t.error); }); }
@@ -5406,7 +5421,7 @@ function renderCustomSounds(d) {
   const list = el("div", "csnd-list"), paint = () => {
     list.replaceChildren();
     Object.keys(SFX).forEach(k => {
-      const c = CSND[k], row = el("div", "csnd" + (c || MUTED[k] ? " cust" : "")), ic = el("span", "sn-i", SFX_LABELS[k][0]), m = el("div", "sn-m"), bs = el("div", "sn-b");
+      const c = CSND[k], row = el("div", "csnd" + (c || MUTED[k] ? " cust" : "")), ic = Object.assign(el("span", "sn-i"), {innerHTML: icon(SFX_LABELS[k][0], 22)}), m = el("div", "sn-m"), bs = el("div", "sn-b");
       m.append(el("div", "sn-n", SFX_LABELS[k][1]), el("div", "sn-s", MUTED[k] ? "No sound" : c ? c.name : "Default sound"));
       const pv = el("button", "sm gray", "▶"), ch = el("button", "sm", c ? "Change" : "Choose"), fi = el("input"); pv.type = ch.type = "button"; pv.title = "Preview"; pv.className = "sn-pv"; pv.onclick = ev => { ev.stopPropagation(); previewSound(k, pv); };
       fi.type = "file"; fi.accept = "audio/*,.mp3,.wav,.ogg,.m4a"; fi.style.display = "none";
@@ -5519,9 +5534,9 @@ async function beginCall(r, video, caller) {
   if (call) { stream.getTracks().forEach(t => t.stop()); return; }
   call = {room: r.id, video, caller, dm: !!r.is_dm, stream, peers: {}, mic: true, cam: video, everConnected: false, start: 0, timer: null, ch: null, wait: null};
   $("#ctitle").textContent = title(r);
-  { const ca = $("#cav"), o = r.is_dm ? other(r) : null; if (ca) ca.replaceChildren(o ? avatar(o, ((names[o] || "?")[0] || "?").toUpperCase(), "md") : el("span", "cav-g", "👥")); }
-  $("#ccam").classList.toggle("hide", !video); $("#ccam").textContent = "🎥"; $("#ccam").classList.remove("off");
-  $("#cmute").textContent = "🎤"; $("#cmute").classList.remove("off");
+  { const ca = $("#cav"), o = r.is_dm ? other(r) : null; if (ca) ca.replaceChildren(o ? avatar(o, ((names[o] || "?")[0] || "?").toUpperCase(), "md") : Object.assign(el("span", "cav-g"), {innerHTML: icon("users", 22)})); }
+  $("#ccam").classList.toggle("hide", !video); $("#ccam").innerHTML = icon("video", 24); $("#ccam").classList.remove("off");
+  $("#cmute").innerHTML = icon("mic", 24); $("#cmute").classList.remove("off");
   $("#selfv").srcObject = stream; $("#self").classList.toggle("hide", !video);
   $("#grid").replaceChildren(); $("#call").classList.remove("hide"); document.documentElement.classList.add("incall"); updateStatus();
   call.wait = setTimeout(() => { if (call && !call.everConnected) endCall(call.caller ? "No answer" : "Couldn't connect"); }, caller ? 45000 : 30000);
@@ -5540,11 +5555,11 @@ function callTexts(m, c) {
   if (c.st === "missed") return mine ? {t: K + " call", s: "No answer"} : {t: "Missed " + c.kind + " call", s: ""};
   return {t: K + " call ended", s: fmtDur(c.sec * 1000)};
 }
-function callPv(m) { const c = callLog(m.body); if (!c) return null; const x = callTexts(m, c); return (c.kind === "video" ? "🎥 " : "📞 ") + x.t + (x.s ? " · " + x.s : ""); }
+function callPv(m) { const c = callLog(m.body); if (!c) return null; const x = callTexts(m, c); return x.t + (x.s ? " · " + x.s : ""); }
 function drawCall(bub, m, c) {
   const x = callTexts(m, c), mine = m.user_id === me.id;
   bub.replaceChildren(); bub.classList.remove("hide");
-  const top = el("div", "clt"), ic = el("div", "cli", c.st === "missed" && !mine ? "📵" : c.kind === "video" ? "🎥" : "📞"), tx = el("div");
+  const top = el("div", "clt"), ic = Object.assign(el("div", "cli"), {innerHTML: icon(c.st === "missed" && !mine ? "phone-off" : c.kind === "video" ? "video-f" : "phone", 22)}), tx = el("div");
   tx.append(el("div", "t1", x.t), el("div", "t2", [x.s, fmt(m.created_at)].filter(Boolean).join(" · ")));
   top.append(ic, tx);
   const b = el("button", "gray", "Call again"); b.type = "button"; b.onclick = () => startCall(c.kind === "video");
@@ -5635,12 +5650,12 @@ function endCall(why) {
 $("#cmute").onclick = () => {
   if (!call) return; call.mic = !call.mic;
   call.stream.getAudioTracks().forEach(t => t.enabled = call.mic);
-  $("#cmute").textContent = call.mic ? "🎤" : "🔇"; $("#cmute").classList.toggle("off", !call.mic);
+  $("#cmute").innerHTML = icon(call.mic ? "mic" : "mic-off", 24); $("#cmute").classList.toggle("off", !call.mic);
 };
 $("#ccam").onclick = () => {
   if (!call || !call.video) return; call.cam = !call.cam;
   call.stream.getVideoTracks().forEach(t => t.enabled = call.cam);
-  $("#ccam").textContent = call.cam ? "🎥" : "🚫"; $("#ccam").classList.toggle("off", !call.cam);
+  $("#ccam").innerHTML = icon(call.cam ? "video" : "video-off", 24); $("#ccam").classList.toggle("off", !call.cam);
   $("#self").classList.toggle("hide", !call.cam); sig({t: "state", cam: call.cam});
 };
 $("#cend").onclick = () => endCall();
