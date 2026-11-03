@@ -96,7 +96,7 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .av.xl{width:96px;height:96px;font-size:38px}.av.xl .odot{width:22px;height:22px;border-width:3px}
 .av.xs{width:16px;height:16px;font-size:9px}
 .iq{display:flex;justify-content:center;gap:28px;padding:12px 16px 8px}.qb{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--mut)}.qb button{width:46px;height:46px;border-radius:50%;padding:0;font-size:20px}
-.irow{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer}.irow:active{background:var(--bg2)}.irow.red{color:#f02849}.irow .ic{width:26px;text-align:center;font-size:20px}
+.irow{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer}.irow:active{background:var(--bg2)}.irow.red{color:#f02849}.irow .ic{width:26px;display:flex;align-items:center;justify-content:center;flex:none}.irow .ic svg,.ai svg,.eic svg,.qb button svg{display:block;flex:none}.ai{display:flex;align-items:center;justify-content:center}
 .tg{width:44px;height:26px;border-radius:13px;padding:0;background:var(--line);position:relative;flex:none}.tg::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s}.tg.on{background:var(--me)}.tg.on::after{left:21px}
 .mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:3px}.mgrid img{width:100%;aspect-ratio:1;object-fit:cover;background:var(--bg2);cursor:pointer}.mgrid .hint{grid-column:1/-1}
 .seen{display:flex;gap:2px;justify-content:flex-end;align-items:center;margin:0 4px 2px;font-size:11px;color:var(--mut)}
@@ -232,6 +232,16 @@ html.dt .sheetbg.pmdt .sheet{width:min(440px,92vw);max-height:80vh;border-radius
 .rl .sd{gap:14px;align-items:center}.rl .sd button{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;color:#fff;padding:2px;font-size:13px;font-weight:600;text-shadow:0 1px 3px #000}.rl .sd svg{width:34px;height:34px;filter:drop-shadow(0 1px 3px #0008)}.rl .sd button.on{color:#ff2d55}.rl .sd button.svb.on{color:#ffc928}
 .rav{position:relative;margin-bottom:10px}.rl .sd .rplus{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);width:20px;height:20px;border-radius:50%;background:#fe2c55;color:#fff;padding:0;font-size:15px;line-height:20px;display:block;text-shadow:none}.rl .sd .rav .av{width:46px;height:46px;border:2px solid #fff;font-size:18px}
 .sheetbg{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.5);display:flex;align-items:flex-end}.sheet{width:100%;max-height:72%;display:flex;flex-direction:column;background:var(--bg2);color:var(--tx);border-radius:16px 16px 0 0}
+@keyframes cmBackdropIn{from{opacity:0}to{opacity:1}}
+@keyframes cmMobileIn{from{transform:translate3d(0,100%,0);opacity:.75}to{transform:translate3d(0,0,0);opacity:1}}
+@keyframes cmMobileOut{from{transform:translate3d(0,0,0);opacity:1}to{transform:translate3d(0,100%,0);opacity:.7}}
+@keyframes cmDesktopIn{from{transform:translate3d(28px,0,0);opacity:.65}to{transform:translate3d(0,0,0);opacity:1}}
+@keyframes cmDesktopOut{from{transform:translate3d(0,0,0);opacity:1}to{transform:translate3d(28px,0,0);opacity:.65}}
+.sheetbg.cm-sheet{animation:cmBackdropIn .2s ease-out both}
+.sheetbg.cm-sheet>.sheet{animation:cmMobileIn .32s cubic-bezier(.2,.8,.2,1) both;will-change:transform,opacity}
+.sheetbg.cm-sheet.closing{animation:cmBackdropIn .22s ease-in reverse both}
+.sheetbg.cm-sheet.closing>.sheet{animation:cmMobileOut .22s ease-in both}
+.cm-handle{display:none}
 .sh{display:flex;align-items:center;justify-content:center;padding:14px 16px;font-weight:700;position:relative}.sh button{position:absolute;right:10px;background:none;color:var(--tx);font-size:20px}
 .sbody{overflow-y:auto;flex:1;padding:0 12px 8px;min-height:90px}.fci2{display:flex;gap:10px;padding:8px 0}.fci2 .t2{font-size:12px;white-space:normal}
 .sbar{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}.sbar input{flex:1;border-radius:20px}
@@ -830,6 +840,11 @@ html.dt .app.cmo:not(.open):has(#list:not([data-t="chats"])) .side>:not(.tabs){d
 }
 html.dt .sheetbg.cmside{inset:auto;top:76px;bottom:0;left:auto;right:12px;width:var(--cmw);display:block;background:none;pointer-events:none;z-index:70}
 html.dt .sheetbg.cmside .sheet{pointer-events:auto;height:calc(100% - 12px);max-height:none;border-radius:16px;border:1px solid var(--line);box-shadow:0 8px 28px rgba(0,0,0,.4)}
+html.dt .sheetbg.cm-sheet.cmside{animation:cmBackdropIn .18s ease-out both}
+html.dt .sheetbg.cm-sheet.cmside .sheet{animation:cmDesktopIn .28s cubic-bezier(.2,.8,.2,1) both}
+html.dt .sheetbg.cm-sheet.cmside.closing .sheet{animation:cmDesktopOut .2s ease-in both}
+html.dt .cm-handle{display:none}
+
 
 /* ===== MESSAGE REACTIONS / REPLY (DM, group, Global) ===== */
 .rxe *{transform-box:fill-box;transform-origin:center;animation-play-state:paused}
@@ -912,6 +927,7 @@ html.dt .story-activity-layer{inset:auto;top:0;bottom:0;right:auto;left:var(--fc
 html.dt .story-activity-panel{max-width:none}
 /* keep the "X reposted" label clear of the back arrow */
 .clipbox .rpl{left:60px}
+.ui-svg{display:block;flex:none}
 </style><style>.chatter-reduce-motion *, .chatter-reduce-motion *::before, .chatter-reduce-motion *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }.pfx .phd{display:flex;gap:14px;align-items:flex-start;padding:0 14px}
 .pfx .pav{margin:-52px 0 0;width:112px;flex:none}.pfx .pav::before{inset:-4px;background:var(--accent);box-shadow:none}
 .pfx .pav .av{width:112px;height:112px;font-size:44px;border-width:4px}
@@ -1537,8 +1553,8 @@ const colorFor = id => { let h = 0; for (const c of id || "") h = (h * 31 + c.ch
 const avatar = (id, label, cls, pres) => { const a = el("div", "av " + (cls || ""), label); a.style.background = colorFor(id); if (photoUrl[id]) { a.textContent = ""; a.style.background = 'url("' + photoUrl[id] + '") center/cover'; } if (pres && online.has(pres)) a.append(el("span", "odot")); return a; };
 const isVid = p => /\.(mp4|webm|mov|m4v)$/i.test(p || "");
 const storyTag = b => { const x = /^\[\[story:([^\]]+)\]\]([\s\S]*)$/.exec(b || ""); return x ? {id: x[1], text: x[2]} : null; };
-const storyPv = l => { const g = storyTag(l.body); return g ? (l.user_id === me.id ? "You replied to a story: " : "Replied to your story: ") + g.text : l.body; };
-const pvText = l => l.deleted_at ? "Message taken back" : sysText(l) || callPv(l) || (l.image_path ? (isVid(l.image_path) ? "🎬 " + (l.body || "Video") : "📷 " + (l.body || "Photo")) : storyPv(l));
+const storyPv = l => { const g = storyTag(l.body); return g ? (l.user_id === me.id ? "You replied to a story: " : "Replied to your story: ") + safeMessageText(g.text) : safeMessageText(l.body); };
+const pvText = l => l.deleted_at ? "Message taken back" : sysText(l) || callPv(l) || (l.image_path ? (isVid(l.image_path) ? "🎬 " + (safeMessageText(l.body) || "Video") : "📷 " + (safeMessageText(l.body) || "Photo")) : storyPv(l));
 let rd = {}; try { rd = JSON.parse(localStorage.getItem("rd") || "{}"); } catch (e) {}
 const markRead = (rid, ts) => { rd[rid] = ts; try { localStorage.setItem("rd", JSON.stringify(rd)); } catch (e) {} };
 
@@ -2191,9 +2207,21 @@ async function loadActivity() {
 }
 function notifActRow(box, a, t, seenT) {
   const nm = names[a.u] || "Someone", d = el("div", "item nf"), mid = el("div", "mid"), w = a.kind === "clip" ? "clip" : "post";
-  const stg = a.type === "message" ? storyTag(a.txt) : null, sn = (stg ? stg.text : (a.txt || "")).trim(), cut = sn.length > 70 ? sn.slice(0, 70) + "…" : sn;
-  const msg = a.type === "message" ? (stg ? "💬 Replied to your story" : "💬 Sent you a message") + (cut ? ": " + cut : ".") : a.type === "like" ? (a.kind === "story" ? "❤️ Reacted to your story." : "❤️ Liked your " + w + ".") : a.type === "comment" ? "💬 Commented on your " + w + (cut ? ": " + cut : ".") : "📝 Posted a new " + w + (cut ? ": " + cut : ".");
-  d.dataset.k = a.type;
+  // Call records are stored as internal message markers. Never expose those markers in notifications.
+  const call = a.type === "message" ? callLog(a.txt) : null;
+  const sys = a.type === "message" && !call ? sysText({body: a.txt, user_id: a.u}) : null;
+  const stg = a.type === "message" && !call && !sys ? storyTag(a.txt) : null;
+  const sn = (stg ? safeMessageText(stg.text) : safeMessageText(a.txt)).trim(), cut = sn.length > 70 ? sn.slice(0, 70) + "…" : sn;
+  let msg;
+  if (call) {
+    const cx = callTexts({user_id: a.u}, call);
+    msg = "📞 " + cx.t + (cx.s ? " · " + cx.s : "");
+  } else if (sys) {
+    msg = "👥 " + sys;
+  } else {
+    msg = a.type === "message" ? (stg ? "💬 Replied to your story" : "💬 Sent you a message") + (cut ? ": " + cut : ".") : a.type === "like" ? (a.kind === "story" ? "❤️ Reacted to your story." : "❤️ Liked your " + w + ".") : a.type === "comment" ? "💬 Commented on your " + w + (cut ? ": " + cut : ".") : "📝 Posted a new " + w + (cut ? ": " + cut : ".");
+  }
+  d.dataset.k = call ? "call" : a.type;
   mid.append(el("div", "t1", nm), el("div", "t2", msg + (t ? " · " + ago2(t) : "")));
   d.append(avatar(a.u, nm[0].toUpperCase(), "", a.u), mid); if (t > seenT) d.append(el("div", "dot"));
   d.onclick = () => a.type === "message" ? openRoom(a.rid) : a.kind === "story" ? (fstories.some(x => x.user_id === me.id) ? openStory(me.id) : toast("This story has expired. You can find it in your archive.")) : openPost(a.pid); box.append(d);
@@ -2893,7 +2921,15 @@ async function reelLike(p, b) {
   const r = on ? await sb.from("post_likes").delete().eq("post_id", p.id).eq("user_id", me.id) : await sb.from("post_likes").insert({post_id: p.id}); if (!on) sfx("heart");
   if (r.error) { flikes[p.id] = L; paintLike(p, b); bubPaint(p); }
 }
-const closeSheet = () => { const o = document.getElementById("sheet"); if (o) o.remove(); const a = $("#app"); if (a) a.classList.remove("cmo"); };
+const closeSheet = () => {
+  const o = document.getElementById("sheet");
+  if (o && o.classList.contains("cm-sheet")) {
+    if (o.classList.contains("closing")) return;
+    o.classList.add("closing");
+    setTimeout(() => { if (o.isConnected) o.remove(); }, 240);
+  } else if (o) o.remove();
+  const a = $("#app"); if (a) a.classList.remove("cmo");
+};
 function sheet(title) {
   closeSheet(); const ov = el("div", "sheetbg"), sh = el("div", "sheet"), hd = el("div", "sh"), t = el("span", null, title), x = el("button", "", "✕"), body = el("div", "sbody");
   ov.id = "sheet"; x.type = "button"; x.onclick = closeSheet; ov.onclick = e => { if (e.target === ov) closeSheet(); };
@@ -2912,7 +2948,11 @@ async function toggleCL(c, redraw) {
   if (r.error) { on ? S.add(me.id) : S.delete(me.id); redraw(); alert(r.error.message); }
 }
 async function openCmts(p, onChange) {
-  const {sh, t, body} = sheet(""), bar = el("div", "sbar"), rb = el("div", "t2"), inp = el("input"), snd = el("button", "sm", "Send");
+  const {sh, t, body} = sheet("");
+  const ov = document.getElementById("sheet");
+  ov.classList.add("cm-sheet");
+  sh.classList.add("cm-panel");
+  const bar = el("div", "sbar"), rb = el("div", "t2"), inp = el("input"), snd = el("button", "sm", "Send");
   inp.placeholder = "Add comment…"; inp.maxLength = 500; snd.type = "button"; rb.style.cssText = "padding:6px 14px 0;display:none;cursor:pointer";
   if (DT() && !dtFitsBoth() && $("#app").classList.contains("open")) $("#back").click();
   if (DT()) { sh.parentNode.classList.add("cmside"); $("#app").classList.add("cmo"); }
@@ -2920,6 +2960,8 @@ async function openCmts(p, onChange) {
   const all = () => fcm[p.id] || [], kids = id => all().filter(r => String(r.parent_id) === String(id));
   const setReply = c => { reply = c; const n = c ? (names[c.user_id] || "Someone") : ""; rb.style.display = c ? "block" : "none"; rb.textContent = c ? "Replying to " + n + "  ✕" : ""; inp.placeholder = c ? "Reply to " + n + "…" : "Add comment…"; if (c) inp.focus(); };
   rb.onclick = () => setReply(null);
+  const handle = el("div", "cm-handle");
+  sh.insertBefore(handle, sh.firstChild);
   const row = (c, nested) => {
     const nm = names[c.user_id] || "Someone", d = el("div", "fci2"), mid = el("div", "mid"), meta = el("div", "t2"), S = fcl[String(c.id)] || new Set(), on = S.has(me.id), hb = el("button", "chb" + (on ? " on" : "")), rp = el("button", "lnk", "Reply");
     if (nested) d.style.marginLeft = "44px";
@@ -3517,7 +3559,7 @@ function aboutMe(box, mine) {
   const s = el("div", "asec abm"), h = el("div", "ah"); h.append(el("b", null, "About me"));
   if (mine) { const e = el("button", "", ""); e.type = "button"; e.innerHTML = PENCIL; e.onclick = editProfile; h.append(e); }
   s.append(h); const bio = ((pf.det || {}).bio || {}).v; if (bio) s.append(el("div", "abio", bio));
-  let n = 0; EP[0][1].forEach(f => { const v = epVal(f); if (v) { const r = el("div", "arow"); r.append(el("span", "ai", f[1]), el("span", "at", f[3] === "date" ? fmtDate(v) : v)); s.append(r); n++; } });
+  let n = 0; EP[0][1].forEach(f => { const v = epVal(f); if (v) { const r = el("div", "arow"); const ai = el("span", "ai"); ai.innerHTML = uiIcon(f[1], 22); r.append(ai, el("span", "at", f[3] === "date" ? fmtDate(v) : v)); s.append(r); n++; } });
   if (!n && !bio) { if (!mine) return; s.append(el("div", "t2", "Add your current city, hometown and birthday.")); }
   box.append(s);
 }
@@ -3530,7 +3572,7 @@ function drawAbout(box, mine, uid) {
   };
   EP.forEach(([title, fields]) => {
     if (title === "Basics") return;
-    const kids = []; fields.forEach(f => { const v = epVal(f); if (v) kids.push(row(f[1], f[3] === "date" ? fmtDate(v) : v)); });
+    const kids = []; fields.forEach(f => { const v = epVal(f); if (v) { const rr = el("div", "arow"), ai = el("span", "ai"); ai.innerHTML = uiIcon(f[1], 22); rr.append(ai, el("span", "at", f[3] === "date" ? fmtDate(v) : v)); kids.push(rr); } });
     if (kids.length) sec(title, kids); else if (mine && title === "Basics") sec(title, [el("div", "t2", "Add your current city, hometown and birthday.")]);
   });
 }
@@ -3600,7 +3642,7 @@ async function editProfile() {
         const v = get(f), tile = el("div", "eft" + (v ? "" : " noval")), m = el("div", "em");
         m.append(el("div", "ehl", f[2]), el("div", "ehv", v ? (f[3] === "date" ? fmtDate(v) : v) : "Tap to add"));
         if (v) m.append(el("div", "ehp", EPV[prv(f)]));
-        tile.append(el("span", "eic", f[1]), m); tile.onclick = () => editField(f); g.append(tile);
+        const eic = el("span", "eic"); eic.innerHTML = uiIcon(f[1], 23); tile.append(eic, m); tile.onclick = () => editField(f); g.append(tile);
       });
       o.append(g);
     });
@@ -4098,12 +4140,22 @@ function setDetail(it, row) {
     const log = el("div"), status = el("div", "cap", "Loading activity…"); d.append(status, log);
     (async () => {
       const entries = [], notes = [];
+      const activityBody = (body, userId = me.id) => {
+        const raw = String(body == null ? "" : body).trim();
+        if (!raw) return "";
+        const m = {user_id: userId, body: raw};
+        const sys = sysText(m), call = callPv(m), story = storyTag(raw);
+        if (sys) return sys;
+        if (call) return call;
+        if (story) return "Story reply" + (story.text ? ": " + safeMessageText(story.text).slice(0, 80) : "");
+        return safeMessageText(raw).slice(0, 100);
+      };
       const take = async (label, query, describe) => { try { const r = await query; if (r.error) { notes.push(label); return; } (r.data || []).forEach(x => entries.push({t: Date.parse(x.created_at || x.updated_at || "") || 0, label: describe(x)})); } catch (e) { notes.push(label); } };
       await Promise.all([
-        take("posts", sb.from("posts").select("id,body,kind,created_at").eq("user_id", me.id).order("created_at", {ascending: false}).limit(20), x => "Published a " + (x.kind === "clip" ? "clip" : "post") + ((x.body || "").trim() ? ": " + x.body.trim().slice(0, 100) : "")),
-        take("comments", sb.from("post_comments").select("id,body,created_at").eq("user_id", me.id).order("created_at", {ascending: false}).limit(20), x => "Commented" + ((x.body || "").trim() ? ": " + x.body.trim().slice(0, 100) : "")),
+        take("posts", sb.from("posts").select("id,body,kind,created_at").eq("user_id", me.id).order("created_at", {ascending: false}).limit(20), x => { const body = activityBody(x.body); return body === "Call activity" || body === "Group activity" || body === "App activity" ? body : "Published a " + (x.kind === "clip" ? "clip" : "post") + (body ? ": " + body : ""); }),
+        take("comments", sb.from("post_comments").select("id,body,created_at").eq("user_id", me.id).order("created_at", {ascending: false}).limit(20), x => { const body = activityBody(x.body); return body === "Call activity" || body === "Group activity" || body === "App activity" ? body : "Commented" + (body ? ": " + body : ""); }),
         take("likes", sb.from("post_likes").select("post_id,created_at").eq("user_id", me.id).order("created_at", {ascending: false}).limit(20), x => "Liked a post"),
-        take("messages", sb.from("messages").select("id,body,created_at").eq("user_id", me.id).order("created_at", {ascending: false}).limit(20), x => "Sent a message" + ((x.body || "").trim() ? ": " + x.body.trim().slice(0, 80) : ""))
+        take("messages", sb.from("messages").select("id,body,created_at,user_id").eq("user_id", me.id).order("created_at", {ascending: false}).limit(20), x => { const body = activityBody(x.body, x.user_id); if (["Call activity", "Group activity", "App activity"].includes(body)) return body; if (/^(Audio|Video) call ended|^(Missed |Audio|Video) (audio|video )?call/i.test(body)) return body; if (body.startsWith("You ") || body.includes(" added ") || body.includes(" left the group") || body.includes(" named the group ")) return body; return "Sent a message" + (body ? ": " + body.slice(0, 80) : ""); })
       ]);
       entries.sort((a,b) => b.t-a.t); log.replaceChildren();
       if (!entries.length) log.append(mfaCap("No activity records were found in the available tables."));
@@ -4385,7 +4437,7 @@ function fill(m) {
   o.pic.replaceChildren(); o.pic.classList.add("hide");
   if (gone) { o.bub.textContent = "Message taken back"; o.bub.classList.add("gone"); o.bub.classList.remove("clog"); o.bub.classList.remove("hide"); }
   else {
-    o.bub.classList.remove("gone"); o.bub.classList.toggle("clog", !!cl); if (cl) drawCall(o.bub, m, cl); else { const stg = storyTag(m.body), tx = stg ? stg.text : m.body; o.bub.textContent = tx || ""; o.bub.classList.toggle("hide", !tx); }
+    o.bub.classList.remove("gone"); o.bub.classList.toggle("clog", !!cl); if (cl) drawCall(o.bub, m, cl); else { const stg = storyTag(m.body), tx = stg ? stg.text : safeMessageText(m.body); o.bub.textContent = tx || ""; o.bub.classList.toggle("hide", !tx); }
     if (m.image_path && isVid(m.image_path)) {
       o.pic.classList.remove("hide");
       const t = el("div", "mtile"), v = el("video"); v.muted = true; v.playsInline = true; v.preload = "metadata";
@@ -4487,7 +4539,15 @@ function openMpop(m, anchor) {
 document.addEventListener("click", e => { if (!e.target.closest("#mpop")) closeMpop(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeMpop(); });
 addEventListener("resize", closeMpop); $("#msgs").addEventListener("scroll", closeMpop, {passive: true});
-const msgSnip = m => !m ? "" : m.deleted_at ? "Message taken back" : m.body ? m.body.slice(0, 80) : m.image_path ? (isVid(m.image_path) ? "🎬 Video" : "📷 Photo") : "";
+const msgSnip = m => {
+  if (!m) return "";
+  if (m.deleted_at) return "Message taken back";
+  const sys = sysText(m), call = callPv(m), story = storyTag(m.body);
+  if (sys || call) return sys || call;
+  if (story) return ("Story reply: " + story.text).slice(0, 80);
+  if (m.body) return safeMessageText(m.body).slice(0, 80);
+  return m.image_path ? (isVid(m.image_path) ? "🎬 Video" : "📷 Photo") : "";
+};
 function setReply(m) {
   if (m && editing) stopEdit();
   replyTo = m || null; $("#rb").classList.toggle("hide", !m);
@@ -4699,7 +4759,7 @@ function toggleRow(label, sub, on, fn) {
   r.onclick = () => sw.click(); r.append(mid, sw); return r;
 }
 function actRow(ic, label, fn, cls) {
-  const r = el("div", "irow" + (cls ? " " + cls : "")); r.append(el("span", "ic", ic), el("div", "mid", label)); r.onclick = fn; return r;
+  const r = el("div", "irow" + (cls ? " " + cls : "")), icon = el("span", "ic"); icon.innerHTML = uiIcon(ic, 21); r.append(icon, el("div", "mid", label)); r.onclick = fn; return r;
 }
 function openInfo(view) {
   const r = rooms.find(x => x.id === cur); if (!r) return;
@@ -4979,9 +5039,29 @@ function dmIntro(r) {
   return d;
 }
 
+
+/* Consistent outline SVG icons for Chat info and profile details */
+const UI_ICON_PATHS = {
+  "🔍":`<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>`,
+  "🖼":`<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>`,
+  "🔔":`<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>`,
+  "🔕":`<path d="m3 3 18 18M10 21h4M18 8a6 6 0 0 0-9-5M6 8c0 7-3 7-3 9h14"/>`,
+  "➕":`<path d="M12 5v14M5 12h14"/>`,
+  "✏️":`<path d="m16 4 4 4L8 20H4v-4L16 4Z"/><path d="m14 6 4 4"/>`,
+  "👥":`<path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>`,
+  "⛔":`<circle cx="12" cy="12" r="9"/><path d="m5.6 5.6 12.8 12.8"/>`,
+  "🚷":`<circle cx="12" cy="12" r="9"/><path d="m5.6 5.6 12.8 12.8M12 7v5"/>`,
+  "🗑":`<path d="M3 6h18M8 6V4h8v2m-11 0 1 14h12l1-14M10 11v5m4-5v5"/>`,
+  "🚪":`<path d="M4 21V3h12v18M16 12h5m-3-3 3 3-3 3"/><path d="M9 12h.01"/>`,
+  "📍":`<path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>`,
+  "🏠":`<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1Z"/>`,
+  "🎂":`<path d="M4 11h16v9H4zM3 20h18M8 11V8m8 3V8M12 11V6M7 5c0-1 1-2 1-3m8 3c0-1-1-2-1-3"/><path d="M4 15c2 2 4-2 6 0s4 2 6 0 4 2 4 0"/>`
+};
+function uiIcon(key, size=22) { const path = UI_ICON_PATHS[key]; if (!path) return key; return '<svg class=\"ui-svg\" viewBox=\"0 0 24 24\" width=\"'+size+'\" height=\"'+size+'\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\">'+path+'</svg>'; }
+
 // ---------- GROUP STYLE ----------
 const initial = r => (r.is_dm || r.is_group) ? ([...(title(r) || "?")][0] || "?").toUpperCase() : "🌐";
-const qbtn = (ic, lb, fn) => { const b = el("div", "qb"), c = el("button", "gray", ic); c.type = "button"; c.onclick = fn; b.append(c, el("div", null, lb)); return b; };
+const qbtn = (ic, lb, fn) => { const b = el("div", "qb"), c = el("button", "gray"); c.type = "button"; c.innerHTML = uiIcon(ic, 21); c.onclick = fn; b.append(c, el("div", null, lb)); return b; };
 function sysLog(b) { const x = /^\[\[sys:(rename|add|left)(?::(.*))?\]\]$/s.exec(b || ""); return x ? {k: x[1], v: x[2] || ""} : null; }
 function sysText(m) {
   const c = sysLog(m.body); if (!c) return null;
@@ -5549,7 +5629,20 @@ async function beginCall(r, video, caller) {
 }
 
 // call log messages are normal chat messages with a special body, e.g. [[call:missed:audio]] or [[call:ended:video:151]]
-const callLog = b => { const x = /^\[\[call:(missed|ended):(audio|video)(?::(\d+))?\]\]$/.exec(b || ""); return x ? {st: x[1], kind: x[2], sec: +x[3] || 0} : null; };
+const callLog = b => {
+  const x = /^\s*\[\[\s*call\s*:\s*(missed|ended)\s*:\s*(audio|video)(?:\s*:\s*(\d+))?\s*\]\]\s*$/i.exec(String(b == null ? "" : b));
+  return x ? {st: x[1].toLowerCase(), kind: x[2].toLowerCase(), sec: +x[3] || 0} : null;
+};
+// Fallback guard for malformed/older internal call markers: show a readable label, never raw syntax.
+const safeMessageText = b => {
+  const raw = String(b == null ? "" : b);
+  if (/^\s*\[\[\s*call\b/i.test(raw)) return "Call activity";
+  if (/^\s*\[\[\s*sys\b/i.test(raw)) return "Group activity";
+  if (/^\s*\[\[\s*story\b/i.test(raw)) return "Story reply";
+  // Catch any future/unknown internal marker so implementation strings never appear in chat UI.
+  if (/^\s*\[\[[a-z][\w-]*(?::[^\]]*)?\]\]/i.test(raw)) return "App activity";
+  return raw;
+};
 function callTexts(m, c) {
   const mine = m.user_id === me.id, K = c.kind === "video" ? "Video" : "Audio";
   if (c.st === "missed") return mine ? {t: K + " call", s: "No answer"} : {t: "Missed " + c.kind + " call", s: ""};
@@ -5677,3 +5770,4 @@ $("#back").onclick = () => { $("#app").classList.remove("open"); cur = null; lea
 sb.auth.getSession().then(({data}) => { if (!data.session) { let b = null; try { b = localStorage.getItem(BK); } catch (e) {} if (!b) showAuth(); } });
 </script>
 </body></html>
+\n@media(prefers-reduced-motion:reduce){.sheetbg.cm-sheet,.sheetbg.cm-sheet>.sheet,html.dt .sheetbg.cm-sheet.cmside .sheet{animation-duration:.01ms!important;transition:none!important}}\n
