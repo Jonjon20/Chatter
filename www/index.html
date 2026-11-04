@@ -231,7 +231,10 @@ html.dt .sheetbg.pmdt .sheet{width:min(440px,92vw);max-height:80vh;border-radius
 .ct{position:relative}.ct img{width:100%;height:100%;object-fit:cover}.ct .tx{padding:8px;font-size:12px;overflow:hidden;height:100%;background:var(--bg2)}.ct .rmv{position:absolute;top:4px;right:4px;background:#0008;color:#fff;border-radius:50%;width:24px;height:24px;padding:0;font-size:13px;line-height:24px}
 .rl .sd{gap:14px;align-items:center}.rl .sd button{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;color:#fff;padding:2px;font-size:13px;font-weight:600;text-shadow:0 1px 3px #000}.rl .sd svg{width:34px;height:34px;filter:drop-shadow(0 1px 3px #0008)}.rl .sd button.on{color:#ff2d55}.rl .sd button.svb.on{color:#ffc928}
 .rav{position:relative;margin-bottom:10px}.rl .sd .rplus{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);width:20px;height:20px;border-radius:50%;background:#fe2c55;color:#fff;padding:0;font-size:15px;line-height:20px;display:block;text-shadow:none}.rl .sd .rav .av{width:46px;height:46px;border:2px solid #fff;font-size:18px}
-.sheetbg{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.5);display:flex;align-items:flex-end}.sheet{width:100%;max-height:72%;display:flex;flex-direction:column;background:var(--bg2);color:var(--tx);border-radius:16px 16px 0 0}
+.sheetbg{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.5);display:flex;align-items:flex-end}
+/* phone: Archived chats / Message requests / Message delivery take the whole screen */
+.sheetbg.fullp{background:var(--bg);align-items:stretch}
+.sheetbg.fullp>.sheet{height:100%;max-height:none;border-radius:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}.sheet{width:100%;max-height:72%;display:flex;flex-direction:column;background:var(--bg2);color:var(--tx);border-radius:16px 16px 0 0}
 @keyframes cmBackdropIn{from{opacity:0}to{opacity:1}}
 @keyframes cmMobileIn{from{transform:translate3d(0,100%,0);opacity:.75}to{transform:translate3d(0,0,0);opacity:1}}
 @keyframes cmMobileOut{from{transform:translate3d(0,0,0);opacity:1}to{transform:translate3d(0,100%,0);opacity:.7}}
@@ -1563,7 +1566,7 @@ async function storyPolicy(uid) {
   try { const {data, error} = await sb.rpc("story_reply_policy", {owner: uid}); if (!error && typeof data === "string" && data) { spCache[uid] = {v: data, t: Date.now()}; return data; } } catch (e) {}
   return "everyone";
 }
-const storyPv = l => { if (storyReplyBlocked(l)) return "Story reply hidden (your story reply settings)"; const g = storyTag(l.body); return g ? (l.user_id === me.id ? "You replied to a story: " : "Replied to your story: ") + safeMessageText(g.text) : safeMessageText(l.body); };
+const storyPv = l => { if (storyReplyBlocked(l)) return ""; const g = storyTag(l.body); return g ? (l.user_id === me.id ? "You replied to a story: " : "Replied to your story: ") + safeMessageText(g.text) : safeMessageText(l.body); };
 const pvText = l => l.deleted_at ? "Message taken back" : sysText(l) || callPv(l) || (l.image_path ? (isVid(l.image_path) ? "🎬 " + (safeMessageText(l.body) || "Video") : "📷 " + (safeMessageText(l.body) || "Photo")) : storyPv(l));
 let rd = {}; try { rd = JSON.parse(localStorage.getItem("rd") || "{}"); } catch (e) {}
 const markRead = (rid, ts) => { rd[rid] = ts; try { localStorage.setItem("rd", JSON.stringify(rd)); } catch (e) {} };
@@ -1909,7 +1912,7 @@ function attachChatMenu(node, r) {
   if (DT()) { const mb = el("button", "rmore", "⋯"); mb.type = "button"; mb.title = "More"; mb.onclick = e => { e.stopPropagation(); const b = mb.getBoundingClientRect(); openChatMenu(r, {clientX: b.left - 240, clientY: b.bottom + 4}); }; node.append(mb); }
 }
 function openArchived() {
-  const {body} = sheet("Archived chats"); if (DT()) { const ov = $("#sheet"); if (ov) ov.classList.add("dtpanel"); }
+  const {body} = sheet("Archived chats"); { const ov = $("#sheet"); if (ov) ov.classList.add(DT() ? "dtpanel" : "fullp"); }
   const L = rooms.filter(isArch).sort((a, b) => stamp(b) - stamp(a));
   const empty = () => body.append(el("div", "hint", "No archived chats. Long-press (or right-click) a chat and choose Archive."));
   if (!L.length) return empty();
@@ -1951,11 +1954,11 @@ function renderDelivery(d) {
   d.append(el("div", "cap", "“Don't receive” hides new messages from those people on this account. They can still send them unless you also turn on Settings › Blocking › Block messages from strangers."));
 }
 function openMessageDelivery() {
-  const {body} = sheet("Message delivery"); if (DT()) { const ov = $("#sheet"); if (ov) ov.classList.add("dtpanel"); }
+  const {body} = sheet("Message delivery"); { const ov = $("#sheet"); if (ov) ov.classList.add(DT() ? "dtpanel" : "fullp"); }
   renderDelivery(body);
 }
 function openMessageRequests(startTab) {
-  const {body} = sheet("Message requests"); if (DT()) { const ov = $("#sheet"); if (ov) ov.classList.add("dtpanel"); }
+  const {body} = sheet("Message requests"); { const ov = $("#sheet"); if (ov) ov.classList.add(DT() ? "dtpanel" : "fullp"); }
   let tabK = startTab || "request";
   const draw = () => {
     body.replaceChildren();
@@ -2751,7 +2754,7 @@ async function openStory(u, custom) {
     const dm = await sb.rpc("start_dm", {other: u});
     if (dm.error) { toast(dm.error.message); return false; }
     const {data: sent, error} = await sb.from("messages").insert({room_id: dm.data, body: "[[story:" + st.id + "]]" + text}).select().single();
-    if (error) { toast(/CHATTER_STRANGERS_BLOCKED|friends/i.test(error.message || "") ? "This person only accepts messages from friends." : "Couldn’t send your reply."); return false; }
+    if (error) { toast(/CHATTER_STORY_REPLY_BLOCKED/.test(error.message || "") ? "Replies are turned off for this story." : /CHATTER_STRANGERS_BLOCKED|friends/i.test(error.message || "") ? "This person only accepts messages from friends." : "Couldn’t send your reply."); return false; }
     sfx("sent"); toast("Reply sent");
     if (sent) { if (!rooms.find(r => r.id === dm.data)) await loadChats(); showSent(sent, dm.data); }
     return true;
@@ -4697,7 +4700,7 @@ function fill(m) {
   o.pic.replaceChildren(); o.pic.classList.add("hide");
   if (gone) { o.bub.textContent = "Message taken back"; o.bub.classList.add("gone"); o.bub.classList.remove("clog"); o.bub.classList.remove("hide"); }
   else {
-    o.bub.classList.remove("gone"); o.bub.classList.toggle("clog", !!cl); if (cl) drawCall(o.bub, m, cl); else { const stg = storyTag(m.body), blk = storyReplyBlocked(m), tx = blk ? "Story reply hidden (your story reply settings)" : stg ? stg.text : safeMessageText(m.body); o.bub.textContent = tx || ""; o.bub.classList.toggle("hide", !tx); }
+    o.bub.classList.remove("gone"); o.bub.classList.toggle("clog", !!cl); if (cl) drawCall(o.bub, m, cl); else { const stg = storyTag(m.body), blk = storyReplyBlocked(m), tx = blk ? "" : stg ? stg.text : safeMessageText(m.body); o.bub.textContent = tx || ""; o.bub.classList.toggle("hide", !tx); o.row.classList.toggle("hide", !!blk); }
     if (m.image_path && isVid(m.image_path)) {
       o.pic.classList.remove("hide");
       const t = el("div", "mtile"), v = el("video"); v.muted = true; v.playsInline = true; v.preload = "metadata";
