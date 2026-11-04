@@ -1925,9 +1925,19 @@ function openArchived() {
   });
 }
 // ---------- MESSAGE REQUESTS (messages from people who are not your friends) ----------
-let repliedRooms = new Set();
+let repliedRooms = new Set(), gAdmins = {};
+const isGroupAdmin = (r, u) => !!r && (r.created_by === u || !!(gAdmins[r.id] && gAdmins[r.id].has(u)));
 const MSG_ICON = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 8 8 6 8-6"/></svg>';
 const msgDelivery = () => Object.assign({groups: "chats", others: "requests"}, S.msg_delivery || {});
+// what the OTHER person chose in Message delivery, as it applies to me: "chats" | "requests" | "none" ("none" = no Message button).
+// If the SQL isn't installed yet, nothing is hidden.
+const mdCache = {};
+async function msgPolicyFor(uid) {
+  const c = mdCache[uid]; if (c && Date.now() - c.t < 60000) return c.v;
+  try { const {data, error} = await sb.rpc("message_delivery_for", {owner: uid}); if (!error && typeof data === "string" && data) { mdCache[uid] = {v: data, t: Date.now()}; return data; } } catch (e) {}
+  return "chats";
+}
+const canMessage = uid => { const c = mdCache[uid]; return isFriend(uid) || !(c && c.v === "none"); };
 const sharesGroup = u => rooms.some(r => r.is_group && (members[r.id] || []).includes(u));
 // "chat" = normal chat list, "request" = You may know, "spam" = Spam tab, "hidden" = never delivered
 function msgBucket(r) {
@@ -1982,6 +1992,52 @@ function openMessageRequests(startTab) {
   };
   draw();
 }
+// ---------- @mention autocomplete: type "@" and a list of people appears right away ----------
+(function () { const st = document.createElement("style"); st.textContent = `
+#mpop{position:fixed;z-index:200;background:var(--bg2);color:var(--tx);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.4);max-height:260px;overflow-y:auto;min-width:220px;max-width:min(360px,calc(100vw - 16px));padding:4px}
+#mpop .mi{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer;font-size:15px}
+#mpop .mi.on,#mpop .mi:hover{background:var(--bg)}
+#mpop .mi .av{width:30px;height:30px;font-size:13px;flex:none}
+#mpop .mi small{color:var(--mut);margin-left:auto;font-size:12px}
+`; document.head.append(st); })();
+function mentionPeople(extraIds, strict) {
+  const seen = new Set([me.id]), out = [], add = (id, tag) => { if (!id || seen.has(id) || !names[id]) return; seen.add(id); out.push({id, name: names[id], tag}); };
+  (extraIds || []).forEach(id => add(id, "")); if (strict) return out; frIds().forEach(id => add(id, "Friend")); Object.keys(names).forEach(id => add(id, ""));
+  return out;
+}
+function attachMention(inp, getIds, strict) {
+  if (!inp || inp._mention) return; inp._mention = true;
+  let items = [], sel = 0, tokenStart = -1, skip = false;
+  const pop = () => document.getElementById("mpop"), close = () => { const o = pop(); if (o) o.remove(); items = []; };
+  const choose = i => {
+    const it = items[i]; if (!it) return; const v = inp.value, caret = inp.selectionStart, ins = "@" + it.name + " ";
+    inp.value = v.slice(0, tokenStart) + ins + v.slice(caret); const pos = tokenStart + ins.length; inp.setSelectionRange(pos, pos); close(); skip = true; inp.focus(); inp.dispatchEvent(new Event("input", {bubbles: true}));
+  };
+  const paint = () => {
+    const prev = pop(); if (prev) prev.remove(); if (!items.length) return;
+    const o = el("div"); o.id = "mpop"; o.onmousedown = e => e.preventDefault();
+    items.forEach((it, i) => { const r = el("div", "mi" + (i === sel ? " on" : "")); r.append(avatar(it.id, (it.name || "?")[0].toUpperCase(), "sm"), el("span", null, it.name)); if (it.tag) r.append(el("small", null, it.tag)); r.onmousedown = e => { e.preventDefault(); choose(i); }; o.append(r); });
+    document.body.append(o); const b = inp.getBoundingClientRect(), h = o.offsetHeight, w = o.offsetWidth;
+    o.style.left = Math.max(8, Math.min(b.left, innerWidth - w - 8)) + "px"; o.style.top = (b.top - h - 6 > 8 ? b.top - h - 6 : b.bottom + 6) + "px";
+  };
+  const update = () => {
+    if (skip) { skip = false; return close(); }
+    const caret = inp.selectionStart == null ? inp.value.length : inp.selectionStart, m = /(^|[\s(])@([^\n@]{0,30})$/.exec(inp.value.slice(0, caret));
+    if (!m) return close();
+    tokenStart = caret - m[2].length - 1; const q = m[2].trim().toLowerCase();
+    items = mentionPeople(getIds ? getIds() : [], strict).filter(p => !q || p.name.toLowerCase().includes(q)).sort((a, b) => (a.name.toLowerCase().startsWith(q) ? 0 : 1) - (b.name.toLowerCase().startsWith(q) ? 0 : 1)).slice(0, 6);
+    sel = 0; paint();
+  };
+  inp.addEventListener("input", update);
+  inp.addEventListener("click", update);
+  inp.addEventListener("blur", () => setTimeout(close, 120));
+  inp.addEventListener("keydown", e => {
+    if (!items.length) return;
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); sel = (sel + (e.key === "ArrowDown" ? 1 : items.length - 1)) % items.length; paint(); }
+    else if (e.key === "Enter" || e.key === "Tab") { e.preventDefault(); e.stopImmediatePropagation(); choose(sel); }
+    else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); close(); }
+  }, true);
+}
 function renderLimited(d) {
   d.append(el("div", "cap", "Limit an account to quiet a chat without blocking. Their chat leaves your chat list, you get no sounds, badges or in-app alerts from them, and your “seen” and “typing” are not sent to them. They are not told."));
   const list = el("div", "csnd-list"), paint = () => {
@@ -2002,8 +2058,8 @@ async function loadChats() {
   const [r, m, l] = await Promise.all([
     sb.from("rooms").select("*"), sb.from("room_members").select("*"),
     sb.from("messages").select("*").order("created_at", {ascending: false}).limit(300)]);
-  rooms = r.data || []; members = {}; latest = {};
-  (m.data || []).forEach(x => { (members[x.room_id] = members[x.room_id] || []).push(x.user_id); if (x.last_read_at) (reads[x.room_id] = reads[x.room_id] || {})[x.user_id] = Date.parse(x.last_read_at); });
+  rooms = r.data || []; members = {}; latest = {}; gAdmins = {};
+  (m.data || []).forEach(x => { if (x.is_admin) (gAdmins[x.room_id] = gAdmins[x.room_id] || new Set()).add(x.user_id); (members[x.room_id] = members[x.room_id] || []).push(x.user_id); if (x.last_read_at) (reads[x.room_id] = reads[x.room_id] || {})[x.user_id] = Date.parse(x.last_read_at); });
   (l.data || []).forEach(x => { if (!latest[x.room_id]) latest[x.room_id] = x; });
   repliedRooms = new Set((l.data || []).filter(x => x.user_id === me.id).map(x => x.room_id));
   await ensureNames([...(m.data || []).map(x => x.user_id), ...Object.values(latest).map(x => x.user_id)]);
@@ -2249,7 +2305,8 @@ const actUnseen = () => { const s = +localStorage.getItem("nseen") || 0; return 
 const nBadge = () => (S.n_fr === false ? 0 : fr.filter(f => f.status === "pending" && f.addressee === me.id).length) + (tab === "notifs" ? 0 : actUnseen());
 function paintNBadge() { const b = $("#b-notifs"), n = nBadge(); b.textContent = n > 99 ? "99+" : n; b.classList.toggle("hide", !n); }
 let myHandle = null;
-const isMention = b => !!myHandle && new RegExp("(^|[^\\w])@" + myHandle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "(?![\\w.])", "i").test(String(b || ""));
+// a mention is "@" + your display name (not your username), e.g. "@Jon Jon G. San Jose"
+const isMention = b => { const n = me && names[me.id]; if (!n) return false; try { return new RegExp("(^|[^\\p{L}\\p{N}_])@" + n.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+") + "(?![\\p{L}\\p{N}])", "iu").test(String(b || "")); } catch (e) { return false; } };
 async function loadActivity() {
   if (!me) return;
   try { if (!localStorage.getItem("nseen")) localStorage.setItem("nseen", Date.now()); } catch (e) {}
@@ -2272,7 +2329,7 @@ async function loadActivity() {
   const tm = x => Date.parse(x.created_at || "") || 0;
   const nextAct = [...L.map(x => ({type: "like", t: tm(x), u: x.user_id, pid: x.post_id, kind: (pm[x.post_id] || {}).kind, id: "like:" + x.post_id + ":" + x.user_id})),
     ...RP.filter(x => !C.some(c => c.id === x.id)).map(x => ({type: "reply", t: tm(x), u: x.user_id, pid: x.post_id, txt: x.body, id: "reply:" + x.id})),
-    ...G.filter(x => !callLog(x.body)).map(x => ({type: "group", t: tm(x), u: x.user_id, rid: x.room_id, txt: x.body, id: "group:" + x.id})),
+    ...G.filter(x => !callLog(x.body)).map(x => ({type: isMention(x.body) ? "mention" : "group", rid: x.room_id, t: tm(x), u: x.user_id, rid: x.room_id, txt: x.body, id: "group:" + x.id})),
     ...C.map(x => ({type: isMention(x.body) ? "mention" : "comment", t: tm(x), u: x.user_id, pid: x.post_id, kind: (pm[x.post_id] || {}).kind, txt: x.body, id: "comment:" + x.id})),
     ...P.map(x => ({type: isMention(x.body) ? "mention" : "post", t: tm(x), u: x.user_id, pid: x.id, kind: x.kind, txt: x.body, id: "post:" + x.id})),
     ...M.map(x => ({type: "message", t: tm(x), u: x.user_id, rid: x.room_id, txt: x.body, id: "message:" + x.id}))].filter(a => S.n_inapp !== false && !(S.n_comments === false && a.type === "comment") && !(S.n_likes === false && a.type === "like") && !(a.type === "message" && msgBucket(rooms.find(r => r.id === a.rid)) !== "chat") && !(S.n_messages === false && a.type === "message") && !(S.n_replies === false && a.type === "reply") && !(S.n_mentions === false && a.type === "mention") && !(S.n_groups === false && a.type === "group") && !(a.type === "message" && storyReplyBlocked({user_id: a.u, body: a.txt})) && !(S.n_clips === false && a.kind === "clip") && !(S.n_profile === false && a.type === "post") && !(a.type === "group" && storyReplyBlocked({user_id: a.u, body: a.txt}))).sort((a, b) => b.t - a.t).slice(0, 100);
@@ -2299,12 +2356,12 @@ function notifActRow(box, a, t, seenT) {
   } else if (sys) {
     msg = "👥 " + sys;
   } else {
-    msg = a.type === "message" ? (stg ? "💬 Replied to your story" : "💬 Sent you a message") + (cut ? ": " + cut : ".") : a.type === "like" ? (a.kind === "story" ? "❤️ Reacted to your story." : "❤️ Liked your " + w + ".") : a.type === "comment" ? "💬 Commented on your " + w + (cut ? ": " + cut : ".") : a.type === "reply" ? "↩️ Replied to your comment" + (cut ? ": " + cut : ".") : a.type === "mention" ? "@ Mentioned you" + (cut ? ": " + cut : ".") : a.type === "group" ? "👥 New message in a group" + (cut ? ": " + cut : ".") : "📝 Posted a new " + w + (cut ? ": " + cut : ".");
+    msg = a.type === "message" ? (stg ? "💬 Replied to your story" : "💬 Sent you a message") + (cut ? ": " + cut : ".") : a.type === "like" ? (a.kind === "story" ? "❤️ Reacted to your story." : "❤️ Liked your " + w + ".") : a.type === "comment" ? "💬 Commented on your " + w + (cut ? ": " + cut : ".") : a.type === "reply" ? "↩️ Replied to your comment" + (cut ? ": " + cut : ".") : a.type === "mention" ? (a.rid ? "@ Mentioned you in a chat" : "@ Mentioned you") + (cut ? ": " + cut : ".") : a.type === "group" ? "👥 New message in a group" + (cut ? ": " + cut : ".") : "📝 Posted a new " + w + (cut ? ": " + cut : ".");
   }
   d.dataset.k = call ? "call" : a.type;
   mid.append(el("div", "t1", nm), el("div", "t2", msg + (t ? " · " + ago2(t) : "")));
   d.append(avatar(a.u, nm[0].toUpperCase(), "", a.u), mid); if (t > seenT) d.append(el("div", "dot"));
-  d.onclick = () => a.type === "message" || a.type === "group" ? openRoom(a.rid) : a.kind === "story" ? (fstories.some(x => x.user_id === me.id) ? openStory(me.id) : toast("This story has expired. You can find it in your archive.")) : openPost(a.pid); box.append(d);
+  d.onclick = () => a.rid ? openRoom(a.rid) : a.kind === "story" ? (fstories.some(x => x.user_id === me.id) ? openStory(me.id) : toast("This story has expired. You can find it in your archive.")) : openPost(a.pid); box.append(d);
 }
 // a post can have several photos (media_paths); old posts only have media_path
 async function postUrls(p) {
@@ -2406,7 +2463,7 @@ function feedRender() {
   [["post", "Newsfeed"], ["clip", "Clips"]].forEach(([k, t]) => { const b = el("button", fmode === k ? "on" : "", t); b.type = "button"; b.onclick = () => { if (fmode !== k) { dropFile(); fdraft.open = false; fdraft.txt = ""; } fmode = k; fposts = []; floading = true; feedDirty = true; render(); loadFeed(); }; tt.append(b); });
   fm.append(hb, tt, el("div", "sp")); top.append(fm);
   // "Share something…"
-  const cmp = el("div", "cmp"), ph = el("div", "cph", fmode === "clip" ? "Add a clip" : "What's on your mind?"), gi = el("button", "pi2");
+  const cmp = el("div", "cmp"), ph = el("div", "cph", fmode === "clip" ? "Add a clip" : "Share something…"), gi = el("button", "pi2");
   ph.onclick = () => openDraft(); gi.type = "button"; gi.innerHTML = FI.photo; gi.onclick = () => pickMedia();
   cmp.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase(), "fa"), ph, gi); top.append(cmp);
   if (false) { // replaced by the full-screen composer (openComposer)
@@ -2549,7 +2606,7 @@ function openComposer() {
   if (!clip) { if (friends.length) chips.append(peopleBtn); chips.append(feelBtn, locBtn); body.append(chips); }
   friends.forEach(f => { const l = el("label"), c = el("input"); c.type = "checkbox"; c.checked = (fdraft.tags || []).includes(f); c.onchange = () => { const T = new Set(fdraft.tags || []); c.checked ? T.add(f) : T.delete(f); fdraft.tags = [...T]; paint(); }; l.append(c, el("span", null, names[f] || "Someone")); panel.append(l); });
   peopleBtn.onclick = () => { feelPanel.classList.add("hide"); locPanel.classList.add("hide"); panel.classList.toggle("hide"); };
-  const t = el("textarea", "cmpt"); t.placeholder = clip ? "Write a caption…" : "What's on your mind?"; t.maxLength = 2000; t.value = fdraft.txt; t.rows = 4;
+  const t = el("textarea", "cmpt"); attachMention(t); t.placeholder = clip ? "Write a caption…" : "Share something…"; t.maxLength = 2000; t.value = fdraft.txt; t.rows = 4;
   const grow = () => { t.style.height = "auto"; t.style.height = Math.max(120, t.scrollHeight) + "px"; };
   t.oninput = () => { fdraft.txt = t.value; grow(); paint(); };
   const media = el("div"); body.append(panel, feelPanel, locPanel, t, media);
@@ -2974,6 +3031,7 @@ async function reportPost(p, where) {
 function pmSheet(title) { const r = sheet(title); if (DT()) r.sh.parentNode.classList.add("pmdt"); return r; }
 function postMenu(p, c, inProfile, after, anchor) {
   const mine = p.user_id === me.id, nm = names[p.user_id] || "Someone", dt = DT() && anchor;
+  if (!mine) msgPolicyFor(p.user_id);
   let body;
   if (dt) { closePop(); body = el("div", "pop pmpop"); body.id = "pop"; } else body = sheet("Post options").body;
   const grp = rows => {
@@ -2986,7 +3044,7 @@ function postMenu(p, c, inProfile, after, anchor) {
     grp([[PM.archive, "Move to archive", () => archivePost(p, after)], [PM.trash, "Move to trash", () => trashPost(p, after), "red"]]);
   } else {
     if (!inProfile) grp([[PM.plus, "Interested", () => { try { const k = new Set(JSON.parse(localStorage.getItem("finterest") || "[]")); k.add(p.id); localStorage.setItem("finterest", JSON.stringify([...k].slice(-300))); } catch (e) {} toast("Marked as interested."); }], [PM.minus, "Not interested", () => hidePostPanel(c, p)]]);
-    grp([[PM.report, "Report post", () => reportPost(p)], [PM.msg, "Message " + nm, () => { closeProfile(); closePov(); openDM(p.user_id); }]]);
+    grp([[PM.report, "Report post", () => reportPost(p)], ...(canMessage(p.user_id) ? [[PM.msg, "Message " + nm, () => { closeProfile(); closePov(); openDM(p.user_id); }]] : [])]);
   }
   if (dt) {
     document.body.append(body);
@@ -3182,7 +3240,7 @@ async function openCmts(p, onChange) {
   ov.classList.add("cm-sheet");
   sh.classList.add("cm-panel");
   const bar = el("div", "sbar"), rb = el("div", "t2"), inp = el("input"), snd = el("button", "sm", "Send");
-  inp.placeholder = "Add comment…"; inp.maxLength = 500; snd.type = "button"; rb.style.cssText = "padding:6px 14px 0;display:none;cursor:pointer";
+  attachMention(inp); inp.placeholder = "Add comment…"; inp.maxLength = 500; snd.type = "button"; rb.style.cssText = "padding:6px 14px 0;display:none;cursor:pointer";
   if (DT() && !dtFitsBoth() && $("#app").classList.contains("open")) $("#back").click();
   if (DT()) { sh.parentNode.classList.add("cmside"); $("#app").classList.add("cmo"); }
   let reply = null;
@@ -3616,6 +3674,7 @@ function drawSaved(box) {
 const blankPf = () => ({uid: null, tab: "posts", posts: [], clips: [], loaded: false, box: null, ov: false, info: null, friends: null});
 let pf = blankPf();
 async function pfLoad(uid) {
+  msgPolicyFor(uid).then(v => { if (pf.uid === uid && v === "none" && pf.loaded) pfPaint(); });
   const {data} = await sb.from("posts").select("*").eq("user_id", uid).in("kind", ["post", "clip"]).order("created_at", {ascending: false}).limit(80);
   if (pf.uid !== uid) return;
   const L = liveP(data), ids = L.map(p => p.id);
@@ -3738,7 +3797,7 @@ function drawProfile() {
       btn("Follow back", "", async () => { if (await followUser(uid)) pfPaint(); });
       btn("Remove follower", "gray", async () => { await sb.from("friendships").delete().eq("id", rl.id); refresh(); });
     } else btn("Friends ✓", "gray", async () => { await unfollowUser(uid); pfPaint(); });
-    btn("💬 Message", rl && rl.status === "accepted" ? "" : "gray", () => { closeProfile(); openDM(uid); });
+    if (canMessage(uid)) btn("💬 Message", rl && rl.status === "accepted" ? "" : "gray", () => { closeProfile(); openDM(uid); });
     btn("⋯", "gray sq", e => popMenu(e.currentTarget, [
       ["Audio call", () => { closeProfile(); callUser(uid, false); }],
       ["Video call", () => { closeProfile(); callUser(uid, true); }],
@@ -4091,7 +4150,7 @@ const OPT = {
   "Language and Region": ["language_region", [["en", "English"], ["fil", "Filipino"]], "en", "Filipino translates the Settings menu. Other screens remain in English for now."]
 };
 const TOG = {"Sounds": ["sounds", true, "Plays sounds for messages, likes, notifications and calls."], "Remember this device": ["save_login", true, "When off, you're signed out when you close the app or tab."], "Alerts for new sign-ins": ["alert_login", true, "Shows a notice here when a new device signs in to your account. Email alerts are not sent."],
-  "Comments": ["n_comments", true, "Hides comment notifications in the activity list."], "Likes": ["n_likes", true, "Controls notifications when someone likes your post."], "Replies to comments": ["n_replies", true, "Shows or hides notifications when someone replies to your comment."], "Tags": ["n_tags", true, "Shows or hides tag notifications."], "Mentions": ["n_mentions", true, "Shows or hides notifications when someone writes @yourusername in a post or comment."], "Messages": ["n_messages", true, "Shows or hides recent incoming direct-message notifications in the Notifications tab."], "Reminders": ["n_rem", true, "Shows or hides unread-chat reminders."], "New followers": ["n_fr", true, "Shows or hides new-follower notifications."], "New friends": ["n_friend_accept", true, "Saves your preference for notifications when someone you follow follows you back and you become friends."], "Suggested people": ["n_pymk", true, "Turn off to hide Suggested people."], "Birthdays": ["n_bday", true, "Shows or hides birthday notifications."], "Group activity": ["n_groups", true, "Shows or hides new messages from your group chats in Notifications."], "Profile activity": ["n_profile", true, "Saves your preference for profile activity notifications."], "Clips": ["n_clips", true, "Hides clip notifications in the activity list."], "Push notifications": ["n_push", false, "Turn on to get push notifications on this browser/device. Needs HTTPS and /sw.js deployed next to index.html."], "Email notifications": ["n_email", true, "Sends email notifications through your chatter-notify function. Your choice is saved to your account settings (n_email)."], "In-app notifications": ["n_inapp", true, "Saves your in-app notification preference."], "Notification sounds": ["n_sound", true, "Plays a short original tone for newly detected in-app activity after you interact with Chatterverse. Browser audio rules apply."], "Approve tags before they show on your profile": ["tag_review", false, "When enabled, the app records pending approvals and shows a review queue. Hiding tagged posts across every profile/feed query still requires server-side enforcement."], "Allow story replies": ["story_reply_enabled", true, "When off, story replies sent to you are hidden in your chats and notifications."], "Save stories to archive": ["story_archive", true, "Saves the preference; automatic story archiving is not implemented yet."], "Autoplay clips": ["autoplay_clips", true, "Saves your autoplay preference."], "Block messages from strangers": ["block_strangers", false, "When enabled, the companion SQL migration blocks incoming direct messages from people who are not accepted friends. Existing rooms may remain visible."], "App invites": ["block_app_invites", true, "Saves your preference; app invitations are not currently supported."], "Event invites": ["block_event_invites", true, "Saves your preference; event invitations are not currently supported."], "Autoplay media": ["autoplay_media", true, "Saves your media autoplay preference."], "Reduce motion": ["reduce_motion", false, "Saves your reduced-motion preference; some animations may remain." ]};
+  "Comments": ["n_comments", true, "Hides comment notifications in the activity list."], "Likes": ["n_likes", true, "Controls notifications when someone likes your post."], "Replies to comments": ["n_replies", true, "Shows or hides notifications when someone replies to your comment."], "Tags": ["n_tags", true, "Shows or hides tag notifications."], "Mentions": ["n_mentions", true, "Shows or hides notifications when someone writes @ followed by your name in a post or comment."], "Messages": ["n_messages", true, "Shows or hides recent incoming direct-message notifications in the Notifications tab."], "Reminders": ["n_rem", true, "Shows or hides unread-chat reminders."], "New followers": ["n_fr", true, "Shows or hides new-follower notifications."], "New friends": ["n_friend_accept", true, "Saves your preference for notifications when someone you follow follows you back and you become friends."], "Suggested people": ["n_pymk", true, "Turn off to hide Suggested people."], "Birthdays": ["n_bday", true, "Shows or hides birthday notifications."], "Group activity": ["n_groups", true, "Shows or hides new messages from your group chats in Notifications."], "Profile activity": ["n_profile", true, "Saves your preference for profile activity notifications."], "Clips": ["n_clips", true, "Hides clip notifications in the activity list."], "Push notifications": ["n_push", false, "Turn on to get push notifications on this browser/device. Needs HTTPS and /sw.js deployed next to index.html."], "Email notifications": ["n_email", true, "Sends email notifications through your chatter-notify function. Your choice is saved to your account settings (n_email)."], "In-app notifications": ["n_inapp", true, "Saves your in-app notification preference."], "Notification sounds": ["n_sound", true, "Plays a short original tone for newly detected in-app activity after you interact with Chatterverse. Browser audio rules apply."], "Approve tags before they show on your profile": ["tag_review", false, "When enabled, the app records pending approvals and shows a review queue. Hiding tagged posts across every profile/feed query still requires server-side enforcement."], "Allow story replies": ["story_reply_enabled", true, "When off, story replies sent to you are hidden in your chats and notifications."], "Save stories to archive": ["story_archive", true, "Saves the preference; automatic story archiving is not implemented yet."], "Autoplay clips": ["autoplay_clips", true, "Saves your autoplay preference."], "Block messages from strangers": ["block_strangers", false, "When enabled, the companion SQL migration blocks incoming direct messages from people who are not accepted friends. Existing rooms may remain visible."], "App invites": ["block_app_invites", true, "Saves your preference; app invitations are not currently supported."], "Event invites": ["block_event_invites", true, "Saves your preference; event invitations are not currently supported."], "Autoplay media": ["autoplay_media", true, "Saves your media autoplay preference."], "Reduce motion": ["reduce_motion", false, "Saves your reduced-motion preference; some animations may remain." ]};
 function chatterBase64UrlBytes(base64url) {
   const pad = "=".repeat((4 - base64url.length % 4) % 4);
   const raw = atob((base64url + pad).replace(/-/g, "+").replace(/_/g, "/"));
@@ -4916,6 +4975,7 @@ async function shrink(file) {
   return new Promise((ok, no) => c.toBlob(b => b ? ok(b) : no(new Error("Couldn't process the image")), "image/jpeg", 0.82));
 }
 function showSent(m, rid) { repliedRooms.add(rid); latest[rid] = m; if (cur === rid) { addMsg(m, rid); markRead(rid, m.created_at); } render(); }
+attachMention($("#in"), () => members[cur] || [], true);   // chats: only people in this chat can be mentioned
 $("#f").onsubmit = async e => {
   e.preventDefault();
   const i = $("#in"), body = i.value.trim(), rid = cur;
@@ -5325,12 +5385,14 @@ function uiIcon(key, size=22) { const path = UI_ICON_PATHS[key]; if (!path) retu
 // ---------- GROUP STYLE ----------
 const initial = r => (r.is_dm || r.is_group) ? ([...(title(r) || "?")][0] || "?").toUpperCase() : "🌐";
 const qbtn = (ic, lb, fn) => { const b = el("div", "qb"), c = el("button", "gray"); c.type = "button"; c.innerHTML = uiIcon(ic, 21); c.onclick = fn; b.append(c, el("div", null, lb)); return b; };
-function sysLog(b) { const x = /^\[\[sys:(rename|add|left)(?::(.*))?\]\]$/s.exec(b || ""); return x ? {k: x[1], v: x[2] || ""} : null; }
+function sysLog(b) { const x = /^\[\[sys:(rename|add|left|remove|admin)(?::(.*))?\]\]$/s.exec(b || ""); return x ? {k: x[1], v: x[2] || ""} : null; }
 function sysText(m) {
   const c = sysLog(m.body); if (!c) return null;
   const who = m.user_id === me.id ? "You" : (names[m.user_id] || "Someone");
   if (c.k === "rename") return who + " named the group " + c.v + ".";
   if (c.k === "left") return who + " left the group.";
+  if (c.k === "remove") return who + " removed " + (c.v === me.id ? "you" : (names[c.v] || "someone")) + " from the group.";
+  if (c.k === "admin") return who + " made " + (c.v === me.id ? "you" : (names[c.v] || "someone")) + " an admin.";
   return who + " added " + c.v.split(",").filter(Boolean).map(u => u === me.id ? "you" : (names[u] || "someone")).join(", ") + ".";
 }
 function sepText(ts) {
@@ -5372,7 +5434,7 @@ function openMembers(r, mode, tabSel) {
   let right = null;
   if (mode !== "block") { right = el("button", "ghost", "Add"); right.type = "button"; right.onclick = () => openAddMembers(r); }
   const p = infoShell(mode === "block" ? "Block a member" : "Members", ids.length + " people", () => openInfo(), right);
-  const isAdmin = u => !!r.created_by && u === r.created_by;
+  const isAdmin = u => isGroupAdmin(r, u), iAmAdmin = isAdmin(me.id);
   if (mode !== "block") {
     const sg = el("div", "segs"), a = el("button", tabSel !== "admins" ? "on" : "", "All"), b = el("button", tabSel === "admins" ? "on" : "", "Admins");
     a.type = b.type = "button"; a.onclick = () => openMembers(r, mode, "all"); b.onclick = () => openMembers(r, mode, "admins"); sg.append(a, b); p.append(sg);
@@ -5382,7 +5444,7 @@ function openMembers(r, mode, tabSel) {
   const redraw = () => openMembers(r, mode, tabSel);
   const row = u => {
     const d = el("div", "irow"), mid = el("div", "mid"), nm = names[u] || "Someone", rl = rel(u);
-    mid.append(el("div", "t1", nm + (u === me.id ? " (you)" : ""))); if (isAdmin(u)) mid.append(el("div", "t2", "Admin"));
+    mid.append(el("div", "t1", nm + (u === me.id ? " (you)" : ""))); if (isAdmin(u)) mid.append(el("div", "t2", u === r.created_by ? "Admin · Group creator" : "Admin"));
     d.append(avatar(u, nm[0].toUpperCase(), "md", u), mid);
     const btn = (t, cls, fn) => { const x = el("button", "sm " + cls, t); x.type = "button"; x.onclick = e => { e.stopPropagation(); fn(); }; d.append(x); };
     if (u !== me.id) {
@@ -5391,12 +5453,33 @@ function openMembers(r, mode, tabSel) {
       else if (rl.status === "pending" && !rl.incoming) btn("Following", "gray", () => {});
       else if (rl.status === "pending") btn("Follow back", "", async () => { if (await followUser(u)) redraw(); });
     }
+    if (mode !== "block" && u === me.id && iAmAdmin && u !== r.created_by) {
+      const sb2 = el("button", "sm gray", "Step down"); sb2.type = "button"; sb2.onclick = e => { e.stopPropagation(); if (confirm("Step down as admin of \"" + r.name + "\"?")) groupAdminSet(r, u, false, redraw); }; d.append(sb2);
+    }
+    if (mode !== "block" && iAmAdmin && u !== me.id && u !== r.created_by) {
+      const mb = el("button", "sm gray", "⋯"); mb.type = "button"; mb.setAttribute("aria-label", "Member options");
+      const iAmCreator = r.created_by === me.id, tAdmin = isAdmin(u), items = [];
+      if (!tAdmin) items.push(["Make admin", () => groupAdminSet(r, u, true, redraw)]);
+      else items.push(["Demote to member", () => groupAdminSet(r, u, false, redraw)]);
+      if (!tAdmin || iAmCreator) items.push(["Remove from group", () => groupRemoveMember(r, u, redraw)]);
+      if (items.length) { mb.onclick = e => { e.stopPropagation(); popMenu(mb, items); }; d.append(mb); }
+    }
     d.onclick = () => { if (mode !== "block") openProfile(u); };
     p.append(d);
   };
   if (friends.length) { p.append(el("div", "sec", "Friends")); friends.forEach(row); }
   if (others.length) { p.append(el("div", "sec", friends.length ? "Other members" : "Members")); others.forEach(row); }
   if (!list.length) p.append(el("div", "hint", "No admins to show."));
+}
+const groupRpcErr = m => /function .* does not exist|schema cache|remove_group_member|set_group_admin/i.test(m || "") ? "Run chatter_group_admins.sql in the Supabase SQL Editor first." : m;
+async function groupAdminSet(r, u, make, done) {
+  const {error} = await sb.rpc("set_group_admin", {rid: r.id, uid: u, make}); if (error) return alert(groupRpcErr(error.message));
+  await loadChats(); toast(make ? (names[u] || "Member") + " is now an admin" : (names[u] || "Member") + " is now a regular member"); done();
+}
+async function groupRemoveMember(r, u, done) {
+  if (!confirm("Remove " + (names[u] || "this person") + " from \"" + r.name + "\"?")) return;
+  const {error} = await sb.rpc("remove_group_member", {rid: r.id, uid: u}); if (error) return alert(groupRpcErr(error.message));
+  await loadChats(); toast((names[u] || "Member") + " removed"); done();
 }
 async function openAddMembers(r) {
   if (cur !== r.id) return; infoProfile = null;
