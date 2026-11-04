@@ -511,6 +511,7 @@ html.dt .sheetbg.pmdt .sheet{width:min(440px,92vw);max-height:80vh;border-radius
 .sv .story-foot{order:3;display:flex;align-items:center;gap:12px;padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));min-height:82px;background:#242629;z-index:4}
 .sv .story-reply{flex:1;min-width:0;height:52px;border:1.5px solid #8b8d91;border-radius:28px;background:transparent;color:#fff;padding:0 26px;font-size:16px;outline:none}
 .sv .story-reply::placeholder{color:#f1f1f1;opacity:1}
+.sv .story-rform{flex:1;min-width:0;display:flex;margin:0}.sv .story-foot.noreply{justify-content:flex-end}
 .sv .story-action{width:42px;height:48px;flex:none;padding:4px;background:none;color:#fff;border-radius:0;display:flex;align-items:center;justify-content:center}
 .sv .story-action svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .sv .story-heart{font-size:36px;line-height:1}
@@ -1555,6 +1556,13 @@ const isVid = p => /\.(mp4|webm|mov|m4v)$/i.test(p || "");
 const storyTag = b => { const x = /^\[\[story:([^\]]+)\]\]([\s\S]*)$/.exec(b || ""); return x ? {id: x[1], text: x[2]} : null; };
 // receiver-side enforcement of "Allow story replies" / "Who can reply to your stories?"
 const storyReplyBlocked = m => { if (!m || !me || m.user_id === me.id || !storyTag(m.body)) return false; if (S.story_reply_enabled === false || S.story_replies === "off") return true; return S.story_replies === "friends" && !isFriend(m.user_id); };
+// what the story owner chose in "Who can reply to your stories?" ("everyone" | "friends" | "off"). If the SQL isn't installed yet, replies stay allowed.
+const spCache = {};
+async function storyPolicy(uid) {
+  const c = spCache[uid]; if (c && Date.now() - c.t < 60000) return c.v;
+  try { const {data, error} = await sb.rpc("story_reply_policy", {owner: uid}); if (!error && typeof data === "string" && data) { spCache[uid] = {v: data, t: Date.now()}; return data; } } catch (e) {}
+  return "everyone";
+}
 const storyPv = l => { if (storyReplyBlocked(l)) return "Story reply hidden (your story reply settings)"; const g = storyTag(l.body); return g ? (l.user_id === me.id ? "You replied to a story: " : "Replied to your story: ") + safeMessageText(g.text) : safeMessageText(l.body); };
 const pvText = l => l.deleted_at ? "Message taken back" : sysText(l) || callPv(l) || (l.image_path ? (isVid(l.image_path) ? "🎬 " + (safeMessageText(l.body) || "Video") : "📷 " + (safeMessageText(l.body) || "Photo")) : storyPv(l));
 let rd = {}; try { rd = JSON.parse(localStorage.getItem("rd") || "{}"); } catch (e) {}
@@ -2733,9 +2741,12 @@ async function openStory(u, custom) {
   };
   hd.append(avatar(u, (names[u] || "?")[0].toUpperCase(), "sm"), mid, menu);
   const isOwnStory = u === me.id;
-  reply.type = "text"; reply.placeholder = "Send message"; reply.autocomplete = "off";
+  reply.type = "text"; reply.placeholder = "Send message"; reply.autocomplete = "off"; reply.enterKeyHint = "send"; reply.setAttribute("autocapitalize", "sentences");
+  let canReply = true;
+  const rform = el("form", "story-rform"); rform.onsubmit = e => { e.preventDefault(); doSend(); }; rform.append(reply);
   const sendReply = async text => {
     if (!text || isOwnStory) return false;
+    if (!canReply) { toast("Replies are turned off for this story."); return false; }
     const st = L[i];
     const dm = await sb.rpc("start_dm", {other: u});
     if (dm.error) { toast(dm.error.message); return false; }
@@ -2766,7 +2777,10 @@ async function openStory(u, custom) {
     share.disabled = false;
     if (!ok) reply.value = v; else reply.blur();
   };
-  share.addEventListener("mousedown", e => e.preventDefault()); share.addEventListener("touchstart", e => { if (document.activeElement === reply) e.preventDefault(); }, {passive: false});
+  // phone: touchstart.preventDefault keeps the keyboard open but also cancels the click, so the touch itself sends
+  share.addEventListener("mousedown", e => e.preventDefault());
+  share.addEventListener("touchstart", e => e.preventDefault(), {passive: false});
+  share.addEventListener("touchend", e => { e.preventDefault(); doSend(); }, {passive: false});
   share.onclick = doSend;
   let ownFoot = null;
   if (isOwnStory) {
@@ -2785,7 +2799,10 @@ async function openStory(u, custom) {
     ownFoot.append(activity, addWrap);
     foot.replaceChildren(ownFoot);
   } else {
-    foot.append(reply, heart, share);
+    const pol = await storyPolicy(u);
+    canReply = pol === "everyone" || (pol === "friends" && isFriend(u));
+    if (canReply) foot.append(rform, heart, share);
+    else { foot.classList.add("noreply"); foot.append(heart); }       // "No one" / not a friend: only the heart is left
   }
   async function refreshOwnActivity(story) {
     if (!isOwnStory || !ownFoot) return;
