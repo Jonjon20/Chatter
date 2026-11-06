@@ -2617,6 +2617,8 @@ function feedRender() {
     r.append(sel, no, go); d.append(r); top.append(d);
   }
   if (fmode === "post") box.append(storiesRow());
+  // Facebook-style "Posting… Keep Chatter open." card while the upload runs in the background
+  ppend.filter(e => e.kind === fmode).forEach(e => (fmode === "clip" ? top : box).append(pendBanner(e)));
   const vis = fposts.filter(p => !fhide.has(p.id) && !isGone(p));
   if (!vis.length) box.append(floading ? spinEl() : el("div", "hint", fmode === "clip" ? "No clips yet. Add the first one!" : "No posts yet. Follow people or post something."));
   if (fmode === "clip") { box.style.setProperty("--ftop", top.offsetHeight + "px"); vis.forEach(p => reel(p)); watchReels(); return; }
@@ -2800,30 +2802,82 @@ async function postMedia(f, body, kind, vis, tags, extra) {
     return false;
   }
 }
-// ---------- "Posting…" notice: same C loader used for refresh / loading ----------
+// ---------- Background posting (Facebook-style) ----------
+// Tap Post -> composer closes -> a "Posting… Keep Chatter open." card sits at the top of the Feed / Clips
+// while the upload runs -> the card goes away, the new post is at the top, and a "Your post was shared. View post" toast shows.
+let ppend = [], spend = [], ppid = 0;
 (function () { const st = document.createElement("style"); st.textContent = `
-.postbar{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:10px;padding:6px 20px 6px 10px;border-radius:999px;background:var(--bg2,#1d1d25);color:var(--tx,#fff);font-size:14px;font-weight:700;white-space:nowrap;border:1px solid color-mix(in srgb,var(--accent,#7c3aed) 45%,transparent);box-shadow:0 8px 26px rgba(0,0,0,.45);animation:pbin .28s cubic-bezier(.2,.9,.3,1.2) both}
-@keyframes pbin{from{opacity:0;transform:translate(-50%,-14px) scale(.92)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+.pbn{position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;margin:8px 12px;padding:10px 12px;border-radius:14px;background:var(--bg2,#1d1d25);color:var(--tx,#fff);border:1px solid var(--line);animation:pbin .25s ease both}
+.pbn::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:38%;background:var(--accent,#7c3aed);border-radius:3px;animation:pbs 1.3s ease-in-out infinite}
+@keyframes pbs{0%{transform:translateX(-100%)}100%{transform:translateX(265%)}}
+@keyframes pbin{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.pbn .pbt{position:relative;width:44px;height:44px;flex:none;border-radius:10px;overflow:hidden;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:20px}
+.pbn .pbt img,.pbn .pbt video{width:100%;height:100%;object-fit:cover;display:block}
+.pbn .pbt i{position:absolute;right:2px;bottom:2px;min-width:16px;height:16px;padding:0 3px;box-sizing:border-box;border-radius:8px;background:rgba(0,0,0,.65);color:#fff;font:700 10px/16px system-ui,sans-serif;font-style:normal;text-align:center}
+.pbn .pbx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.pbn .pbx b{font-size:15px}
+.pbn .pbx span{font-size:13px;color:var(--mut)}
+.pbn .spn{width:30px;height:30px;flex:none}
+.cs.sharing .ct{position:relative}
+.cs.sharing .spw{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.38);z-index:2}
+.cs.sharing .spw .spn{width:38px;height:38px}
+.cgrid .cv{position:absolute;right:6px;bottom:5px;color:#fff;font-size:12px;text-shadow:0 1px 3px #000}
+.toast.act{display:flex;align-items:center;justify-content:space-between;gap:18px;width:min(92vw,420px);box-sizing:border-box;padding:12px 16px;border-radius:12px;background:#2a2b2e;font-size:14px}
+.toast.act button{border:0;background:transparent;color:#6ea8ff;font:inherit;font-weight:700;cursor:pointer;padding:0;white-space:nowrap}
+.postbar{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:10px;padding:6px 20px 6px 10px;border-radius:999px;background:var(--bg2,#1d1d25);color:var(--tx,#fff);font-size:14px;font-weight:700;white-space:nowrap;border:1px solid color-mix(in srgb,var(--accent,#7c3aed) 45%,transparent);box-shadow:0 8px 26px rgba(0,0,0,.45)}
 .postbar .spn{width:34px;height:34px;flex:none}
 `; document.head.append(st); })();
-function postingBar(kind) {
+window.addEventListener("beforeunload", e => { if (ppend.length || spend.length) { e.preventDefault(); e.returnValue = ""; } });
+function toastAct(t, label, fn) {
+  const d = el("div", "toast act"), s = el("span", null, t), b = el("button", null, label); b.type = "button";
+  b.onclick = () => { d.remove(); fn(); }; d.append(s, b); document.body.append(d); setTimeout(() => d.remove(), 7000);
+}
+function postingBar(kind) {   // fallback pill when the person is not looking at the Feed / Clips
   const b = el("div", "postbar"), s = el("div", "spn"); b.setAttribute("role", "status"); s.innerHTML = cSpin();
   b.append(s, el("span", null, "Posting your " + (kind === "clip" ? "clip" : "post") + "…")); document.body.append(b); return b;
+}
+function pendBanner(e) {
+  const d = el("div", "pbn"), t = el("div", "pbt"), x = el("div", "pbx"), s = el("div", "spn"); d.setAttribute("role", "status");
+  if (e.thumb && e.vid) { const v = el("video"); v.muted = true; v.playsInline = true; v.preload = "metadata"; v.src = e.thumb + "#t=0.1"; t.append(v); }
+  else if (e.thumb) { const im = el("img"); im.src = e.thumb; im.alt = ""; t.append(im); }
+  else t.textContent = "✏️";
+  if (e.n > 1) t.append(el("i", null, String(e.n)));
+  x.append(el("b", null, "Posting…"), el("span", null, "Keep Chatter open.")); s.innerHTML = cSpin(); d.append(t, x, s); return d;
+}
+async function viewMine(kind) {
+  const {data} = await sb.from("posts").select("*").eq("kind", kind).eq("user_id", me.id).order("created_at", {ascending: false}).limit(1), p = data && data[0];
+  if (!p) return;
+  if (kind === "clip") {
+    if (!feedOn()) setTab("feed");
+    if (fmode !== "clip") { fmode = "clip"; fposts = []; floading = true; feedDirty = true; render(); await loadFeed(); }
+    const b = fb(); if (b) b.scrollTo({top: 0, behavior: "smooth"});
+  } else { await postUrls(p); openPost(p.id, p); }
 }
 async function doPost() {
   const kind = fmode, meta = kind === "clip" ? "" : [fdraft.feel, fdraft.loc ? "📍 " + fdraft.loc : ""].filter(Boolean).join(" · "), txt = (fdraft.txt.trim() + (meta ? (fdraft.txt.trim() ? "\n\n— " : "— ") + meta : "")).trim(), f = fdraft.file;
   if (fbusy || (kind === "clip" ? !f : (!f && !fdraft.txt.trim() && !meta))) return;
   if (kind === "post" && f && f.type.startsWith("video")) return alert("Feed is for photos only. To share a video, post it in Clips.");
   if (kind === "clip" && f && !f.type.startsWith("video")) return alert("Please choose a video for your clip.");
-  // post in the background: close the composer right away and show a small "Posting…" notice
+  // post in the background: close the composer right away and show the "Posting…" card at the top of the feed
   const snap = {txt: fdraft.txt, file: fdraft.file, url: fdraft.url, files: fdraft.files || [], urls: fdraft.urls || [], vis: fdraft.vis, tags: fdraft.tags || [], feel: fdraft.feel, loc: fdraft.loc};
   fdraft.file = null; fdraft.url = null; fdraft.files = []; fdraft.urls = []; fdraft.txt = ""; fdraft.tags = []; fdraft.feel = ""; fdraft.loc = ""; fdraft.open = false; fdraft.tagOpen = false;
   closeComposer();
-  const bar = postingBar(kind);
+  const pe = {id: ++ppid, kind, thumb: snap.urls[0] || null, vid: !!(f && f.type.startsWith("video")), n: snap.files.length};
+  ppend.push(pe);
+  let bar = null;
+  if (feedOn() && fmode === kind) { feedDirty = true; render(); const b = fb(); if (b) b.scrollTop = 0; } else bar = postingBar(kind);
   const ok = await postMedia(f, txt, kind, snap.vis, snap.tags, snap.files.slice(1));
-  bar.remove();
-  if (ok) { snap.urls.forEach(u => { try { URL.revokeObjectURL(u); } catch (e) {} }); toast(kind === "clip" ? "Clip posted" : "Post shared"); feedDirty = true; loadFeed(); actSoon(); }
-  else if (!fdraft.file && !fdraft.txt.trim()) { Object.assign(fdraft, {txt: snap.txt, file: snap.file, url: snap.url, files: snap.files, urls: snap.urls, vis: snap.vis, tags: snap.tags, feel: snap.feel, loc: snap.loc}); if (fmode === kind) openComposer(); }
+  if (ok) { try { await loadFeed(); } catch (e) {} }   // new post is loaded under the card, then the card goes away
+  ppend = ppend.filter(x => x !== pe); if (bar) bar.remove();
+  if (ok) {
+    snap.urls.forEach(u => { try { URL.revokeObjectURL(u); } catch (e) {} });
+    feedDirty = true; if (feedOn()) { const b = fb(), keep = b && b.scrollTop > 200 ? b.scrollTop : 0; render(); if (b) b.scrollTop = keep; }
+    actSoon();
+    toastAct(kind === "clip" ? "Your clip was shared." : "Your post was shared.", kind === "clip" ? "View clip" : "View post", () => viewMine(kind));
+  } else {
+    feedDirty = true; if (feedOn()) render();
+    if (!fdraft.file && !fdraft.txt.trim()) { Object.assign(fdraft, {txt: snap.txt, file: snap.file, url: snap.url, files: snap.files, urls: snap.urls, vis: snap.vis, tags: snap.tags, feel: snap.feel, loc: snap.loc}); if (fmode === kind) openComposer(); }
+  }
 }
 // ----- stories (kind = "story", visible for 24 hours) -----
 function pickStory() {
@@ -2831,13 +2885,26 @@ function pickStory() {
   i.onchange = async () => {
     const f = i.files[0]; if (!f) return; if (f.size > 45 * 1048576) return alert("File is too big (max 45 MB).");
     const audience = S.story_audience === "public" ? "public" : "friends";
-    toast("Posting story…"); if (await postMedia(f, "", "story", audience)) { toast("Story posted"); await loadStories(); }
+    // Facebook-style: your story card shows up right away with the photo and "Sharing…" until the upload is done
+    const pe = {id: ++ppid, thumb: URL.createObjectURL(f), vid: f.type.startsWith("video")}, onFeed = () => feedOn() && fmode === "post";
+    spend.push(pe); if (onFeed()) { feedDirty = true; render(); const r = fb() && fb().querySelector(".str"); if (r) r.scrollLeft = 0; } else toast("Sharing story…");
+    const ok = await postMedia(f, "", "story", audience);
+    if (ok) { try { await loadStories(); } catch (e) {} }
+    spend = spend.filter(x => x !== pe); try { URL.revokeObjectURL(pe.thumb); } catch (e) {}
+    feedDirty = true; if (onFeed()) render();
+    if (ok) toast("Your story was shared.");
   }; i.click();
+}
+function sharingCard(e) {
+  const c = el("div", "cs sharing"), t = el("div", "ct"), av = el("div", "cav"), w = el("div", "spw"), sp = el("div", "spn");
+  const m = el(e.vid ? "video" : "img"); if (e.vid) { m.muted = true; m.playsInline = true; m.preload = "metadata"; m.src = e.thumb + "#t=0.1"; } else m.src = e.thumb;
+  sp.innerHTML = cSpin(); w.append(sp); t.append(m, w); av.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase()));
+  c.setAttribute("role", "status"); c.append(t, av, el("div", "cn", "Sharing…")); return c;
 }
 function storiesRow() {
   const row = el("div", "str"), mk = el("div", "cs add"), t = el("div", "ct"), pl = el("div", "pl"), av = el("div", "cav");
   pl.innerHTML = FI.plus; t.append(pl); av.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase()));
-  mk.append(t, av, el("div", "cn", "Add story")); mk.onclick = pickStory; row.append(mk);
+  mk.append(t, av, el("div", "cn", "Add story")); mk.onclick = pickStory; row.append(mk); spend.forEach(e => row.append(sharingCard(e)));
   const seenU = new Set(), latestOf = fstories.filter(s => !seenU.has(s.user_id) && seenU.add(s.user_id));
   latestOf.sort((a, b) => (b.user_id === me.id) - (a.user_id === me.id)).forEach(s => row.append(storyCard(s)));
   return row;
@@ -3313,7 +3380,7 @@ function postCard(p, inProfile, noRp, full) {
   return c;
 }
 function reel(p, into, onGone) {
-  const r = el("div", "rl"), v = el("video"), ov = el("div", "ov"), sd = el("div", "sd");
+  const r = el("div", "rl"), v = el("video"), ov = el("div", "ov"), sd = el("div", "sd"); r.dataset.pid = p.id;
   v.src = p.url || ""; v.loop = true; v.muted = clipMuted; v.playsInline = true; v.preload = "metadata"; v.autoplay = false;
   const who = el("div", "ovh"); who.append(el("div", "t1", names[p.user_id] || "Someone")); who.onclick = e => { e.stopPropagation(); openProfile(p.user_id); };
   const bub = el("div", "bubs"), rpr = el("div", "rpr"), rpl = el("div", "rpl"); rpr.onclick = e => { e.stopPropagation(); openReposts(p); }; ov.append(bub, rpr, who); if (p.visibility === "friends") { const ft = el("div", "", "👥 Friends only"); ft.style.cssText = "font-size:12px;opacity:.85;margin-bottom:2px"; ov.append(ft); } ov.append(mEl("", p.body || "", "profile"));
@@ -3776,9 +3843,26 @@ function heartBurst(r, x, y) {
   r.append(h); setTimeout(() => h.remove(), 900);
 }
 let reelObs = null;
+// ---------- Clip views: one view per person per clip (counted after ~1.5s of watching) ----------
+let fviews = {}, viewSeen = new Set(), viewsOK = null;
+async function loadViews(ids) {
+  ids = (ids || []).filter(Boolean); if (!ids.length) return;
+  const {data, error} = await sb.from("post_views").select("post_id").in("post_id", ids).limit(20000);
+  if (error) { viewsOK = false; return; }
+  viewsOK = true; ids.forEach(i => fviews[i] = 0); (data || []).forEach(x => fviews[x.post_id] = (fviews[x.post_id] || 0) + 1);
+}
+async function recView(pid) {
+  if (!pid || viewSeen.has(pid) || viewsOK === false) return; viewSeen.add(pid);
+  const {error} = await sb.from("post_views").upsert({post_id: pid, viewer_id: me.id}, {onConflict: "post_id,viewer_id", ignoreDuplicates: true});
+  if (error) { viewsOK = false; console.warn("Clip view not saved. Run post_views.sql in Supabase:", error.message); }
+}
+function viewWatch(e) {
+  const r = e.target; clearTimeout(r._vt);
+  if (e.isIntersecting && r.dataset.pid) r._vt = setTimeout(() => recView(r.dataset.pid), 1500);
+}
 function watchReels() {
   const box = fb(); box.style.scrollSnapType = "y mandatory"; if (reelObs) reelObs.disconnect();
-  reelObs = new IntersectionObserver(es => es.forEach(e => { const v = e.target.querySelector("video"); if (!v) return; if (feedCovered()) { v.pause(); return; } if (e.isIntersecting && S.autoplay_clips !== false) v.play().catch(err => { if (err && err.name === "NotAllowedError") { v.muted = true; v.play().catch(() => {}); } }); else v.pause(); }), {root: box, threshold: 0.7});
+  reelObs = new IntersectionObserver(es => es.forEach(e => { viewWatch(e); const v = e.target.querySelector("video"); if (!v) return; if (feedCovered()) { v.pause(); return; } if (e.isIntersecting && S.autoplay_clips !== false) v.play().catch(err => { if (err && err.name === "NotAllowedError") { v.muted = true; v.play().catch(() => {}); } }); else v.pause(); }), {root: box, threshold: 0.7});
   box.querySelectorAll(".rl").forEach(r => reelObs.observe(r));
 }
 
@@ -3849,7 +3933,7 @@ function drawSaved(box) {
   const L = ids.map(i => S.posts[i]), clips = L.filter(p => p.kind === "clip"), g = el("div", "cgrid");
   L.forEach(p => {
     const t = el("div", "ct"), rm = el("button", "rmv", "✕"); rm.type = "button";
-    if (p.kind === "clip") { const v = el("video"); v.muted = true; v.playsInline = true; v.preload = "metadata"; v.src = (p.url || "") + "#t=0.1"; t.append(v, el("div", "cl", "❤️ " + (flikes[p.id] || []).length)); t.onclick = () => openClip(clips, clips.indexOf(p)); }
+    if (p.kind === "clip") { const v = el("video"); v.muted = true; v.playsInline = true; v.preload = "metadata"; v.src = (p.url || "") + "#t=0.1"; t.append(v, el("div", "cl", "❤️ " + (flikes[p.id] || []).length)); if (viewsOK !== false && fviews[p.id] != null) t.append(el("div", "cv", "👁 " + fviews[p.id])); t.onclick = () => openClip(clips, clips.indexOf(p)); }
     else { if (p.url) { const im = el("img"); im.src = p.url; t.append(im); } else t.append(el("div", "tx", (p.body || "").slice(0, 80))); t.onclick = () => openPost(p.id); }
     rm.onclick = async e => {
       e.stopPropagation(); let q = sb.from("saved_posts").delete().eq("post_id", p.id); if (S.col !== "All") q = q.eq("collection", S.col);
@@ -3877,6 +3961,7 @@ async function pfLoad(uid) {
     await ensureNames((c.data || []).map(x => x.user_id));
   }
   await Promise.all(L.map(async p => { await postUrls(p); }));
+  await loadViews(L.filter(p => p.kind === "clip").map(p => p.id));
   if (pf.uid !== uid) return;
   pf.posts = L.filter(p => p.kind === "post"); pf.clips = L.filter(p => p.kind === "clip"); pf.loaded = true;
   pfPaint(); if (!pf.reps) loadRepTab();
@@ -3934,8 +4019,7 @@ function drawProfile() {
     pa.classList.add("hasst");
     pa.addEventListener("click", e => {
       if (e.target.closest(".camb")) return; e.stopPropagation(); e.preventDefault();
-      if (mine) return photoMenu("avatar", e);
-      openStory(uid, {list: pf.stories.slice(), index: 0, onRemove: g => { pf.stories = (pf.stories || []).filter(x => x.id !== g.id); pfPaint(); }});
+      photoMenu("avatar", e, uid);
     }, true);
   }
   if (mine) {
@@ -4022,7 +4106,7 @@ function drawProfile() {
     const g = el("div", "cgrid");
     pf.clips.forEach((p, i) => {
       const t = el("div", "ct"), v = el("video"); v.muted = true; v.playsInline = true; v.preload = "metadata"; v.src = (p.url || "") + "#t=0.1";
-      t.append(v, el("div", "cl", "❤️ " + (flikes[p.id] || []).length)); t.onclick = () => openClip(pf.clips, i); g.append(t);
+      t.append(v, el("div", "cl", "❤️ " + (flikes[p.id] || []).length)); if (viewsOK !== false && fviews[p.id] != null) t.append(el("div", "cv", "👁 " + fviews[p.id])); t.onclick = () => openClip(pf.clips, i); g.append(t);
     });
     box.append(g);
   }
@@ -4137,7 +4221,7 @@ async function editProfile() {
 }
 function observeReels(box) {
   if (box._obs) box._obs.disconnect();
-  box._obs = new IntersectionObserver(es => es.forEach(e => { const v = e.target.querySelector("video"); if (!v) return; if (e.isIntersecting && S.autoplay_clips !== false) v.play().catch(err => { if (err && err.name === "NotAllowedError") { v.muted = true; v.play().catch(() => {}); } }); else v.pause(); }), {root: box, threshold: 0.7});
+  box._obs = new IntersectionObserver(es => es.forEach(e => { viewWatch(e); const v = e.target.querySelector("video"); if (!v) return; if (e.isIntersecting && S.autoplay_clips !== false) v.play().catch(err => { if (err && err.name === "NotAllowedError") { v.muted = true; v.play().catch(() => {}); } }); else v.pause(); }), {root: box, threshold: 0.7});
   box.querySelectorAll(".rl").forEach(r => box._obs.observe(r));
 }
 // loads likes, comments, reposts and saves for the clips we are about to show (the profile pages don't load them all)
@@ -5927,12 +6011,14 @@ function photoEditor(kind, file) {
 Object.assign(IC_S, {image: '<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="9" r="1.6"/><path d="M21 16l-5-5-8 8"/>', camera: '<path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.5"/>', "user-circle": '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.2 18.5a6.5 6.5 0 0 1 11.6 0"/>'});
 function showMenu(title, items, ev) {
   if (DT()) {
-    closePop(); const pop = el("div", "pop cpop"); pop.id = "pop";
-    items.forEach(it => { const d = el("div", "cpi"); d.innerHTML = '<span class="cmi">' + it.icon + "</span>"; d.append(el("span", "cml", it.label)); d.onclick = e => { e.stopPropagation(); closePop(); it.fn(); }; pop.append(d); });
-    pop.style.width = "270px"; pop.style.visibility = "hidden"; document.body.append(pop);
-    const x = ev ? ev.clientX : 220, y = ev ? ev.clientY : 220, ph = pop.offsetHeight;
-    pop.style.left = Math.max(8, Math.min(x, innerWidth - 278)) + "px"; pop.style.top = Math.max(8, Math.min(y, innerHeight - ph - 8)) + "px"; pop.style.visibility = "";
+    const x = ev ? ev.clientX : 220, y = ev ? ev.clientY : 220;
+    // built after the current click has finished: the app closes #pop on every click on the document, which would remove it at once
     setTimeout(() => {
+      closePop(); const pop = el("div", "pop cpop"); pop.id = "pop";
+      items.forEach(it => { const d = el("div", "cpi"); d.innerHTML = '<span class="cmi">' + it.icon + "</span>"; d.append(el("span", "cml", it.label)); d.onclick = e => { e.stopPropagation(); closePop(); it.fn(); }; pop.append(d); });
+      pop.style.width = "270px"; pop.style.visibility = "hidden"; document.body.append(pop);
+      const ph = pop.offsetHeight;
+      pop.style.left = Math.max(8, Math.min(x, innerWidth - 278)) + "px"; pop.style.top = Math.max(8, Math.min(y, innerHeight - ph - 8)) + "px"; pop.style.visibility = "";
       const off = e => { if (!e.target.closest("#pop")) bye(); }, esc = e => { if (e.key === "Escape") bye(); };
       function bye() { closePop(); document.removeEventListener("mousedown", off, true); document.removeEventListener("keydown", esc, true); }
       document.addEventListener("mousedown", off, true); document.addEventListener("keydown", esc, true);
@@ -5954,11 +6040,12 @@ async function openPhotoHistory(uid, kind) {
   if (!items.length) return openPhoto({url: cur, title: (names[uid] || "") + (kind === "cover" ? "’s cover photo" : "’s profile picture"), kind, own: uid === me.id});
   openViewer(items, 0);
 }
-function photoMenu(kind, ev) {
-  const items = [], has = !!(kind === "cover" ? coverUrl[me.id] : photoUrl[me.id]);
-  if (kind === "avatar" && pf && pf.uid === me.id && pf.stories && pf.stories.length) items.push({icon: icon("user-circle", 20), label: "View story", fn: () => openStory(me.id, {list: pf.stories.slice(), index: 0, onRemove: g => { pf.stories = (pf.stories || []).filter(x => x.id !== g.id); pfPaint(); }})});
-  if (has) items.push({icon: icon("image", 20), label: kind === "cover" ? "See cover photo" : "See profile picture", fn: () => openPhotoHistory(me.id, kind)});
-  items.push({icon: icon("upload", 20), label: kind === "cover" ? "Upload cover photo" : "Choose profile picture", fn: () => pickPhoto(kind)});
+function photoMenu(kind, ev, uid) {
+  uid = uid || me.id; const mine = uid === me.id, items = [], has = !!(kind === "cover" ? coverUrl[uid] : photoUrl[uid]);
+  if (kind === "avatar" && pf && pf.uid === uid && pf.stories && pf.stories.length) items.push({icon: icon("user-circle", 20), label: "View story", fn: () => openStory(uid, {list: pf.stories.slice(), index: 0, onRemove: g => { pf.stories = (pf.stories || []).filter(x => x.id !== g.id); pfPaint(); }})});
+  if (has) items.push({icon: icon("image", 20), label: kind === "cover" ? "See cover photo" : "See profile picture", fn: () => openPhotoHistory(uid, kind)});
+  if (mine) items.push({icon: icon("upload", 20), label: kind === "cover" ? "Upload cover photo" : "Choose profile picture", fn: () => pickPhoto(kind)});
+  if (!items.length) return;
   showMenu(kind === "cover" ? "Cover photo" : "Profile picture", items, ev);
 }
 function pickPhoto(kind) { const i = document.createElement("input"); i.type = "file"; i.accept = "image/*"; i.onchange = () => { if (i.files[0]) photoEditor(kind, i.files[0]); }; i.click(); }
