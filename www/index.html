@@ -257,7 +257,7 @@ html.dt .sheetbg:not(.fullp):not(.cm-sheet):not(.pmdt) .sh::before{display:none}
 .crow{display:flex;align-items:center;gap:12px;padding:10px 6px}.crow .mid{flex:1}.crow button{width:34px;height:34px;border-radius:50%;padding:0;background:var(--line);color:var(--tx);font-size:18px}
 .stoast{position:fixed;left:50%;right:auto;transform:translateX(-50%);width:max-content;max-width:calc(100vw - 24px);bottom:84px;z-index:80;background:#2a2a2a;color:#fff;border-radius:999px;padding:10px 18px;font-size:14px;display:flex;justify-content:center;align-items:center;gap:18px;box-shadow:0 4px 16px rgba(0,0,0,.4)}.stoast button{background:none;color:color-mix(in srgb,var(--accent) 50%,#fff);padding:0;font-weight:600}
 .rl{position:relative;height:calc(100% - var(--ftop,56px));scroll-margin-top:var(--ftop,56px);scroll-snap-align:start;background:#000;color:#fff}.rl video{width:100%;height:100%;object-fit:contain}.rl .ov{position:absolute;left:12px;right:70px;bottom:16px;text-shadow:0 1px 3px #000}.rl .sd{position:absolute;right:10px;bottom:30px;display:flex;flex-direction:column;gap:14px}.rl .sd button{background:#0008;color:#fff;border-radius:50%;width:48px;height:48px;padding:0;font-size:12px}
-.pov{position:fixed;inset:0;z-index:45;background:var(--bg2);display:flex;flex-direction:column}.pvt{display:flex;align-items:center;gap:10px;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--line);background:var(--bg);font-weight:700}.pvb{flex:1;overflow-y:auto;max-width:640px;width:100%;margin:0 auto}
+.pov{position:fixed;inset:0;z-index:45;background:var(--bg2);display:flex;flex-direction:column}.pvt{display:flex;align-items:center;gap:10px;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--line);background:var(--bg);font-weight:700}.pvb{flex:1;overflow-y:auto;max-width:640px;width:100%;margin:0 auto}.pov{z-index:70}
 #pfv{position:fixed;inset:0;z-index:65;overflow-y:auto;padding-top:env(safe-area-inset-top,0px);background:var(--bg2)}
 /* Menu opens as a left-side drawer, not a full-screen page */
 #mnu{position:fixed;inset:0;z-index:62;display:flex;align-items:stretch;justify-content:flex-start;overflow:hidden;padding-top:env(safe-area-inset-top,0px);background:rgba(0,0,0,.58);overscroll-behavior:contain}
@@ -918,6 +918,11 @@ html.dt #st .nmbar{left:var(--fcx,500px);transform:none;width:var(--fcw,505px);m
 .pc>img.pcimg{cursor:pointer}
 .pcs{margin-top:4px}
 .pcs img{display:block;width:100%;margin-top:6px;background:#000}
+/* post page: sort row, comments, quick emoji + comment box (like a Facebook post page) */
+.pvs{padding:10px 14px 4px}.pvs .lnk{font-size:15px;font-weight:700;color:var(--tx)}
+.pvl{padding:2px 14px 18px}
+.pvf{border-top:1px solid var(--line);background:var(--bg);max-width:640px;width:100%;margin:0 auto;box-sizing:border-box}.pvf .sbar{border-top:0;padding-top:4px}.pvf .sbar input{background:var(--oth)}
+.pvem{display:flex;justify-content:space-between;padding:8px 14px 2px}.pvem button{background:none;border:0;font-size:26px;line-height:1;padding:4px;cursor:pointer;transition:transform .12s}.pvem button:active{transform:scale(1.3)}
 .pvt .pvback{width:40px;height:40px;padding:0;border-radius:50%;line-height:0;flex:none}
 .pvt .pvback svg{width:22px;height:22px}
 .pvt .pvtt{flex:1;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1359,6 +1364,23 @@ html.dt .sheetbg.dtpanel .sheet{height:100%;max-height:none;border-radius:0}
 .cli{display:flex;align-items:center;justify-content:center;color:var(--accent,#7c3aed)}
 .sn-i{color:var(--accent,#7c3aed)}
 .cav-g{color:var(--tx)}
+#mv .st{touch-action:none;overflow:hidden;user-select:none;-webkit-user-select:none}
+#mv .st img{will-change:transform;transform-origin:center center;-webkit-user-drag:none;animation:mvIn .2s ease-out}
+@keyframes mvIn{from{opacity:0;scale:.94}to{opacity:1;scale:1}}
+#mv .mb.c{justify-content:center}#mv button.chg{all:unset;box-sizing:border-box;cursor:pointer;padding:12px 24px;border-radius:26px;background:var(--accent,#7c3aed);color:#fff;font-weight:600;font-size:15px}
+#pe{position:fixed;inset:0;z-index:100000;background:#000;color:#fff;display:flex;flex-direction:column}
+#pe .pet{display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px}
+#pe .pet button{all:unset;cursor:pointer;padding:9px 16px;border-radius:20px;font-weight:600;font-size:15px}
+#pe .pet .pes{background:var(--accent,#7c3aed)}#pe .pet .pes:disabled{opacity:.5}#pe .pett{flex:1;text-align:center;font-weight:600}
+#pe .pest{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:0 14px 30px}
+#pe .pef{position:relative;overflow:hidden;background:#111;touch-action:none;cursor:grab}
+#pe .pef.cov{width:min(94vw,640px);aspect-ratio:2/1;border-radius:20px}#pe .pef.avt{width:min(78vw,380px);aspect-ratio:1/1;border-radius:28%}
+#pe .pef img{user-select:none;-webkit-user-drag:none}#pe .pesl{width:min(80vw,380px);accent-color:var(--accent,#7c3aed)}#pe .peh{color:#aaa;font-size:13px;text-align:center}
+</style>
+<style id="photo2">
+#mv .st{position:relative}
+#mv .mcap{position:absolute;left:0;right:0;bottom:12px;text-align:center;font-size:13px;font-weight:600;color:#fff;text-shadow:0 1px 8px #000b;pointer-events:none}
+.camb svg{display:block}
 </style>
 <div id="boot"><svg id="bt-logo" class="bt-svg" viewBox="60 60 1130 1130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Chatterverse"><defs>
 <linearGradient id="bt-eg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" class="cv-a"/><stop offset=".35" class="cv-a" stop-opacity="0"/><stop offset=".65" class="cv-a" stop-opacity="0"/><stop offset="1" class="cv-a"/></linearGradient>
@@ -2467,8 +2489,9 @@ function collage(p, urls) {
   });
   return g;
 }
-function povPaint() { if (pov && pov.box.isConnected) pov.box.replaceChildren(postCard(pov.p, true, false, true)); }
-function closePov() { if (pov) { pov.ov.remove(); pov = null; } }
+function povPaint() { if (!(pov && pov.box.isConnected)) return; const keep = pov.box.scrollTop; pov.box.replaceChildren(postCard(pov.p, true, false, true), ...(pov.inline ? [pov.head, pov.list] : [])); pov.box.scrollTop = keep; }
+const CM_EMOJI = ["❤️", "🙌", "🔥", "👏", "😢", "🤩", "😮", "😂"];
+function closePov() { if (pov) { pov.ov.remove(); pov = null; if (DT()) { const cs = document.getElementById("sheet"); if (cs && cs.classList.contains("cmside")) closeSheet(); } } }
 async function openPost(id, seed, idx) {
   if (DT()) closeLooseOverlays();
   closePov();
@@ -2486,11 +2509,20 @@ async function openPost(id, seed, idx) {
   fopen.add(id); await ensureNames([p.user_id]);
   // Post page: back arrow, "<Name>'s post", then the post with its photos stacked
   const ov = el("div", "pov"), top = el("div", "pvt"), x = el("button", "gray pvback"), box = el("div", "pvb");
-  x.type = "button"; x.title = "Back"; x.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>'; x.onclick = closePov;
-  top.append(x, el("div", "pvtt", p.kind === "clip" ? "Clip" : (names[p.user_id] || "Someone") + "’s post"), el("div", "pvsp")); ov.append(top, box); document.body.append(ov);
-  pov = {ov, box, p}; povPaint();
+  x.type = "button"; x.title = "Close"; x.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>'; x.onclick = closePov;
+  top.append(x, el("div", "pvtt", p.kind === "clip" ? "Clip" : (names[p.user_id] || "Someone")), el("div", "pvsp"));
+  const list = el("div", "pvl"), head = el("div", "pvs"), sortB = el("button", "lnk", "Most relevant ⌄"), foot = el("div", "pvf"), emr = el("div", "pvem");
+  sortB.type = "button"; head.append(sortB);
+  CM_EMOJI.forEach(e => { const b = el("button", "", e); b.type = "button"; b.onclick = () => { if (me0.cm) me0.cm.send(e); }; emr.append(b); }); foot.append(emr);
+  const inline = !DT(); ov.append(top, box); if (inline) ov.append(foot); document.body.append(ov);
+  const me0 = pov = {ov, box, p, list, head, order: "rel", inline};
+  sortB.onclick = () => { me0.order = me0.order === "rel" ? "new" : "rel"; sortB.textContent = me0.order === "rel" ? "Most relevant ⌄" : "Newest ⌄"; if (me0.cm) me0.cm.draw(); };
+  povPaint();
+  // phones: comments sit under the post. desktop: they stay in the side panel next to it
+  if (inline) mountCmts(p, {list, scroller: box, footer: foot, placeholder: "Write a comment…", order: () => me0.order, onChange: () => { if (pov === me0) povPaint(); }}).then(api => { me0.cm = api; });
+  else openCmts(p, () => fkeep(() => {}));
   if (idx > 0) setTimeout(() => { const im = box.querySelectorAll(".pcs img")[idx]; if (im) im.scrollIntoView({block: "start"}); }, 80);
-  if (seed) { try { await load(); if (pov && pov.p === p) povPaint(); } catch (e) {} }
+  if (seed) { try { await load(); if (pov && pov.p === p) { povPaint(); if (pov.cm) pov.cm.draw(); } } catch (e) {} }
 }
 
 // ---------- NEWSFEED + CLIPS + STORIES ----------
@@ -3255,12 +3287,12 @@ function postCard(p, inProfile, noRp, full) {
   const phs = postPhotoUrls(p); let mediaNode = null;
   if (p.url && p.media_type === "video") { const m = el("video"); m.src = p.url; m.controls = true; m.playsInline = true; m.preload = "metadata"; mediaNode = m; }
   else if (phs.length) {
-    if (full) { mediaNode = el("div", "pcs"); phs.forEach(u => { const im = el("img"); im.src = u; im.alt = ""; im.loading = "lazy"; mediaNode.append(im); }); }
+    if (full) { mediaNode = el("div", "pcs"); phs.forEach((u, k) => { const im = el("img"); im.src = u; im.alt = ""; im.loading = "lazy"; im.style.cursor = "zoom-in"; im.onclick = e => { e.stopPropagation(); openViewer(phs.map(x => ({url: x, postId: p.id})), k, {plain: true}); }; mediaNode.append(im); }); }
     else if (phs.length === 1) { const im = el("img", "pcimg"); im.src = phs[0]; im.alt = ""; im.onclick = () => openPost(p.id, p, 0); mediaNode = im; }
     else mediaNode = collage(p, phs);
   }
   if (mediaNode && !(full && mediaNode.className === "pcs")) c.append(mediaNode);
-  const toggleCm = () => openCmts(p, () => fkeep(() => {}));
+  const toggleCm = full && !DT() ? () => { const i = document.querySelector(".pov .pvf input"); if (i) i.focus(); } : () => openCmts(p, () => fkeep(() => {}));
   const RM = repMap(p.id);
   if (L.length || cm.length || RM.size) {
     const cn = el("div", "cn"), a = el("span", null, (L.length ? "❤️ " + L.length : "") + (RM.size ? (L.length ? "  " : "") + "🔁 " + RM.size : "")), b = el("span", null, cm.length ? cm.length + (cm.length === 1 ? " comment" : " comments") : "");
@@ -3272,6 +3304,11 @@ function postCard(p, inProfile, noRp, full) {
   lb.onclick = () => toggleLike(p); cb.onclick = toggleCm; rb.onclick = () => postRepost(p, rb); sb2.onclick = () => toggleSave(p, sb2); ac.append(lb, cb, rb, sb2); c.append(ac);
   if (mediaNode && full && mediaNode.className === "pcs") c.append(mediaNode);
   const rps = [...repMap(p.id).keys()].filter(x => x === me.id || isFriend(x));
+  if (!full) c.addEventListener("click", e => {
+    if (e.target.closest("button,a,input,textarea,video,img,.mnt,.fl,.hx,.fa,.pn b,.cn,.ac,.rpt")) return;
+    if (window.getSelection && String(window.getSelection())) return;
+    openPost(p.id, p, 0);
+  });
   if (rps.length && !noRp) { const t = el("div", "rpt", "🔁 " + (rps[0] === me.id ? "You" : (names[rps[0]] || "Someone")) + (rps.length > 1 ? " and " + (rps.length - 1) + (rps.length === 2 ? " other" : " others") : "") + " reposted"); c.insertBefore(t, c.firstChild); }
   return c;
 }
@@ -3321,7 +3358,8 @@ const closeSheet = () => {
   const a = $("#app"); if (a) a.classList.remove("cmo");
 };
 function sheet(title) {
-  closeSheet(); const ov = el("div", "sheetbg"), sh = el("div", "sheet"), hd = el("div", "sh"), t = el("span", null, title), x = el("button", "", "✕"), body = el("div", "sbody");
+  document.querySelectorAll("#sheet").forEach(n => n.remove()); { const a = $("#app"); if (a) a.classList.remove("cmo"); }
+  const ov = el("div", "sheetbg"), sh = el("div", "sheet"), hd = el("div", "sh"), t = el("span", null, title), x = el("button", "", "✕"), body = el("div", "sbody");
   ov.id = "sheet"; x.type = "button"; x.onclick = closeSheet; ov.onclick = e => { if (e.target === ov) closeSheet(); };
   hd.append(t, x); sh.append(hd, body); ov.append(sh); document.body.append(ov); return {sh, t, body};
 }
@@ -3339,20 +3377,26 @@ async function toggleCL(c, redraw) {
 }
 async function openCmts(p, onChange) {
   const {sh, t, body} = sheet("");
-  const ov = document.getElementById("sheet");
+  const ov = sh.parentNode;
   ov.classList.add("cm-sheet");
   sh.classList.add("cm-panel");
-  const bar = el("div", "sbar"), rb = el("div", "t2"), inp = el("input"), snd = el("button", "sm", "Send");
-  attachMention(inp); inp.placeholder = "Add comment…"; inp.maxLength = 500; snd.type = "button"; rb.style.cssText = "padding:6px 14px 0;display:none;cursor:pointer";
   if (DT() && !dtFitsBoth() && $("#app").classList.contains("open")) $("#back").click();
   if (DT()) { sh.parentNode.classList.add("cmside"); $("#app").classList.add("cmo"); }
+  const handle = el("div", "cm-handle");
+  sh.insertBefore(handle, sh.firstChild);
+  await mountCmts(p, {list: body, scroller: body, title: t, footer: sh, onChange});
+}
+// comment list + composer. Used by the comments sheet and by the post page.
+// o: {list, scroller, title?, footer, placeholder?, order?: () => "old"|"rel"|"new", onChange?}
+async function mountCmts(p, o) {
+  const body = o.list, sc = o.scroller || body, t = o.title, onChange = o.onChange, ph = o.placeholder || "Add comment…";
+  const bar = el("div", "sbar"), rb = el("div", "t2"), inp = el("input"), snd = el("button", "sm", "Send");
+  attachMention(inp); inp.placeholder = ph; inp.maxLength = 500; snd.type = "button"; rb.style.cssText = "padding:6px 14px 0;display:none;cursor:pointer";
   let reply = null;
   const cmOK = c => { if (p.user_id !== me.id || c.user_id === me.id) return true; const w = S.public_comments || "everyone"; return w === "everyone" || (w === "friends" && isFriend(c.user_id)); };
   const all = () => (fcm[p.id] || []).filter(cmOK), kids = id => all().filter(r => String(r.parent_id) === String(id));
-  const setReply = c => { reply = c; const n = c ? (names[c.user_id] || "Someone") : ""; rb.style.display = c ? "block" : "none"; rb.textContent = c ? "Replying to " + n + "  ✕" : ""; inp.placeholder = c ? "Reply to " + n + "…" : "Add comment…"; if (c) inp.focus(); };
+  const setReply = c => { reply = c; const n = c ? (names[c.user_id] || "Someone") : ""; rb.style.display = c ? "block" : "none"; rb.textContent = c ? "Replying to " + n + "  ✕" : ""; inp.placeholder = c ? "Reply to " + n + "…" : ph; if (c) inp.focus(); };
   rb.onclick = () => setReply(null);
-  const handle = el("div", "cm-handle");
-  sh.insertBefore(handle, sh.firstChild);
   const row = (c, nested) => {
     const nm = names[c.user_id] || "Someone", d = el("div", "fci2"), mid = el("div", "mid"), meta = el("div", "t2"), S = fcl[String(c.id)] || new Set(), on = S.has(me.id), hb = el("button", "chb" + (on ? " on" : "")), rp = el("button", "lnk", "Reply");
     if (nested) d.style.marginLeft = "44px";
@@ -3361,9 +3405,12 @@ async function openCmts(p, onChange) {
     hb.innerHTML = (on ? FI.heartOn : FI.heart) + (S.size ? "<span>" + S.size + "</span>" : ""); hb.onclick = () => toggleCL(c, draw);
     d.append(avatar(c.user_id, nm[0].toUpperCase(), "sm"), mid, hb); return d;
   };
+  const likesOf = c => (fcl[String(c.id)] || new Set()).size;
   const draw = () => {
-    const cm = all(), keep = body.scrollTop; t.textContent = DT() ? "Comments " + cm.length : cm.length + (cm.length === 1 ? " comment" : " comments"); body.replaceChildren();
-    const tops = cm.filter(c => !c.parent_id);
+    const cm = all(), keep = sc.scrollTop; if (t) t.textContent = DT() ? "Comments " + cm.length : cm.length + (cm.length === 1 ? " comment" : " comments"); body.replaceChildren();
+    let tops = cm.filter(c => !c.parent_id); const ord = o.order ? o.order() : "old";
+    if (ord === "rel") tops = tops.slice().sort((a, b) => (likesOf(b) - likesOf(a)) || (Date.parse(a.created_at) - Date.parse(b.created_at)));
+    else if (ord === "new") tops = tops.slice().sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
     if (!tops.length) body.append(el("div", "hint", "No comments yet. Be the first!"));
     tops.forEach(c => {
       body.append(row(c, false)); const ks = kids(c.id);
@@ -3373,17 +3420,18 @@ async function openCmts(p, onChange) {
         if (open) ks.forEach(r => body.append(row(r, true)));
       }
     });
-    body.scrollTop = keep;
+    sc.scrollTop = keep;
   };
-  const send = async () => {
-    const b = inp.value.trim(); if (!b) return; inp.value = ""; snd.disabled = true;
+  const send = async txt => {
+    const b = (typeof txt === "string" ? txt : inp.value).trim(); if (!b) return; if (typeof txt !== "string") inp.value = ""; snd.disabled = true;
     const rowd = {post_id: p.id, body: b}; if (reply) rowd.parent_id = String(reply.parent_id || reply.id);
     const {data, error} = await sb.from("post_comments").insert(rowd).select().single(); snd.disabled = false;
     if (error) return alert(/CHATTER_COMMENTS_CLOSED/.test(error.message) ? "The owner has turned off comments on this post." : /CHATTER_COMMENTS_FRIENDS_ONLY/.test(error.message) ? "Only the post owner's friends can comment on this post." : /parent_id|column/i.test(error.message) ? "Replies aren't set up yet. Run clips_more.sql in the Supabase SQL Editor." : error.message);
-    (fcm[p.id] = fcm[p.id] || []).push(data); if (rowd.parent_id) rpOpen.add(rowd.parent_id); setReply(null); draw(); if (!rowd.parent_id) body.scrollTop = body.scrollHeight; if (onChange) onChange();
+    (fcm[p.id] = fcm[p.id] || []).push(data); if (rowd.parent_id) rpOpen.add(rowd.parent_id); setReply(null); draw(); if (!rowd.parent_id && !(o.order && o.order() === "new")) sc.scrollTop = sc.scrollHeight; if (onChange) onChange();
   };
-  snd.onclick = send; inp.onkeydown = e => { if (e.key === "Enter") send(); };
-  bar.append(inp, snd); sh.append(rb, bar); draw(); await loadCL(all().map(c => c.id)); draw();
+  snd.onclick = () => send(); inp.onkeydown = e => { if (e.key === "Enter") send(); };
+  bar.append(inp, snd); o.footer.append(rb, bar); draw(); await loadCL(all().map(c => c.id)); draw();
+  return {draw, send, inp};
 }
 const SHI = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 4l7 7-7 7v-4.2c-5 0-8.5 1.4-11 5.2.8-5.2 4-9.8 11-10.8V4z"/></svg>';
 async function shareClip(p) {
@@ -3886,12 +3934,18 @@ function drawProfile() {
     pa.classList.add("hasst");
     pa.addEventListener("click", e => {
       if (e.target.closest(".camb")) return; e.stopPropagation(); e.preventDefault();
+      if (mine) return photoMenu("avatar", e);
       openStory(uid, {list: pf.stories.slice(), index: 0, onRemove: g => { pf.stories = (pf.stories || []).filter(x => x.id !== g.id); pfPaint(); }});
     }, true);
   }
   if (mine) {
-    const c1 = el("button", "camb", "📷"), c2 = el("button", "camb", "📷"); c1.type = c2.type = "button";
-    c1.onclick = () => pickPhoto("cover"); c2.onclick = () => pickPhoto("avatar"); cv.append(c1); pa.append(c2);
+    const c1 = el("button", "camb"), c2 = el("button", "camb"); c1.type = c2.type = "button"; c1.innerHTML = c2.innerHTML = icon("camera", 18); c1.title = "Cover photo"; c2.title = "Profile picture";
+    c1.onclick = e => photoMenu("cover", e); c2.onclick = e => photoMenu("avatar", e); cv.append(c1); pa.append(c2);
+  }
+  if (!bl) {
+    if (coverUrl[uid] || mine) cv.style.cursor = "pointer";
+    cv.addEventListener("click", e => { if (e.target.closest(".camb")) return; if (mine) return photoMenu("cover", e); if (!coverUrl[uid]) return; openPhotoHistory(uid, "cover"); });
+    pa.addEventListener("click", e => { if (e.target.closest(".camb") || pa.classList.contains("hasst")) return; if (mine) return photoMenu("avatar", e); if (!photoUrl[uid]) return; openPhotoHistory(uid, "avatar"); });
   }
   let sub = "";
   if (mine) sub = "";
@@ -3956,7 +4010,7 @@ function drawProfile() {
   if (pf.tab === "photos") {
     const L = pf.posts.filter(x => x.url && x.media_type !== "video");
     if (!L.length) box.append(el("div", "hint", mine ? "You haven't added any photos yet." : "No photos yet."));
-    else { const g = el("div", "cgrid"); L.forEach(x => { const t = el("div", "ct"), im = el("img"); im.src = x.url; t.append(im); t.onclick = () => openPost(x.id); g.append(t); }); box.append(g); }
+    else { const g = el("div", "cgrid"); L.forEach((x, k) => { const t = el("div", "ct"), im = el("img"); im.src = x.url; t.append(im); t.onclick = () => openViewer(L.map(y => ({url: y.url, postId: y.id})), k, {plain: true}); g.append(t); }); box.append(g); }
   } else if (pf.tab === "posts") {
     aboutMe(box, mine);
     drawAbout(box, mine, uid);
@@ -5321,18 +5375,88 @@ function closeViewer() {
   const o = document.getElementById("mv"); if (o) { o.querySelectorAll("video").forEach(v => v.pause()); o.remove(); }
   if (mvKey) { document.removeEventListener("keydown", mvKey); mvKey = null; }
 }
-function openViewer(items, start) {
-  closeViewer(); if (!items || !items.length) return;
+// ---------- PHOTO GESTURES: pinch / wheel / double-tap zoom, drag to pan, swipe down to close, swipe sideways to go next ----------
+function mvGestures(st, getImg, nav, close, opts) {
+  const o = opts || {};
+  let s = 1, tx = 0, ty = 0, dy = 0, mode = "", dir = "", moved = 0, lastTap = 0, d0 = 1, s0 = 1, m0 = null, sp = null;
+  const P = new Map(), ov = () => st.closest("#mv");
+  const apply = anim => { const x = getImg(); if (!x) return; x.style.transition = anim ? "transform .22s ease" : "none"; x.style.transform = "translate(" + tx + "px," + (ty + dy) + "px) scale(" + s + ")"; };
+  const clamp = () => { const x = getImg(); if (!x) return; if (s <= 1.001) { s = 1; if (!o.pan1) { tx = ty = 0; return; } }
+    const mx = Math.max(0, (x.clientWidth * s - st.clientWidth) / 2), my = Math.max(0, (x.clientHeight * s - st.clientHeight) / 2); tx = Math.min(mx, Math.max(-mx, tx)); ty = Math.min(my, Math.max(-my, ty)); };
+  const zoomAt = (fx, fy, ns, anim) => { ns = Math.min(5, Math.max(1, ns)); tx = fx - (fx - tx) * (ns / s); ty = fy - (fy - ty) * (ns / s); s = ns; clamp(); apply(anim); };
+  const rel = (cx, cy) => { const r = st.getBoundingClientRect(); return [cx - r.left - r.width / 2, cy - r.top - r.height / 2]; };
+  const fade = a => { const o = ov(); if (o) o.style.background = "rgba(0,0,0," + a + ")"; };
+  const dist = () => { const a = [...P.values()]; return Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) || 1; };
+  const mid = () => { const a = [...P.values()]; return [(a[0].x + a[1].x) / 2, (a[0].y + a[1].y) / 2]; };
+  const tap = e => { const t = Date.now(); if (t - lastTap < 320 && getImg()) { const [fx, fy] = rel(e.clientX, e.clientY); if (s > 1) { s = 1; tx = ty = 0; apply(true); } else zoomAt(fx, fy, 2.5, true); lastTap = 0; } else lastTap = t; };
+  st.style.touchAction = "none";
+  st.addEventListener("pointerdown", e => {
+    if (e.target.closest("button, input, .vc") || (e.pointerType === "mouse" && e.button !== 0)) return;
+    try { st.setPointerCapture(e.pointerId); } catch (_) {}
+    P.set(e.pointerId, {x: e.clientX, y: e.clientY});
+    if (P.size === 2) { mode = "pinch"; d0 = dist(); s0 = s; m0 = mid(); dy = 0; fade(1); }
+    else if (P.size === 1) { mode = (s > 1 || o.pan1) ? "pan" : "swipe"; dir = ""; moved = 0; sp = {x: e.clientX, y: e.clientY}; }
+  });
+  st.addEventListener("pointermove", e => {
+    const p = P.get(e.pointerId); if (!p) return;
+    const ddx = e.clientX - p.x, ddy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
+    if (mode === "pinch" && P.size === 2) { const m = mid(), f = rel(m[0], m[1]); tx += m[0] - m0[0]; ty += m[1] - m0[1]; m0 = m; zoomAt(f[0], f[1], s0 * dist() / d0); }
+    else if (mode === "pan") { moved += Math.abs(ddx) + Math.abs(ddy); tx += ddx; ty += ddy; clamp(); apply(false); }
+    else if (mode === "swipe" && sp) {
+      const ax = e.clientX - sp.x, ay = e.clientY - sp.y; moved = Math.max(moved, Math.abs(ax) + Math.abs(ay));
+      if (!dir && (Math.abs(ax) > 8 || Math.abs(ay) > 8)) dir = Math.abs(ay) > Math.abs(ax) ? "v" : "h";
+      if (dir === "v" && getImg()) { dy = ay; apply(false); fade(Math.max(.3, 1 - Math.abs(dy) / 500)); }
+    }
+  });
+  const end = e => {
+    if (!P.has(e.pointerId)) return; const was = mode; P.delete(e.pointerId);
+    if (was === "pinch") { if (P.size === 1) { mode = (s > 1 || o.pan1) ? "pan" : ""; dir = ""; moved = 99; } if (s < 1.05) { s = 1; if (!o.pan1) tx = ty = 0; clamp(); apply(true); } return; }
+    if (was === "pan") { mode = ""; if (moved < 6) tap(e); return; }
+    if (was === "swipe" && sp) {
+      const ax = e.clientX - sp.x, ay = e.clientY - sp.y; mode = "";
+      if (dir === "v" && Math.abs(ay) > 110) return close();
+      dy = 0; apply(true); fade(1);
+      if (dir === "h" && Math.abs(ax) > 60) return nav(ax < 0 ? 1 : -1);
+      if (moved < 8) tap(e);
+    }
+  };
+  st.addEventListener("pointerup", end); st.addEventListener("pointercancel", end);
+  st.addEventListener("wheel", e => { if (!getImg()) return; e.preventDefault(); const f = rel(e.clientX, e.clientY); zoomAt(f[0], f[1], s * (e.deltaY < 0 ? 1.18 : 1 / 1.18)); }, {passive: false});
+  return {reset() { s = 1; tx = ty = dy = 0; mode = ""; P.clear(); apply(false); fade(1); }, get() { return {s, tx, ty}; }, zoomTo(ns) { zoomAt(0, 0, ns, false); }};
+}
+// profile picture / cover photo viewer: o = {url, title, kind, own}
+function openPhoto(o) {
+  closeViewer(); if (!o || !o.url) return;
+  const ov = el("div"); ov.id = "mv";
+  const top = el("div", "mt"), cx = mvBtn("x", "Close"), ct = el("div", "sp", o.title || ""), dl = mvBtn("dl", "Download"), st = el("div", "st"), im = el("img");
+  im.alt = o.title || "Photo"; im.draggable = false; st.append(spinEl());
+  im.onload = () => { st.replaceChildren(im); }; im.onerror = () => { st.replaceChildren(el("div", "hint", "Couldn't open this photo.")); }; im.src = o.url;
+  mvGestures(st, () => st.querySelector("img"), () => {}, closeViewer);
+  st.addEventListener("click", e => { if (e.target === st) closeViewer(); });
+  cx.onclick = closeViewer;
+  dl.onclick = async () => {
+    try { const b = await (await fetch(o.url)).blob(), a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "chatter-" + (o.kind || "photo") + ".jpg"; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
+    catch (e) { window.open(o.url, "_blank", "noopener"); }
+  };
+  top.append(cx, ct, dl); ov.append(top, st);
+  if (o.own) { const mb = el("div", "mb c"), ch = el("button"); ch.className = "chg"; ch.textContent = "Change " + (o.kind === "cover" ? "cover photo" : "profile picture"); ch.onclick = () => { closeViewer(); pickPhoto(o.kind); }; mb.append(ch); ov.append(mb); }
+  mvKey = e => { if (e.key === "Escape") closeViewer(); }; document.addEventListener("keydown", mvKey);
+  document.body.append(ov);
+}
+function openViewer(items, start, opts) {
+  closeViewer(); if (!items || !items.length) return; opts = opts || {}; const plain = !items[0].m;
   let i = Math.min(Math.max(0, start || 0), items.length - 1), tok = 0, sx = 0;
   const ov = el("div"); ov.id = "mv";
   const top = el("div", "mt"), cx = mvBtn("x", "Close"), ct = el("div", "sp"), dl = mvBtn("dl", "Download"), mo = mvBtn("more", "More");
   const st = el("div", "st"), mb = el("div", "mb"), inp = el("input"), sd = mvBtn("send", "Send"), menu = el("div", "mm hide");
   const pv = mvBtn("prev"), nx = mvBtn("next"); pv.className = "nv l"; nx.className = "nv r";
   const go = d => { const n = i + d; if (n < 0 || n >= items.length) return; i = n; show(); };
+  const gx = mvGestures(st, () => st.querySelector("img"), d => go(d), closeViewer);
   function show() {
-    const it = items[i], my = ++tok;
+    const it = items[i], my = ++tok; gx.reset();
     st.replaceChildren(spinEl()); ct.textContent = items.length > 1 ? (i + 1) + " / " + items.length : ""; menu.classList.add("hide");
-    imgUrl(it.path).then(u => {
+    if (typeof vb !== "undefined") vb.style.visibility = (it.postId || opts.postId) ? "visible" : "hidden";
+    (it.url ? Promise.resolve(it.url) : imgUrl(it.path)).then(u => {
       if (my !== tok) return; st.replaceChildren();
       if (!u) { st.append(el("div", "hint", "Couldn't open this file.")); return; }
       if (it.vid) {
@@ -5345,14 +5469,17 @@ function openViewer(items, start) {
         pp.onclick = e => { e.stopPropagation(); if (v.paused) v.play(); else v.pause(); }; v.onclick = pp.onclick;
         rg.oninput = () => { if (v.duration) v.currentTime = (rg.value / 1000) * v.duration; };
         st.append(v, vc); ic(); v.play().catch(() => {});
-      } else { const im = el("img"); im.src = u; im.alt = "Photo"; st.append(im); }
+      } else { const im = el("img"); im.src = u; im.alt = "Photo"; im.draggable = false; st.append(im); if (it.cap) st.append(el("div", "mcap", it.cap)); }
       if (items.length > 1) { if (i > 0) st.append(pv); if (i < items.length - 1) st.append(nx); }
+      [i - 1, i + 1].forEach(k => { const x = items[k]; if (x && !x.vid) (x.url ? Promise.resolve(x.url) : imgUrl(x.path)).then(v => { if (v) { const t = new Image(); t.src = v; } }); });
     });
   }
   pv.onclick = e => { e.stopPropagation(); go(-1); }; nx.onclick = e => { e.stopPropagation(); go(1); };
   cx.onclick = closeViewer;
   dl.onclick = async () => {
-    const it = items[i], name = "chatter-" + it.m.id + "." + (it.path.split(".").pop() || "jpg");
+    const it = items[i];
+    if (!it.m) { const u = it.url || await imgUrl(it.path); try { const bl = await (await fetch(u)).blob(), a = document.createElement("a"); a.href = URL.createObjectURL(bl); a.download = "chatter-photo.jpg"; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); } catch (e) { window.open(u, "_blank", "noopener"); } return; }
+    const name = "chatter-" + it.m.id + "." + (it.path.split(".").pop() || "jpg");
     const {data, error} = await sb.storage.from("chat-images").createSignedUrl(it.path, 120, {download: name});
     if (error || !data) return toast("Couldn't download.");
     const a = document.createElement("a"); a.href = data.signedUrl; a.download = name; document.body.append(a); a.click(); a.remove();
@@ -5360,8 +5487,8 @@ function openViewer(items, start) {
   mo.onclick = e => {
     e.stopPropagation(); const it = items[i]; menu.replaceChildren();
     const add = (t, fn, red) => { const b = el("button", red ? "red" : "", t); b.type = "button"; b.onclick = ev => { ev.stopPropagation(); menu.classList.add("hide"); fn(); }; menu.append(b); };
-    add("Open in new tab", async () => { const u = await imgUrl(it.path); if (u) window.open(u, "_blank", "noopener"); });
-    if (it.m.user_id === me.id) add("Take back", () => { closeViewer(); unsend(it.m); }, true);
+    add("Open in new tab", async () => { const u = it.url || await imgUrl(it.path); if (u) window.open(u, "_blank", "noopener"); });
+    if (it.m && it.m.user_id === me.id) add("Take back", () => { closeViewer(); unsend(it.m); }, true);
     menu.classList.toggle("hide");
   };
   inp.placeholder = "Message"; inp.maxLength = 1000;
@@ -5373,12 +5500,14 @@ function openViewer(items, start) {
     if (sent) showSent(sent, m.room_id); toast("Sent");
   };
   inp.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); sd.onclick(); } };
-  st.addEventListener("touchstart", e => { sx = e.touches[0].clientX; }, {passive: true});
-  st.addEventListener("touchend", e => { const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 60) go(dx < 0 ? 1 : -1); }, {passive: true});
   ov.onclick = () => menu.classList.add("hide");
   mvKey = e => { if (e.key === "Escape") closeViewer(); else if (e.target !== inp && e.key === "ArrowLeft") go(-1); else if (e.target !== inp && e.key === "ArrowRight") go(1); };
   document.addEventListener("keydown", mvKey);
-  top.append(cx, ct, dl, mo); mb.append(inp, sd); ov.append(top, st, mb, menu); document.body.append(ov); show();
+  top.append(cx, ct, dl, mo); ov.append(top, st);
+  let vb;
+  if (!plain) { mb.append(inp, sd); ov.append(mb); }
+  else { mb.className = "mb c"; vb = el("button"); vb.className = "chg"; vb.textContent = "View post"; vb.onclick = () => { const id = items[i].postId || opts.postId; closeViewer(); if (id) openPost(id); }; mb.append(vb); ov.append(mb); }
+  ov.append(menu); document.body.append(ov); show();
 }
 // ==MV-END==
 async function drawMedia(p, r) {
@@ -5761,12 +5890,83 @@ async function loadPhotos(ids) {
   }));
   if (ch && me) { render(); updateHead(); pfPaint(); }
 }
-function pickPhoto(kind) { const i = document.createElement("input"); i.type = "file"; i.accept = "image/*"; i.onchange = () => { if (i.files[0]) uploadPhoto(kind, i.files[0]); }; i.click(); }
+// ---------- ADJUST PHOTO: drag to reposition, pinch / scroll / slider to zoom, then save the cropped result ----------
+function photoEditor(kind, file) {
+  const url = URL.createObjectURL(file), cover = kind === "cover", ratio = cover ? 2 : 1;
+  const ov = el("div"); ov.id = "pe";
+  const top = el("div", "pet"), cancel = el("button", "", "Cancel"), ttl = el("div", "pett", cover ? "Adjust cover photo" : "Adjust profile picture"), save = el("button", "pes", "Save");
+  const stage = el("div", "pest"), frame = el("div", "pef " + (cover ? "cov" : "avt")), img = el("img"), sl = el("input"), hint = el("div", "peh", "Drag to reposition. Pinch, scroll or use the slider to zoom.");
+  img.draggable = false; img.alt = ""; frame.append(img); sl.type = "range"; sl.min = 100; sl.max = 400; sl.value = 100; sl.className = "pesl";
+  let gx = null;
+  const key = e => { if (e.key === "Escape") done(); };
+  const done = () => { URL.revokeObjectURL(url); ov.remove(); document.removeEventListener("keydown", key); };
+  img.onload = () => {
+    const fw = frame.clientWidth, fh = frame.clientHeight, ia = img.naturalWidth / img.naturalHeight; let w, h;
+    if (ia > fw / fh) { h = fh; w = h * ia; } else { w = fw; h = w / ia; }
+    img.style.cssText = "position:absolute;left:50%;top:50%;width:" + w + "px;height:" + h + "px;margin:" + (-h / 2) + "px 0 0 " + (-w / 2) + "px;max-width:none;max-height:none";
+    gx = mvGestures(frame, () => img, () => {}, () => {}, {pan1: true}); sl.oninput = () => gx.zoomTo(sl.value / 100);
+  };
+  img.onerror = () => { done(); uploadPhoto(kind, file); };      // this browser can't preview it: upload it as before
+  save.onclick = async () => {
+    if (!gx) return; save.disabled = true; save.textContent = "Saving…";
+    try {
+      const g = gx.get(), fw = frame.clientWidth, fh = frame.clientHeight, iw = parseFloat(img.style.width), ih = parseFloat(img.style.height), k = img.naturalWidth / iw;
+      const sw = (fw / g.s) * k, sh = (fh / g.s) * k, sx = ((-fw / 2 - g.tx) / g.s + iw / 2) * k, sy = ((-fh / 2 - g.ty) / g.s + ih / 2) * k;
+      const outW = Math.min(cover ? 1920 : 1080, Math.round(sw)), outH = Math.round(outW / ratio);
+      const bmp = await createImageBitmap(file), c = document.createElement("canvas"); c.width = outW; c.height = outH;
+      c.getContext("2d").drawImage(bmp, sx, sy, sw, sh, 0, 0, outW, outH);
+      const blob = await new Promise(r => c.toBlob(r, "image/jpeg", .95));
+      done(); await uploadPhoto(kind, new File([blob], kind + ".jpg", {type: "image/jpeg"}));
+    } catch (e) { save.disabled = false; save.textContent = "Save"; toast("Couldn't crop this photo."); }
+  };
+  cancel.onclick = done; document.addEventListener("keydown", key);
+  top.append(cancel, ttl, save); stage.append(frame, sl, hint); ov.append(top, stage); document.body.append(ov); img.src = url;
+}
+
+// ---------- PROFILE / COVER PHOTO: tap menu + photo history viewer ----------
+Object.assign(IC_S, {image: '<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="9" r="1.6"/><path d="M21 16l-5-5-8 8"/>', camera: '<path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.5"/>', "user-circle": '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.2 18.5a6.5 6.5 0 0 1 11.6 0"/>'});
+function showMenu(title, items, ev) {
+  if (DT()) {
+    closePop(); const pop = el("div", "pop cpop"); pop.id = "pop";
+    items.forEach(it => { const d = el("div", "cpi"); d.innerHTML = '<span class="cmi">' + it.icon + "</span>"; d.append(el("span", "cml", it.label)); d.onclick = e => { e.stopPropagation(); closePop(); it.fn(); }; pop.append(d); });
+    pop.style.width = "270px"; pop.style.visibility = "hidden"; document.body.append(pop);
+    const x = ev ? ev.clientX : 220, y = ev ? ev.clientY : 220, ph = pop.offsetHeight;
+    pop.style.left = Math.max(8, Math.min(x, innerWidth - 278)) + "px"; pop.style.top = Math.max(8, Math.min(y, innerHeight - ph - 8)) + "px"; pop.style.visibility = "";
+    setTimeout(() => {
+      const off = e => { if (!e.target.closest("#pop")) bye(); }, esc = e => { if (e.key === "Escape") bye(); };
+      function bye() { closePop(); document.removeEventListener("mousedown", off, true); document.removeEventListener("keydown", esc, true); }
+      document.addEventListener("mousedown", off, true); document.addEventListener("keydown", esc, true);
+    }, 0);
+    return;
+  }
+  const {body} = sheet(title);
+  items.forEach(it => { const b = el("button", "cmrow"); b.type = "button"; b.innerHTML = '<span class="cmi">' + it.icon + "</span>"; b.append(el("span", "cml", it.label)); b.onclick = () => { closeSheet(); it.fn(); }; body.append(b); });
+}
+async function photoHistory(uid, kind) {
+  const body = kind === "cover" ? "updated their cover photo." : "updated their profile picture.";
+  const {data, error} = await sb.from("posts").select("id,media_path,created_at").eq("user_id", uid).eq("body", body).eq("media_type", "image").not("media_path", "is", null).order("created_at", {ascending: false}).limit(30);
+  if (error || !data) return [];
+  return data.map(r => ({path: r.media_path, postId: r.id, cap: new Date(r.created_at).toLocaleDateString(undefined, {year: "numeric", month: "short", day: "numeric"})}));
+}
+async function openPhotoHistory(uid, kind) {
+  const cur = kind === "cover" ? coverUrl[uid] : photoUrl[uid]; if (!cur) return;
+  let items = []; try { items = await photoHistory(uid, kind); } catch (e) {}
+  if (!items.length) return openPhoto({url: cur, title: (names[uid] || "") + (kind === "cover" ? "’s cover photo" : "’s profile picture"), kind, own: uid === me.id});
+  openViewer(items, 0);
+}
+function photoMenu(kind, ev) {
+  const items = [], has = !!(kind === "cover" ? coverUrl[me.id] : photoUrl[me.id]);
+  if (kind === "avatar" && pf && pf.uid === me.id && pf.stories && pf.stories.length) items.push({icon: icon("user-circle", 20), label: "View story", fn: () => openStory(me.id, {list: pf.stories.slice(), index: 0, onRemove: g => { pf.stories = (pf.stories || []).filter(x => x.id !== g.id); pfPaint(); }})});
+  if (has) items.push({icon: icon("image", 20), label: kind === "cover" ? "See cover photo" : "See profile picture", fn: () => openPhotoHistory(me.id, kind)});
+  items.push({icon: icon("upload", 20), label: kind === "cover" ? "Upload cover photo" : "Choose profile picture", fn: () => pickPhoto(kind)});
+  showMenu(kind === "cover" ? "Cover photo" : "Profile picture", items, ev);
+}
+function pickPhoto(kind) { const i = document.createElement("input"); i.type = "file"; i.accept = "image/*"; i.onchange = () => { if (i.files[0]) photoEditor(kind, i.files[0]); }; i.click(); }
 async function uploadPhoto(kind, file) {
   try {
-    const bmp = await createImageBitmap(file), k = Math.min(1, (kind === "cover" ? 1200 : 600) / Math.max(bmp.width, bmp.height));
+    const bmp = await createImageBitmap(file), k = Math.min(1, (kind === "cover" ? 1920 : 1080) / Math.max(bmp.width, bmp.height));
     const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k); c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
-    const blob = await new Promise(r => c.toBlob(r, "image/jpeg", .85)), path = me.id + "/" + kind + "-" + Date.now() + ".jpg";
+    const blob = await new Promise(r => c.toBlob(r, "image/jpeg", .9)), path = me.id + "/" + kind + "-" + Date.now() + ".jpg";
     const up = await sb.storage.from("chat-images").upload(path, blob, {cacheControl: "31536000", contentType: "image/jpeg"}); if (up.error) throw up.error;
     const {error} = await sb.rpc("set_profile_photo", {kind, path}); if (error) throw error;
     delete photoDone[me.id]; await loadPhotos([me.id]); render();
