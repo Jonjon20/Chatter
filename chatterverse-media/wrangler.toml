@@ -1,0 +1,11 @@
+name = "chatterverse-media"
+main = "src/index.js"
+compatibility_date = "2026-11-08"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "chatterverse-media"
+
+[vars]
+# Keep non-secret settings here only. Add SUPABASE_URL and SUPABASE_ANON_KEY
+# in the Cloudflare Worker Settings UI, or configure them as vars below.
