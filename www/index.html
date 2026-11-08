@@ -975,6 +975,21 @@ html.dt .story-activity-panel{max-width:none}
 #st .nmbar{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:640px;padding:14px 18px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--bg);display:flex;flex-direction:column;gap:10px;z-index:3}
 #st .nmbtn{width:100%;padding:18px;font-size:19px;font-weight:600;border-radius:32px;background:var(--me);color:#fff}#st .nmbtn:disabled{opacity:.4}#st .nmgray{background:var(--bg2);color:var(--tx)}
 </style>
+<style id="cv-ai-support-css">
+.cv-ai-support-card{margin:14px 8px 18px;padding:17px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent,#7c3aed) 12%,var(--bg)),var(--bg2))}
+.cv-ai-support-title{font-size:17px;font-weight:800;margin-bottom:5px;color:var(--tx)}
+.cv-ai-support-launch{width:100%;border-radius:13px;padding:13px 16px;margin-top:10px}
+.cv-ai-chat{display:flex;flex-direction:column;gap:10px;margin:14px 8px;padding:12px;border:1px solid var(--line);border-radius:18px;background:var(--bg);min-height:430px;max-height:70vh}
+.cv-ai-chat-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.cv-ai-chat-name{font-weight:800;font-size:16px}.cv-ai-chat-sub,.cv-ai-status{font-size:12px;color:var(--mut)}
+.cv-ai-transcript{display:flex;flex:1;min-height:180px;overflow-y:auto;flex-direction:column;gap:9px;padding:6px 2px}
+.cv-ai-bubble{max-width:88%;padding:10px 13px;border-radius:16px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.45}
+.cv-ai-bubble.bot{align-self:flex-start;background:var(--bg2);color:var(--tx);border-bottom-left-radius:5px}
+.cv-ai-bubble.user{align-self:flex-end;background:var(--me);color:var(--metx);border-bottom-right-radius:5px}
+.cv-ai-bubble.system{align-self:center;max-width:96%;padding:7px 12px;border-radius:999px;background:var(--bg2);color:var(--mut);font-size:12px;text-align:center}
+.cv-ai-composer{display:flex;gap:7px;align-items:center}.cv-ai-composer input{flex:1;width:100%;height:44px;border:1px solid var(--line);background:var(--bg2)}.cv-ai-composer button{padding:10px 13px}
+.cv-ai-chat>button{border-radius:12px}
+</style>
 </head>
 <body>
 <style>
@@ -1693,8 +1708,7 @@ $("#af").onsubmit = async e => {
             if (explanation.length < 20) { appealStatus.textContent = "Please provide at least 20 characters."; return; }
             submitAppeal.disabled = true; submitAppeal.textContent = "Submitting…";
             try {
-              const { data: sessionData } = await sb.auth.getSession();
-              const resp = await fetch(`https://ykyphsopgnhfdnvytswp.supabase.co/functions/v1/account-appeals`, {
+              const resp = await fetch("https://ykyphsopgnhfdnvytswp.supabase.co/functions/v1/account-appeals", {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
                 body: JSON.stringify({ email: id, explanation })
@@ -4671,6 +4685,45 @@ function drawSet() {
   else w.append(setDetail(stItem, row));
   o.append(w);
 }
+
+async function openChatterverseSupport(container) {
+  const panel=el("div","cv-ai-chat"), head=el("div","cv-ai-chat-head"), title=el("div");
+  title.append(el("div","cv-ai-chat-name","Chatterverse AI Assistant"),el("div","cv-ai-chat-sub","AI support · Human support available"));
+  const close=el("button","gray","Close"); close.type="button"; close.onclick=()=>panel.remove(); head.append(title,close);
+  const transcript=el("div","cv-ai-transcript"), composer=el("div","cv-ai-composer"), input=el("input"), send=el("button","","Send"), status=el("div","cv-ai-status");
+  input.placeholder="Type a message…"; input.maxLength=2000; send.type="button";
+  composer.append(input,send); panel.append(head,transcript,composer,status); container.append(panel);
+  let conversationId=null,busy=false,waiting=false,lastSeen=0,supportAgentJoined=false;
+  const bubble=(role,text)=>{const b=el("div","cv-ai-bubble "+role);b.textContent=text;transcript.append(b);transcript.scrollTop=transcript.scrollHeight};
+  const announceSupportJoined=(firstName)=>{if(supportAgentJoined)return;supportAgentJoined=true;const name=String(firstName||"").trim().split(/\s+/)[0];bubble("system",name?`${name} joined the conversation`:"A support representative joined the conversation");status.textContent="Connected to human support.";};
+  const call=async(action,payload={})=>{const {data,error}=await sb.functions.invoke("chatterverse-ai-support",{body:{action,...payload}});if(error)throw new Error(error.message||"Support request failed.");if(data?.error)throw new Error(data.error);return data||{};};
+  const asksForHuman=(text)=>/(\b(human|real\s+person|live\s+agent|support\s+agent|talk\s+to\s+(a\s+)?(person|human|agent)|speak\s+to\s+(a\s+)?(person|human|agent)|customer\s+support)\b|human\s+support|support\s+staff|tao\s+na\s+support|kausap\s+na\s+tao|makipag-usap\s+sa\s+tao|human\s+support\s+sana|agent\s+sana)/i.test(text);
+  const handoff=async(message)=>{
+    status.textContent="Connecting you with human support…";
+    const r=await call("request_human",{conversation_id:conversationId,message});
+    conversationId=r.conversation_id;waiting=true;
+    bubble("bot","I'll connect you with the Chatterverse support team. A support representative will reply in this conversation. You can keep this chat open for updates.");
+    status.textContent="Waiting for a support representative.";
+  };
+  bubble("bot","Hi! I'm the Chatterverse AI Assistant. Ask me about profiles, posts, messages, privacy, settings, or using the app. If you would like to speak with a person, just tell me here.");
+  const submit=async()=>{
+    const message=input.value.trim();if(!message||busy||waiting)return;
+    busy=true;send.disabled=input.disabled=true;bubble("user",message);input.value="";
+    try{
+      if(asksForHuman(message)){await handoff(message);}
+      else{
+        status.textContent="AI is typing…";
+        const r=await call("chat",{conversation_id:conversationId,message});conversationId=r.conversation_id;
+        bubble("bot",r.reply||"I couldn't reply right now. Please try again.");
+        status.textContent=r.ai_configured===false?"AI support is not configured yet.":"";
+      }
+    }catch(e){status.textContent=e.message||"Couldn't connect. Please try again.";}
+    finally{busy=false;send.disabled=input.disabled=waiting;if(!waiting)input.focus();}
+  };
+  send.onclick=submit;input.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();submit();}});
+  const timer=setInterval(async()=>{if(!panel.isConnected){clearInterval(timer);return;}if(!conversationId)return;try{const r=await call("get_messages",{conversation_id:conversationId});for(const m of r.messages||[]){const id=Number(m.id)||0;if(id>lastSeen){lastSeen=id;if(m.sender_role==="support"){announceSupportJoined(m.sender_first_name);bubble("bot",m.body);}}}if(r.status==="closed")status.textContent="This support conversation is closed.";}catch(_){ }},10000);
+}
+
 function setDetail(it, row) {
   const d = el("div", "stp"), cap = t => d.append(el("div", "cap", t)), msg = el("div", "cap"), inp = (ph, type, v) => { const i = el("input"); i.placeholder = ph; i.type = type || "text"; i.value = v || ""; return i; };
   const btn = (t, fn, cls) => { const b = el("button", cls || "", t); b.onclick = () => fn(b); return b; };
@@ -4683,6 +4736,12 @@ function setDetail(it, row) {
     renderLimited(d);
   } else if (it === "Help Center") {
     d.append(el("div", "help-intro", "Find answers to common questions about using Chatterverse."));
+    const aiCard = el("div", "cv-ai-support-card");
+    aiCard.append(el("div", "cv-ai-support-title", "✦ Chatterverse AI Assistant"));
+    aiCard.append(el("div", "help-intro", "Ask about your account or how to use Chatterverse. If you need a person, just ask in the chat."));
+    const aiLaunch = el("button", "cv-ai-support-launch", "Chat with Chatterverse AI");
+    aiLaunch.type = "button"; aiLaunch.onclick = () => openChatterverseSupport(d);
+    aiCard.append(aiLaunch); d.append(aiCard);
     const search = inp("Search help articles", "search"); search.className = "help-search"; search.setAttribute("aria-label", "Search help articles");
     const faqBox = el("div", "help-faq-list");
     const faqs = [
