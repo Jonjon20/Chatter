@@ -198,6 +198,16 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
 .smd{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center}.smd img,.smd video{max-width:100%;max-height:100%;object-fit:contain}
 .sz{position:absolute;top:0;bottom:0}.sz.l{left:0;width:30%}.sz.r{right:0;width:70%}
 .pc{border-top:6px solid var(--fsep);padding-top:12px}
+/* Chatterverse sponsored native banner */
+.cv-ad-card{border-top:6px solid var(--fsep);padding:12px 14px 14px;background:var(--bg)}
+.cv-ad-head{display:flex;align-items:center;gap:8px;margin:0 0 9px;color:var(--mut);font-size:12px;font-weight:600;letter-spacing:.15px}
+.cv-ad-head .cv-ad-mark{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--bg2);color:var(--me);font-size:14px}
+.cv-ad-head .cv-ad-label{color:var(--tx);font-size:14px;font-weight:700}
+.cv-ad-head .cv-ad-sub{margin-left:auto;font-size:11px;font-weight:500;color:var(--mut)}
+.cv-ad-frame{width:100%;min-height:90px;overflow:hidden;border-radius:12px;background:var(--bg2);display:flex;align-items:center;justify-content:center}
+.cv-ad-frame #container-83be8c2251ec4df08e59e63ba7adca4b{width:100%;min-width:0}
+.cv-ad-frame iframe{max-width:100%!important}
+
 .pc .ph1{display:flex;gap:10px;align-items:center;padding:0 8px 8px 14px}
 .pc .l1.sysu{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.3}.pc .l1.sysu .mut{font-weight:400}
 .pc .pn{flex:1;min-width:0}.pc .l1{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pc .l1 b{font-weight:600}
@@ -975,51 +985,6 @@ html.dt .story-activity-panel{max-width:none}
 #st .nmbar{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:640px;padding:14px 18px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--bg);display:flex;flex-direction:column;gap:10px;z-index:3}
 #st .nmbtn{width:100%;padding:18px;font-size:19px;font-weight:600;border-radius:32px;background:var(--me);color:#fff}#st .nmbtn:disabled{opacity:.4}#st .nmgray{background:var(--bg2);color:var(--tx)}
 </style>
-<style id="cv-ai-support-css">
-.cv-ai-support-card{margin:14px 8px 18px;padding:17px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent,#7c3aed) 12%,var(--bg)),var(--bg2))}
-.cv-ai-support-title{font-size:17px;font-weight:800;margin-bottom:5px;color:var(--tx)}
-.cv-ai-support-launch{width:100%;border-radius:13px;padding:13px 16px;margin-top:10px}
-.cv-ai-chat{display:flex;flex-direction:column;gap:10px;margin:0;padding:12px;border:0;border-radius:0;background:var(--bg);height:100%;min-height:430px;max-height:none;box-sizing:border-box}
-.sw2.cv-ai-chat-mode{height:100%;min-height:0;display:flex;flex-direction:column}
-.sw2.cv-ai-chat-mode>.mtop{display:none}
-.sw2.cv-ai-chat-mode>.stp{flex:1;min-height:0;display:flex;flex-direction:column}
-.sw2.cv-ai-chat-mode .cv-ai-chat{flex:1;min-height:0}
-.sw2.cv-ai-chat-mode .cv-ai-transcript{min-height:0}
-.cv-ai-chat-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:10px;border-bottom:1px solid var(--line)}
-.cv-ai-chat-name{font-weight:800;font-size:16px}.cv-ai-chat-sub,.cv-ai-status{font-size:12px;color:var(--mut)}
-.cv-ai-transcript{display:flex;flex:1;min-height:180px;overflow-y:auto;flex-direction:column;gap:9px;padding:6px 2px}
-.cv-ai-bubble{max-width:88%;padding:10px 13px;border-radius:16px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.45}
-.cv-ai-bubble.bot{align-self:flex-start;background:var(--bg2);color:var(--tx);border-bottom-left-radius:5px}
-.cv-ai-bubble.user{align-self:flex-end;background:var(--me);color:var(--metx);border-bottom-right-radius:5px}
-.cv-ai-bubble.system{align-self:center;max-width:96%;padding:7px 12px;border-radius:999px;background:var(--bg2);color:var(--mut);font-size:12px;text-align:center}
-.cv-ai-composer{display:flex;gap:7px;align-items:center}.cv-ai-composer input{flex:1;width:100%;height:44px;border:1px solid var(--line);background:var(--bg2)}.cv-ai-composer button{padding:10px 13px}
-.cv-ai-chat>button{border-radius:12px}
-</style>
-
-<style>
-.vbadge{display:inline-flex;align-items:center;justify-content:center;flex:0 0 17px;width:17px;height:18px;margin-left:5px;vertical-align:middle;line-height:1;color:#858b94;filter:drop-shadow(0 1px 1px rgba(0,0,0,.16))}
-.vbadge svg{display:block;width:17px;height:18px;overflow:visible}
-.profile-transparency{padding:14px 16px 24px}
-.pt-intro{font-size:14px;line-height:1.5;color:var(--mut);padding:4px 2px 14px}
-.pt-card{background:var(--cd,var(--bg2));border:1px solid var(--line);border-radius:18px;padding:6px 14px;margin:0 0 16px;overflow:hidden}
-.pt-row{display:flex;align-items:center;gap:14px;min-height:66px;padding:11px 2px;border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
-.pt-row:last-child{border-bottom:0}
-.pt-icon{width:30px;height:30px;flex:0 0 30px;display:flex;align-items:center;justify-content:center;color:var(--tx)}
-.pt-icon svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.pt-copy{min-width:0;flex:1}
-.pt-label{font-size:15px;font-weight:650;color:var(--tx);line-height:1.3}
-.pt-value{font-size:14px;color:var(--mut);line-height:1.45;margin-top:3px;overflow-wrap:anywhere}
-.pt-verified{padding:14px 2px;align-items:flex-start}
-.pt-verified .pt-icon{width:36px;height:36px;flex-basis:36px;color:#858b94}
-.pt-verified .pt-icon svg{width:34px;height:34px;stroke:none}
-.pt-verified .pt-icon svg path:first-child{fill:currentColor;stroke:none}
-.pt-verified .pt-label{font-size:16px}
-.pt-verified-detail{color:var(--mut)}
-.pt-unverified .pt-icon{color:var(--mut)}
-.pt-section-title{font-size:18px;font-weight:750;margin:18px 2px 10px}
-.pname{cursor:pointer}.pname .vbadge{cursor:pointer}
-</style>
-
 </head>
 <body>
 <style>
@@ -1500,7 +1465,6 @@ requestAnimationFrame(k)})()</script>
 <div id="auth" class="hide">
  <form id="af">
   <h1>💬 Chatterverse</h1>
-  <div id="savedAcc" class="hide" style="display:flex;flex-direction:column;gap:6px"></div>
   <input id="em" type="text" placeholder="Email" required autocomplete="username">
   <input id="pw" type="password" placeholder="Password" required minlength="6" autocomplete="current-password">
   <button id="ab">Log in</button>
@@ -1686,7 +1650,7 @@ const pvText = l => l.deleted_at ? "Message taken back" : sysText(l) || callPv(l
 let rd = {}; try { rd = JSON.parse(localStorage.getItem("rd") || "{}"); } catch (e) {}
 const markRead = (rid, ts) => { rd[rid] = ts; try { localStorage.setItem("rd", JSON.stringify(rd)); } catch (e) {} };
 
-let me, names = {}, verifiedUsers = {}, verifiedLoaded = new Set(), rooms = [], members = {}, latest = {}, fr = [], online = new Set(), reads = {}, blocked = new Set(), infoProfile = null, lastSeen = {}, lastTs = 0, pfilter = "all", photoUrl = {}, coverUrl = {}, photoDone = {}, pymk = null, pymkAll = false;
+let me, names = {}, rooms = [], members = {}, latest = {}, fr = [], online = new Set(), reads = {}, blocked = new Set(), infoProfile = null, lastSeen = {}, lastTs = 0, pfilter = "all", photoUrl = {}, coverUrl = {}, photoDone = {}, pymk = null, pymkAll = false;
 let pref = {rcpt: true, typ: true, mute: {}}; try { Object.assign(pref, JSON.parse(localStorage.getItem("pf") || "{}")); } catch (e) {}
 let tab = "chats", filter = "all", query = "", results = null, cur = null, seen = new Set(), lastUid = null, signup = false;
 
@@ -1695,7 +1659,7 @@ function bootOff() { const b = document.getElementById("boot"); if (!b) return; 
 function showAuth() {
   bootOff(); W.reset = false;
   $("#app").classList.add("hide"); $("#auth").classList.remove("hide");
-  $("#af").classList.remove("hide"); $("#wiz").classList.add("hide"); renderSaved();
+  $("#af").classList.remove("hide"); $("#wiz").classList.add("hide");
 }
 // ---------- Account suspended screen ----------
 // Shown when a ban lands while the person is using the app (and when login says banned). Nothing else is usable:
@@ -1968,68 +1932,7 @@ async function hardOut() {
   try { sbKeys().forEach(k => localStorage.removeItem(k)); sessionStorage.clear(); } catch (e) {}
   if (me) loggedOut();
 }
-var SAVED_KEY = "cv-saved-accounts";
-function getSaved() { try { return JSON.parse(localStorage.getItem(SAVED_KEY) || "[]"); } catch (e) { return []; } }
-function putSaved(l) { try { localStorage.setItem(SAVED_KEY, JSON.stringify(l)); } catch (e) {} }
-function forgetSaved(id) { if (id) putSaved(getSaved().filter(x => x.id !== id)); }
-function updSaved(se) { try { if (!se || !se.user) return; const l = getSaved(), i = l.findIndex(x => x.id === se.user.id); if (i >= 0) { l[i].a = se.access_token; l[i].r = se.refresh_token; putSaved(l); } } catch (e) {} }
-function askSaveAccount() {
-  return new Promise(res => {
-    const bg = el("div"), box = el("div"), done = v => { bg.remove(); res(v); };
-    bg.style.cssText = "position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px";
-    box.style.cssText = "width:100%;max-width:340px;background:var(--bg);color:var(--tx);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px";
-    const h = el("b", "", "Save this account on this device?"), p = el("div", "", "Next time you can continue with one tap, without a password or 2FA code.");
-    p.style.cssText = "color:var(--mut);font-size:13px";
-    const a = el("button", "", "Save and log out"), b = el("button", "gray", "Don't save, log out"), c = el("button", "ghost", "Cancel");
-    [a, b, c].forEach(x => x.type = "button");
-    a.onclick = () => done("save"); b.onclick = () => done("no"); c.onclick = () => done("cancel");
-    box.append(h, p, a, b, c); bg.append(box); document.body.append(bg);
-  });
-}
-// leave the account WITHOUT ending its session on the server, so "Continue as ..." works later
-async function saveAndLeave() {
-  let se = null; try { se = (await sb.auth.getSession()).data.session; } catch (e) {}
-  if (!se || !se.refresh_token || !se.user) return false;
-  const l = getSaved().filter(x => x.id !== se.user.id);
-  l.unshift({id: se.user.id, email: se.user.email || lastEmail || "", a: se.access_token, r: se.refresh_token}); putSaved(l);
-  outNow = true; dropBk();
-  try { sb.auth.stopAutoRefresh(); } catch (e) {}
-  try { Object.keys(localStorage).filter(k => k.startsWith("imgurl:")).forEach(k => localStorage.removeItem(k)); sbKeys().forEach(k => localStorage.removeItem(k)); sessionStorage.clear(); } catch (e) {}
-  location.reload(); return true;
-}
-function renderSaved() {
-  const box = $("#savedAcc"); if (!box) return; const l = getSaved();
-  box.replaceChildren(); box.classList.toggle("hide", !l.length); if (!l.length) return;
-  const mk = t => { const d = el("div", "", t); d.style.cssText = "color:var(--mut);font-size:13px;text-align:center"; return d; };
-  box.append(mk("Saved accounts"));
-  l.forEach(x => {
-    const row = el("div"), go = el("button", "gray", "Continue as " + (x.email || "saved account")), rm = el("button", "gray sm", "✕");
-    row.style.cssText = "display:flex;gap:6px"; go.style.cssText = "flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap";
-    go.type = rm.type = "button"; rm.title = "Remove this saved account";
-    go.onclick = () => resumeSaved(x.id); rm.onclick = () => removeSaved(x.id); row.append(go, rm); box.append(row);
-  });
-  box.append(mk("or log in with another account"));
-}
-async function resumeSaved(id) {
-  const x = getSaved().find(v => v.id === id); if (!x) return; const msg = $("#amsg"); msg.textContent = "Logging in…";
-  let error = null; try { ({error} = await sb.auth.setSession({access_token: x.a, refresh_token: x.r})); } catch (e) { error = e; }
-  if (!error) return; // onAuthStateChange takes over and opens the app
-  if (isRetryable(error)) { msg.textContent = "Couldn't connect. Try again in a moment."; return; }
-  forgetSaved(id); renderSaved(); msg.textContent = "That saved login expired. Please log in with your password.";
-}
-async function removeSaved(id) {
-  if (!confirm("Remove this saved account from this device? It will be logged out for good.")) return;
-  const x = getSaved().find(v => v.id === id); forgetSaved(id); renderSaved();
-  try { if (x) { const t = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {auth: {persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, storageKey: "cv-rm"}}); await t.auth.setSession({access_token: x.a, refresh_token: x.r}); await t.auth.signOut({scope: "local"}); } } catch (e) {}
-}
-async function doLogout(close) {
-  try { close && close(); } catch (e) {}
-  const choice = await askSaveAccount(); if (choice === "cancel") return;
-  try { await Promise.race([dropPush(), sleep(1500)]); } catch (e) {}
-  if (choice === "save" && await saveAndLeave()) return;
-  try { const se = (await sb.auth.getSession()).data.session; if (se && se.user) forgetSaved(se.user.id); } catch (e) {}
-  await hardOut();
-}
+async function doLogout(close) { try { close && close(); } catch (e) {} try { await Promise.race([dropPush(), sleep(1500)]); } catch (e) {} await hardOut(); }
 // ---- banned while already logged in: the server stops refreshing the session, so we notice and show the suspended screen with the appeal form
 const isBanErr = er => !!er && /banned|ban_duration|user_banned/i.test(String(er.message || "") + " " + String(er.code || ""));
 var lastEmail = "", banBusy = false;
@@ -2078,7 +1981,7 @@ async function recover(n) {
   loggedOut();
 }
 sb.auth.onAuthStateChange((ev, session) => {
-  if (session) { outNow = false; saveBk(session); updSaved(session); if (session.user && session.user.email) lastEmail = session.user.email; if (susp) return; if (!me && !W.reset) start(session.user); return; }
+  if (session) { outNow = false; saveBk(session); if (session.user && session.user.email) lastEmail = session.user.email; if (susp) return; if (!me && !W.reset) start(session.user); return; }
   if (susp) return;
   if (ev !== "SIGNED_OUT" && ev !== "INITIAL_SESSION") return;
   if (outNow) { loggedOut(); return; }
@@ -2089,103 +1992,11 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 
 // ---------- DATA ----------
 async function ensureNames(ids) {
-  const need = [...new Set(ids)].filter(i => i && (!names[i] || !verifiedLoaded.has(i))); if (!need.length) return;
-
-  // Keep profile names working before the Admin Console migration is installed.
-  // The migration adds profiles.is_verified, so older databases need a fallback.
-  let {data, error} = await sb.from("profiles").select("id,username,is_verified").in("id", need);
-  let hasVerificationColumn = !error;
-  if (error) {
-    console.warn("Unable to load profile verification flags; retrying basic profile fields:", error.message);
-    const fallback = await sb.from("profiles").select("id,username").in("id", need);
-    data = fallback.data;
-    error = fallback.error;
-    hasVerificationColumn = false;
-  }
-  if (error) {
-    console.warn("Unable to load profile names:", error.message);
-    return;
-  }
-  (data || []).forEach(p => {
-    names[p.id] = p.username || "Someone";
-    verifiedUsers[p.id] = hasVerificationColumn && p.is_verified === true;
-    verifiedLoaded.add(p.id);
-  });
+  const need = [...new Set(ids)].filter(i => i && !names[i]); if (!need.length) return;
+  const {data} = await sb.from("profiles").select("id,username").in("id", need);
+  (data || []).forEach(p => names[p.id] = p.username);
   loadPhotos(need);
-  need.forEach(i => {
-    if (!names[i]) names[i] = "Someone";
-    verifiedLoaded.add(i);
-    verifiedUsers[i] = verifiedUsers[i] === true;
-  });
-}
-function verifiedBadge(uid) {
-  if (!verifiedUsers[uid]) return null;
-  const b = el("span", "vbadge");
-  b.title = "Verified account";
-  b.setAttribute("aria-label", "Verified account");
-  const ns = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(ns, "svg");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("role", "img");
-  svg.setAttribute("aria-hidden", "true");
-  const circle = document.createElementNS(ns, "circle");
-  circle.setAttribute("cx", "12");
-  circle.setAttribute("cy", "12");
-  circle.setAttribute("r", "11");
-  circle.setAttribute("fill", "#858b94");
-  const check = document.createElementNS(ns, "path");
-  check.setAttribute("d", "m6.8 12.2 3.3 3.2 7.1-7.1");
-  check.setAttribute("fill", "none");
-  check.setAttribute("stroke", "#fff");
-  check.setAttribute("stroke-width", "2.2");
-  check.setAttribute("stroke-linecap", "round");
-  check.setAttribute("stroke-linejoin", "round");
-  svg.append(circle, check);
-  b.append(svg);
-  return b;
-}
-async function refreshAccountStatus(showNotice = true) {
-  if (!me) return false;
-  const {data, error} = await sb.from("profiles").select("account_status").eq("id", me.id).maybeSingle();
-  if (error) { console.warn("Account status check unavailable:", error.message); return true; }
-  const next = data?.account_status || "active";
-  const previous = accountStatus; accountStatus = next;
-  if (next === "suspended") {
-    alert("Your Chatterverse account has been suspended. You will be signed out.");
-    await hardOut(); return false;
-  }
-  if (next === "restricted" && previous !== "restricted" && showNotice && !accountStatusNotice) {
-    accountStatusNotice = true;
-    alert("Your Chatterverse account is restricted. You can browse, but posting, messaging, and other account actions are temporarily limited.");
-  }
-  if (next !== "restricted") accountStatusNotice = false;
-  return true;
-}
-function verifiedBadge(uid) {
-  if (!verifiedUsers[uid]) return null;
-  const b = el("span", "vbadge");
-  b.title = "Verified account";
-  b.setAttribute("aria-label", "Verified account");
-  const ns = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(ns, "svg");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("role", "img");
-  svg.setAttribute("aria-hidden", "true");
-  const circle = document.createElementNS(ns, "circle");
-  circle.setAttribute("cx", "12");
-  circle.setAttribute("cy", "12");
-  circle.setAttribute("r", "11");
-  circle.setAttribute("fill", "#858b94");
-  const check = document.createElementNS(ns, "path");
-  check.setAttribute("d", "m6.8 12.2 3.3 3.2 7.1-7.1");
-  check.setAttribute("fill", "none");
-  check.setAttribute("stroke", "#fff");
-  check.setAttribute("stroke-width", "2.2");
-  check.setAttribute("stroke-linecap", "round");
-  check.setAttribute("stroke-linejoin", "round");
-  svg.append(circle, check);
-  b.append(svg);
-  return b;
+  need.forEach(i => { if (!names[i]) names[i] = "Someone"; });
 }
 const rel = uid => {
   const f = fr.find(f => (f.requester === me.id && f.addressee === uid) || (f.requester === uid && f.addressee === me.id));
@@ -2898,6 +2709,22 @@ async function loadFeed() {
   floading = false; feedDirty = true; if (feedOn()) render();
 }
 const fkeep = fn => { const b = fb(), y = b.scrollTop; fn(); feedDirty = true; render(); b.scrollTop = y; pfPaint(); povPaint(); };
+function chatterverseNativeAd() {
+  // Adsterra Native Banner is shown as a clearly labelled sponsored feed card.
+  const card = el("section", "cv-ad-card");
+  card.setAttribute("aria-label", "Sponsored advertisement");
+  const head = el("div", "cv-ad-head"), mark = el("span", "cv-ad-mark", "Ad"), label = el("span", "cv-ad-label", "Sponsored"), sub = el("span", "cv-ad-sub", "Advertisement");
+  head.append(mark, label, sub);
+  const frame = el("div", "cv-ad-frame"), slot = el("div");
+  slot.id = "container-83be8c2251ec4df08e59e63ba7adca4b";
+  frame.append(slot); card.append(head, frame);
+  const script = document.createElement("script");
+  script.async = true; script.setAttribute("data-cfasync", "false");
+  script.src = "https://bicea.org/21/83be8c2251ec4df08e59e63ba7adca4b";
+  frame.append(script);
+  return card;
+}
+
 function feedRender() {
   const box = fb(); if (!feedDirty) return; feedDirty = false; box.replaceChildren(); box.dataset.t = "feed"; box.style.scrollSnapType = ""; if (reelObs) { reelObs.disconnect(); reelObs = null; }
   // top bar: hamburger + Newsfeed / Clips
@@ -2946,7 +2773,11 @@ function feedRender() {
   const vis = fposts.filter(p => !fhide.has(p.id) && !isGone(p));
   if (!vis.length) box.append(floading ? spinEl() : el("div", "hint", fmode === "clip" ? "No clips yet. Add the first one!" : "No posts yet. Follow people or post something."));
   if (fmode === "clip") { box.style.setProperty("--ftop", top.offsetHeight + "px"); vis.forEach(p => reel(p)); watchReels(); return; }
-  vis.forEach(p => box.append(postCard(p)));
+  vis.forEach((p, i) => {
+    box.append(postCard(p));
+    // Keep the ad between organic posts, not inside a user's post card.
+    if (i === 3 && vis.length > 4) box.append(chatterverseNativeAd());
+  });
 }
 // ---------- Full-screen composer ("New post" / "New clip"), Facebook-style ----------
 (function () { const st = document.createElement("style"); st.textContent = `
@@ -3325,10 +3156,7 @@ function storyCard(s) {
     t.append(m);
   }
   av.append(avatar(u, nm[0].toUpperCase()));
-  const storyName = el("div", "cn", u === me.id ? "Your story" : nm);
-  const storyBadge = u !== me.id ? verifiedBadge(u) : null;
-  if (storyBadge) storyName.append(storyBadge);
-  c.append(t, av, storyName);
+  c.append(t, av, el("div", "cn", u === me.id ? "Your story" : nm));
   c.onclick = () => openStory(u); return c;
 }
 function storyUsers() {
@@ -3744,7 +3572,6 @@ function postCard(p, inProfile, noRp, full) {
   const av = avatar(u, nm[0].toUpperCase(), "fa"); av.style.cursor = "pointer"; av.onclick = e => { e.stopPropagation(); openProfile(u); };
   const l1 = el("div", "l1"), r = u === me.id ? null : rel(u);
   const nb = el("b", null, nm); nb.style.cursor = "pointer"; nb.onclick = () => openProfile(u); l1.append(nb);
-  const postBadge = verifiedBadge(u); if (postBadge) l1.append(postBadge);
   // "updated their profile picture / cover photo" posts read like Facebook: it goes right after the name, not as a caption under it
   const sysM = /^updated (?:their|his|her) (profile picture|cover photo)\.$/.exec(p.body || "");
   if (sysM) { l1.classList.add("sysu"); l1.append(el("span", "mut", " updated their " + sysM[1] + ".")); }
@@ -4451,16 +4278,7 @@ function drawProfile() {
     if (online.has(uid)) sub += (sub ? " · " : "") + "Online now";
   }
   const hd = el("div", "phd"), col = el("div", "phi"), nr = el("div", "pnr");
-  const profileName = el("div", "pname", nm), profileBadge = verifiedBadge(uid);
-  profileName.style.cursor = "pointer";
-  profileName.title = "View profile information";
-  profileName.onclick = e => { e.stopPropagation(); openProfileTransparency(uid); };
-  if (profileBadge) {
-    profileBadge.style.cursor = "pointer";
-    profileBadge.onclick = e => { e.stopPropagation(); openProfileTransparency(uid); };
-    profileName.append(profileBadge);
-  }
-  nr.append(profileName);
+  nr.append(el("div", "pname", nm));
   if (mine) { const eb = el("button", "pen", ""); eb.type = "button"; eb.innerHTML = PENCIL; eb.onclick = editProfile; nr.append(eb); }
   col.append(nr); if (sub) col.append(el("div", "psub", sub)); hd.append(pa, col); box.append(cv, hd);
   if (!bl) {
@@ -4531,81 +4349,6 @@ function drawProfile() {
     });
     box.append(g);
   }
-}
-
-const profileDateLabel = value => {
-  if (!value) return "Not available";
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "Not available";
-  return d.toLocaleDateString(undefined, {month: "long", day: "numeric", year: "numeric"});
-};
-const profileRelativeLabel = value => {
-  if (!value) return "Not available";
-  const d = new Date(value), ms = Date.now() - d.getTime();
-  if (Number.isNaN(d.getTime()) || ms < 0) return "Not available";
-  const mins = Math.floor(ms / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return mins + (mins === 1 ? " minute ago" : " minutes ago");
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return hrs + (hrs === 1 ? " hour ago" : " hours ago");
-  const days = Math.floor(hrs / 24);
-  if (days < 30) return days + (days === 1 ? " day ago" : " days ago");
-  return profileDateLabel(value);
-};
-async function openProfileTransparency(uid) {
-  const nm = names[uid] || "this member";
-  const {body} = pmSheet("About this profile");
-  body.classList.add("profile-transparency");
-  body.append(el("div", "pt-intro", "Chatterverse shares basic account information to help people understand profiles and keep the community safer."));
-  const card = el("div", "pt-card");
-  const row = (icon, title, value, extraClass) => {
-    const r = el("div", "pt-row");
-    const ic = el("span", "pt-icon"); ic.innerHTML = icon;
-    const copy = el("div", "pt-copy");
-    copy.append(el("div", "pt-label", title), el("div", "pt-value" + (extraClass ? " " + extraClass : ""), value));
-    r.append(ic, copy); return r;
-  };
-  let meta = await sb.from("profiles").select("created_at,updated_at,is_verified").eq("id", uid).maybeSingle();
-  let verificationAvailable = !meta.error;
-  if (meta.error) {
-    // Older database schemas may not yet include profiles.is_verified.
-    meta = await sb.from("profiles").select("created_at,updated_at").eq("id", uid).maybeSingle();
-  }
-  if (!body.isConnected) return;
-  const createdAt = uid === me.id ? (me.created_at || (meta.data && meta.data.created_at)) : (meta.data && meta.data.created_at);
-  const updatedAt = meta.data && meta.data.updated_at;
-  const verified = verificationAvailable ? meta.data?.is_verified === true : verifiedUsers[uid] === true;
-  const vr = row('<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.8 21 5v6.1c0 5.5-3.7 9.2-9 11.1-5.3-1.9-9-5.6-9-11.1V5l9-3.2Z" fill="currentColor"/><path d="m7.4 11.9 3 3 6.3-6.4" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>', "Verified account status", verified ? "Verified — this account has been verified by the Chatterverse team." : "Not verified", "pt-verified-detail");
-  vr.classList.add("pt-verified");
-  if (!verified) vr.classList.add("pt-unverified");
-  card.append(vr);
-  card.append(
-    row('<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 9h18M8 13h2m4 0h2m-8 4h2"/></svg>', "Joined Chatterverse", profileDateLabel(createdAt)),
-    row('<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>', "Profile last updated", profileRelativeLabel(updatedAt))
-  );
-  const category = pf.info && (pf.info.category || pf.info.profession);
-  if (category) card.append(row('<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/></svg>', "Category", String(category)));
-  body.append(card);
-  const aboutFields = [];
-  const bio = ((pf.det || {}).bio || {}).v;
-  if (bio) aboutFields.push({label:"Bio", value:String(bio)});
-  if (pf.det || pf.info) {
-    EP.forEach(([section, fields]) => fields.forEach(f => {
-      if (f[0] === "phone" || f[0] === "email") return;
-      const value = epVal(f);
-      if (value) aboutFields.push({label:f[2], value:f[3] === "date" ? fmtDate(value) : String(value)});
-    }));
-  }
-  body.append(el("div", "pt-section-title", "About the member"));
-  const about = el("div", "pt-card");
-  if (aboutFields.length) {
-    aboutFields.slice(0, 12).forEach(x => about.append(row('<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg>', x.label, x.value)));
-  } else {
-    const empty = el("div", "pt-row");
-    empty.append(el("div", "pt-value", "No member information available."));
-    about.append(empty);
-  }
-  body.append(about);
 }
 
 // ---------- PROFILE DETAILS: personal details, education, friends, edit form ----------
@@ -4900,7 +4643,7 @@ async function loadBdays() {
 }
 let S = {}, stCat = null, stItem = null;
 const ST = {
-  "Account Basics": ["Name", "Username", "Contact Information", "Request verification", "Password and safety", "Language and Region", "Deactivate or delete", "Account control"],
+  "Account Basics": ["Name", "Username", "Contact Information", "Password and safety", "Language and Region", "Deactivate or delete", "Account control"],
   "Privacy Settings": ["Message delivery", "Who can see your new posts?", "Review your posts and tags", "Who can follow you?", "Who can view your friends?", "Can people find you by your email?", "Can people find you by your phone number?", "Should your profile show up in search engines?", "Who can comment on your public posts?", "Who can see your profile information?"],
   "Security & Sign-in": ["Change password", "Active sessions", "Sign out of devices", "Remember this device", "Two-factor authentication", "Alerts for new sign-ins", "Trusted devices", "Recovery contact"],
   "Notifications": ["Sounds", "Custom sounds", "Comments", "Likes", "Replies to comments", "Tags", "Mentions", "Messages", "Reminders", "New followers", "New friends", "Suggested people", "Birthdays", "Group activity", "Profile activity", "Clips", "Push notifications", "Email notifications", "In-app notifications", "Notification sounds"],
@@ -5033,63 +4776,6 @@ function drawSet() {
   else w.append(setDetail(stItem, row));
   o.append(w);
 }
-async function openChatterverseSupport(container) {
-  const shell=container.closest(".sw2"); if(shell) shell.classList.add("cv-ai-chat-mode");
-  const panel=el("div","cv-ai-chat"), head=el("div","cv-ai-chat-head"), title=el("div");
-  title.append(el("div","cv-ai-chat-name","Chatterverse AI Assistant"),el("div","cv-ai-chat-sub","AI support · Human support available"));
-  const close=el("button","gray","Back"); close.type="button"; close.onclick=()=>drawSet(); head.append(title,close);
-  const transcript=el("div","cv-ai-transcript"), composer=el("div","cv-ai-composer"), input=el("input"), send=el("button","","Send"), status=el("div","cv-ai-status");
-  input.placeholder="Type a message…"; input.maxLength=2000; send.type="button";
-  composer.append(input,send); panel.append(head,transcript,composer,status); container.replaceChildren(panel); input.focus();
-  let conversationId=null,busy=false,waiting=false,humanMode=false,lastSeen=0,supportAgentJoined=false;
-  const setComposer=(enabled)=>{input.disabled=!enabled;send.disabled=!enabled;if(enabled)input.focus();};
-  const bubble=(role,text)=>{const b=el("div","cv-ai-bubble "+role);b.textContent=text;transcript.append(b);transcript.scrollTop=transcript.scrollHeight};
-  const announceSupportJoined=()=>{if(supportAgentJoined)return;supportAgentJoined=true;bubble("system","A support representative replied. You can now send a message.");};
-  const SUPPORT_WORKER_URL="https://chatterverse-media.jonjonsanjose11.workers.dev";
-  const call=async(action,payload={})=>{
-    const {data:sessionData,error:sessionError}=await sb.auth.getSession();
-    const accessToken=sessionData?.session?.access_token;
-    if(sessionError||!accessToken)throw new Error("Your session expired. Please sign in again.");
-    const tooSlow="The AI took too long to answer. Please tap Send to try again.";
-    const ctl=new AbortController(), kill=setTimeout(()=>ctl.abort(),120000);          // never wait forever
-    let response;
-    try{response=await fetch(`${SUPPORT_WORKER_URL}/support`,{method:"POST",signal:ctl.signal,headers:{"Authorization":`Bearer ${accessToken}`,"Content-Type":"application/json"},body:JSON.stringify({action,...payload})});}
-    catch(e){throw new Error(e&&(e.name==="AbortError"||/abort/i.test(e.message||""))?tooSlow:"Couldn't reach Chatterverse. Check your connection and try again.");}
-    finally{clearTimeout(kill);}
-    const data=await response.json().catch(()=>({}));
-    if(!response.ok||data?.error){const m=String(data?.error||"");throw new Error(/abort|timed?\s?out/i.test(m)?tooSlow:(m||`Support request failed (${response.status}).`));}   // the Worker's raw "The operation was aborted" becomes a clear message
-    return data||{};
-  };
-  const asksForHuman=(text)=>/(\b(human|real\s+person|live\s+agent|support\s+agent|talk\s+to\s+(a\s+)?(person|human|agent)|speak\s+to\s+(a\s+)?(person|human|agent)|customer\s+support)\b|human\s+support|support\s+staff|tao\s+na\s+support|kausap\s+na\s+tao|makipag-usap\s+sa\s+tao|human\s+support\s+sana|agent\s+sana)/i.test(text);
-  const handoff=async(message)=>{
-    status.textContent="Connecting you with human support…";
-    const r=await call("request_human",{conversation_id:conversationId,message});
-    conversationId=r.conversation_id;waiting=true;humanMode=true;
-    bubble("bot","I'll connect you with the Chatterverse support team. A support representative will reply in this conversation. You can keep this chat open for updates.");
-    status.textContent="Waiting for a support representative.";setComposer(false);
-  };
-  bubble("bot","Hi! I'm the Chatterverse AI Assistant. Ask me about profiles, posts, messages, privacy, settings, or using the app. If you would like to speak with a person, just tell me here.");
-  const submit=async()=>{
-    const message=input.value.trim();if(!message||busy||waiting)return;
-    busy=true;setComposer(false);bubble("user",message);input.value="";
-    try{
-      if(humanMode){
-        const r=await call("chat",{conversation_id:conversationId,message});
-        waiting=true;status.textContent="Message sent. Waiting for the support representative to reply.";
-      }else if(asksForHuman(message)){await handoff(message);}
-      else{
-        status.textContent="AI is typing…";
-        const r=await call("chat",{conversation_id:conversationId,message});conversationId=r.conversation_id;
-        bubble("bot",r.reply||"I couldn't reply right now. Please try again.");
-        status.textContent=r.ai_configured===false?"AI support is temporarily unavailable. You can request human support.":(r.ai_fallback?"AI is temporarily busy. You can try again or request human support.":"");
-      }
-    }catch(e){status.textContent=e.message||"Couldn't connect. Please try again.";if(!input.value)input.value=message;}   // keep what they typed so they can just tap Send again
-    finally{busy=false;if(!waiting)setComposer(true);}
-  };
-  send.onclick=submit;input.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();submit();}});
-  const timer=setInterval(async()=>{if(!panel.isConnected){clearInterval(timer);return;}if(!conversationId)return;try{const r=await call("get_messages",{conversation_id:conversationId});for(const m of r.messages||[]){const id=Number(m.id)||0;if(id>lastSeen){lastSeen=id;if(m.sender_role==="support"){announceSupportJoined();bubble("bot",m.body);waiting=false;status.textContent="Support replied. You can send a message.";setComposer(true);}}}if(r.status==="closed"){waiting=true;setComposer(false);status.textContent="This support conversation is closed.";}}catch(e){status.textContent=e.message||"Unable to refresh support messages.";}},5000);
-}
-
 function setDetail(it, row) {
   const d = el("div", "stp"), cap = t => d.append(el("div", "cap", t)), msg = el("div", "cap"), inp = (ph, type, v) => { const i = el("input"); i.placeholder = ph; i.type = type || "text"; i.value = v || ""; return i; };
   const btn = (t, fn, cls) => { const b = el("button", cls || "", t); b.onclick = () => fn(b); return b; };
@@ -5102,12 +4788,6 @@ function setDetail(it, row) {
     renderLimited(d);
   } else if (it === "Help Center") {
     d.append(el("div", "help-intro", "Find answers to common questions about using Chatterverse."));
-    const aiCard = el("div", "cv-ai-support-card");
-    aiCard.append(el("div", "cv-ai-support-title", "✦ Chatterverse AI Assistant"));
-    aiCard.append(el("div", "help-intro", "Ask about your account or how to use Chatterverse. If you need a person, just ask in the chat."));
-    const aiLaunch = el("button", "cv-ai-support-launch", "Chat with Chatterverse AI");
-    aiLaunch.type = "button"; aiLaunch.onclick = () => openChatterverseSupport(d);
-    aiCard.append(aiLaunch); d.append(aiCard);
     const search = inp("Search help articles", "search"); search.className = "help-search"; search.setAttribute("aria-label", "Search help articles");
     const faqBox = el("div", "help-faq-list");
     const faqs = [
@@ -5313,19 +4993,6 @@ function setDetail(it, row) {
       status.textContent = notes.length ? "Some activity types could not be loaded: " + notes.join(", ") + "." : "Recent activity";
     })();
   } else if (INFO[it]) { cap(INFO[it]);
-  } else if (it === "Request verification") {
-    cap("Submit a request for a verified badge. The Chatterverse team will review your account. You can have one pending request at a time.");
-    const reason = el("textarea"); reason.placeholder = "Explain why your account should be verified (10–500 characters)."; reason.maxLength = 500; reason.style.cssText = "width:100%;min-height:110px;padding:12px;border-radius:10px";
-    d.append(reason, msg, btn("Submit verification request", async b => {
-      const value = reason.value.trim(); if (value.length < 10) return msg.textContent = "Please enter at least 10 characters.";
-      b.disabled = true; msg.textContent = "Submitting request…";
-      try {
-        const {data, error} = await sb.rpc("submit_my_verification_request", {p_reason: value});
-        b.disabled = false;
-        if (error) msg.textContent = /already have a pending/i.test(error.message) ? "You already have a pending verification request." : error.message;
-        else { reason.value = ""; msg.textContent = "Your verification request was submitted successfully."; toast("Verification request submitted"); }
-      } catch (e) { b.disabled = false; msg.textContent = e.message || "Unable to submit verification request."; }
-    }));
   } else if (it === "Contact Information") {
     const e = inp("Email", "email", me.email || ""), c = inp("Mobile number (09…)", "tel", me.phone ? "+" + me.phone.replace(/^\+/, "") : ""), code = inp("6-digit code", "text"); let ty = null, tg = null;
     cap("Changing your email or number sends a confirmation code."); code.className = "hide";
