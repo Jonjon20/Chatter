@@ -2813,7 +2813,11 @@ async function compressVideo(file, onProg) {
   try { await new Promise((ok, no) => { v.onloadedmetadata = ok; v.onerror = () => no(new Error("meta")); setTimeout(() => no(new Error("meta")), 15000); }); ready = true; } catch (e) {}
   if (ready && isFinite(v.duration) && v.duration > VID_MAX_SEC) { URL.revokeObjectURL(url); throw new Error("Video is too long (max " + (VID_MAX_SEC / 60) + " minutes)."); }
   const AC = window.AudioContext || window.webkitAudioContext, dur = v.duration, w = v.videoWidth, h = v.videoHeight, short = Math.min(w, h);
-  if (!ready || !mt || !AC || !HTMLCanvasElement.prototype.captureStream || !isFinite(dur) || !w || !h || file.size < 6 * 1048576 || (file.size * 8 / dur < 2.6e6 && short <= 720)) { URL.revokeObjectURL(url); return orig; }
+  const skip = why => { try { console.warn("video sent as-is:", why); toast("Video sent as-is (" + why + ")"); } catch (e) {} return orig; };
+  if (!ready || !mt || !AC || !HTMLCanvasElement.prototype.captureStream || !isFinite(dur) || !w || !h || file.size < 6 * 1048576 || (file.size * 8 / dur < 2.6e6 && short <= 720)) {
+    URL.revokeObjectURL(url);
+    return skip(!ready ? "this browser can't read the video" : !mt ? "no video recorder support" : !AC ? "no audio support" : !HTMLCanvasElement.prototype.captureStream ? "no canvas capture support" : file.size < 6 * 1048576 ? "already small" : "already low quality");
+  }
   let ctx = null, stream = null, rec = null, onVis = null;
   try {
     const sc = Math.min(1, 720 / short), cw = Math.round(w * sc / 2) * 2, ch = Math.round(h * sc / 2) * 2;
@@ -2853,11 +2857,10 @@ async function compressVideo(file, onProg) {
     if (rec.state !== "inactive") rec.stop();
     await stopped;
     const out = new Blob(chunks, {type: mt.mime.split(";")[0]});
-    if (!out.size || out.size > file.size * 0.9) return orig;   // not smaller: keep the original
+    if (!out.size || out.size > file.size * 0.9) return skip("couldn't make it smaller");   // keep the original
     return {blob: out, type: out.type, ext: mt.ext};
   } catch (e) {
-    console.warn("video compression skipped:", e && e.message);
-    return orig;
+    return skip(e && e.message === "audio blocked" ? "audio blocked by the browser" : e && e.message === "stalled" ? "compression stalled" : "compression failed: " + (e && e.message || e));
   } finally {
     if (onVis) document.removeEventListener("visibilitychange", onVis);
     try { if (rec && rec.state !== "inactive") rec.stop(); } catch (e) {}
