@@ -19,7 +19,16 @@
   }
   try { apply(); window.addEventListener("resize", apply); } catch (e) {}
 })();</script>
-<title>Chatterverse</title>
+<title>Chatterverse – Chat, share posts, clips and stories with friends</title>
+<meta name="description" content="Chatterverse is a social app for chatting with friends, group chats, sharing posts, clips and stories. Sign up free.">
+<link rel="canonical" href="https://chatterverse.jonjonsanjose11.workers.dev/">
+<meta name="robots" content="index,follow">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Chatterverse">
+<meta property="og:title" content="Chatterverse – Chat, share posts, clips and stories">
+<meta property="og:description" content="Chat with friends, join group chats, and share posts, clips and stories on Chatterverse.">
+<meta property="og:url" content="https://chatterverse.jonjonsanjose11.workers.dev/">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#000000">
 <style>
 :root{--bg:#fff;--bg2:#f0f2f5;--tx:#050505;--mut:#65676b;--me:var(--accent,#7c3aed);--metx:#fff;--oth:#e9ebee;--line:#e2e4e8;--dot:var(--accent,#7c3aed)}
 :root{color-scheme:light}:root[data-theme="light"]{color-scheme:light}
@@ -2785,16 +2794,16 @@ async function postMedia(f, body, kind, vis, tags, extra) {
   let path = null, extraPaths = [];
   try {
     let vid = false;
-    const up1 = async (file, isVid) => { const pa = me.id + "/" + uid() + (isVid ? ".mp4" : ".jpg"), blob = isVid ? file : await shrink(file), up = await sb.storage.from("chat-images").upload(pa, blob, {cacheControl: "31536000", contentType: isVid ? (file.type || "video/mp4") : "image/jpeg"}); if (up.error) throw up.error; return pa; };
+    const up1 = async (file, isVid) => { const pa = rp(me.id + "/" + uid() + (isVid ? ".mp4" : ".jpg")), blob = isVid ? file : await shrink(file), up = await media.upload(pa, blob, {cacheControl: "31536000", contentType: isVid ? (file.type || "video/mp4") : "image/jpeg"}); if (up.error) throw up.error; return pa; };
     if (f) vid = f.type.startsWith("video");
     // main file and extra photos upload at the same time instead of one after another
     const ups = await Promise.allSettled([f ? up1(f, vid) : Promise.resolve(null), ...((f && !vid && extra) ? extra : []).map(x => up1(x, false))]);
     const done = ups.filter(x => x.status === "fulfilled" && x.value).map(x => x.value), bad = ups.find(x => x.status === "rejected");
-    if (bad) { if (done.length) sb.storage.from("chat-images").remove(done); throw bad.reason; }
+    if (bad) { if (done.length) media.remove(done); throw bad.reason; }
     path = ups[0].value; extraPaths = ups.slice(1).map(x => x.value);
     const all = [path, ...extraPaths].filter(Boolean);
     const {error} = await sb.from("posts").insert({body, media_path: path, media_type: f ? (vid ? "video" : "image") : null, kind, visibility: vis || "public", ...(tags && tags.length ? {tags} : {}), ...(all.length > 1 ? {media_paths: all} : {})});
-    if (error) { if (all.length) sb.storage.from("chat-images").remove(all); throw error; }
+    if (error) { if (all.length) media.remove(all); throw error; }
     return true;
   } catch (e) {
     const m = e.message || String(e);
@@ -2989,7 +2998,7 @@ async function openStory(u, custom) {
       item(icDelete, "Delete " + what, "", "", () => {
         dismiss(false);
         confirmBox("Delete " + what + " from your story?", "If you want to remove this " + what + " from your story without losing it, you can cancel and archive it instead.", "DELETE", async () => {
-          if (s.media_path) await sb.storage.from("chat-images").remove([s.media_path]);
+          if (s.media_path) await media.remove([s.media_path]);
           const {error} = await sb.from("posts").delete().eq("id", s.id);
           if (error) { toast("Couldn\u2019t delete: " + error.message); return resumeStory(); }
           afterRemove();
@@ -3294,7 +3303,7 @@ async function purgeTrash() {
   const cutoff = new Date(Date.now() - 30 * 864e5).toISOString();
   const {data, error} = await sb.from("posts").select("*").eq("user_id", me.id).lt("trashed_at", cutoff).limit(50);
   if (error || !data) return;
-  for (const x of data) { const ps = postAllPaths(x); if (ps.length) sb.storage.from("chat-images").remove(ps); await sb.from("posts").delete().eq("id", x.id); }
+  for (const x of data) { const ps = postAllPaths(x); if (ps.length) media.remove(ps); await sb.from("posts").delete().eq("id", x.id); }
 }
 // Settings > Your Chatterverse Data > Post archive / Trash
 async function renderPostBox(d, kind) {
@@ -3319,7 +3328,7 @@ async function renderPostBox(d, kind) {
       bt.append(back);
       const more = el("button", "gray sm red", trash ? "Delete" : "Trash"); more.type = "button";
       more.onclick = async () => {
-        if (trash) { if (!(await appConfirm("Delete for good?", "This post will be deleted for good. This can't be undone.", "Delete"))) return; const ps = postAllPaths(x); if (ps.length) sb.storage.from("chat-images").remove(ps); const r = await sb.from("posts").delete().eq("id", x.id); if (r.error) return toast(r.error.message); }
+        if (trash) { if (!(await appConfirm("Delete for good?", "This post will be deleted for good. This can't be undone.", "Delete"))) return; const ps = postAllPaths(x); if (ps.length) media.remove(ps); const r = await sb.from("posts").delete().eq("id", x.id); if (r.error) return toast(r.error.message); }
         else { const r = await sb.from("posts").update({trashed_at: new Date().toISOString()}).eq("id", x.id); if (r.error) return toast(r.error.message); }
         data.splice(data.indexOf(x), 1); toast(trash ? "Deleted" : "Moved to trash"); draw();
       };
@@ -4907,7 +4916,7 @@ async function deleteAccount() {
   try {
     // 1) remove stored images (files in Storage are NOT removed by SQL deletes)
     const paths = new Set();
-    const {data: mine} = await sb.storage.from("chat-images").list(me.id, {limit: 1000});
+    const {data: mine} = await media.list(me.id, {limit: 1000});
     (mine || []).forEach(f => f.name && paths.add(me.id + "/" + f.name));
     const dmIds = rooms.filter(r => r.is_dm).map(r => r.id);
     if (dmIds.length) {
@@ -4915,7 +4924,7 @@ async function deleteAccount() {
       (im || []).forEach(x => x.image_path && paths.add(x.image_path));
     }
     const list = [...paths];
-    for (let i = 0; i < list.length; i += 100) await sb.storage.from("chat-images").remove(list.slice(i, i + 100));
+    for (let i = 0; i < list.length; i += 100) await media.remove(list.slice(i, i + 100));
     // 2) delete rows + auth user (server-side function, see delete_account.sql)
     const {error} = await sb.rpc("delete_my_account");
     if (error) throw error;
@@ -4964,10 +4973,50 @@ const urls = {}, uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now
 // Signed links are kept for 7 days and remembered across reloads. A link that stays the same lets the browser reuse the
 // photo/video it already downloaded, instead of downloading it again after every refresh (that was using up Supabase egress).
 const URL_TTL = 7 * 864e5, URL_KEY = "imgurl:";
+// ---- Media storage: new uploads go to Cloudflare R2 (through the chatterverse-media Worker). Old files stay in Supabase until migrated. ----
+const MEDIA_API = "https://chatterverse-media.jonjonsanjose11.workers.dev", R2_PUB = "https://pub-0f7697fe43874d44a9d4852d343efdaa.r2.dev";
+const R2_ALL = false; // set to true AFTER running migrate-to-r2.mjs, so old files are also read from R2
+const isR2 = p => R2_ALL || /(^|\/)r_[^/]*$/.test(p || "");
+const rp = p => p.replace(/([^/]+)$/, "r_$1");
+const r2url = p => R2_PUB + "/" + String(p).split("/").map(encodeURIComponent).join("/");
+async function mtoken() { try { const {data} = await sb.auth.getSession(); return data.session ? data.session.access_token : null; } catch (e) { return null; } }
+async function mcall(path, opt) { const t = await mtoken(); if (!t) throw new Error("Not signed in"); return fetch(MEDIA_API + path, {...opt, headers: {...((opt && opt.headers) || {}), Authorization: "Bearer " + t}}); }
+const media = {
+  async upload(path, blob, o) {
+    if (!isR2(path)) return sb.storage.from("chat-images").upload(path, blob, o);
+    try {
+      const r = await mcall("/o/" + path.split("/").map(encodeURIComponent).join("/"), {method: "PUT", body: blob, headers: {"Content-Type": (o && o.contentType) || blob.type || "application/octet-stream"}});
+      if (!r.ok) { let m = ""; try { m = (await r.json()).error || ""; } catch (e) {} return {error: {message: "Upload failed (" + r.status + ") " + m}}; }
+      return {data: {path}};
+    } catch (e) { return {error: e}; }
+  },
+  async remove(paths) {
+    const list = (paths || []).filter(Boolean); if (!list.length) return {data: [], error: null};
+    const jobs = [];
+    if (!R2_ALL) jobs.push(sb.storage.from("chat-images").remove(list).catch(() => null));
+    jobs.push(mcall("/rm", {method: "POST", body: JSON.stringify({keys: list}), headers: {"Content-Type": "application/json"}}).catch(() => null));
+    await Promise.all(jobs); return {data: [], error: null};
+  },
+  async list(prefix, o) {
+    const out = new Map();
+    const [a, b] = await Promise.all([
+      R2_ALL ? null : sb.storage.from("chat-images").list(prefix, o).catch(() => null),
+      mcall("/list?prefix=" + encodeURIComponent(prefix + "/")).then(r => r.ok ? r.json() : null).catch(() => null)
+    ]);
+    ((a && a.data) || []).forEach(f => f.name && out.set(f.name, {name: f.name}));
+    ((b && b.names) || []).forEach(n => out.set(n, {name: n}));
+    return {data: [...out.values()], error: null};
+  },
+  async createSignedUrl(path, ttl, o) {
+    if (!isR2(path)) return sb.storage.from("chat-images").createSignedUrl(path, ttl, o);
+    return {data: {signedUrl: r2url(path)}, error: null};
+  }
+};
 async function imgUrl(path) {
+  if (isR2(path)) return r2url(path);
   const c = urls[path]; if (c && c.exp > Date.now()) return c.url;
   try { const j = JSON.parse(localStorage.getItem(URL_KEY + path) || "null"); if (j && j.exp > Date.now() + 864e5) { urls[path] = j; return j.url; } } catch (e) {}
-  const {data, error} = await sb.storage.from("chat-images").createSignedUrl(path, URL_TTL / 1000);
+  const {data, error} = await media.createSignedUrl(path, URL_TTL / 1000);
   if (error || !data) return null;
   const rec = {url: data.signedUrl, exp: Date.now() + URL_TTL - 36e5}; urls[path] = rec;
   try { localStorage.setItem(URL_KEY + path, JSON.stringify(rec)); } catch (e) { try { Object.keys(localStorage).filter(k => k.startsWith(URL_KEY)).forEach(k => localStorage.removeItem(k)); } catch (e2) {} }
@@ -5211,7 +5260,7 @@ async function unsend(m) {
   if (!(await appConfirm("Unsend this message?", "It will disappear for everyone.", "Unsend"))) return;
   const {data, error} = await sb.from("messages").update({deleted_at: new Date().toISOString(), body: "", image_path: null}).eq("id", m.id).select().single();
   if (error) return alert("Couldn't unsend: " + error.message);
-  if (m.image_path) sb.storage.from("chat-images").remove([m.image_path]);
+  if (m.image_path) media.remove([m.image_path]);
   if (editing && editing.m.id === m.id) stopEdit();
   afterChange(data);
 }
@@ -5292,12 +5341,12 @@ $("#f").onsubmit = async e => {
   try {
     const vid = pend.file.type.startsWith("video/"), ext = vid ? (/webm/.test(pend.file.type) ? "webm" : "mp4") : "jpg";
     if (vid) $("#send").textContent = "…";
-    const blob = vid ? pend.file : await shrink(pend.file), path = me.id + "/" + uid() + "." + ext;
-    const up = await sb.storage.from("chat-images").upload(path, blob, {cacheControl: "31536000", contentType: vid ? (ext === "webm" ? "video/webm" : "video/mp4") : "image/jpeg"});
+    const blob = vid ? pend.file : await shrink(pend.file), path = rp(me.id + "/" + uid() + "." + ext);
+    const up = await media.upload(path, blob, {cacheControl: "31536000", contentType: vid ? (ext === "webm" ? "video/webm" : "video/mp4") : "image/jpeg"});
     if (up.error) throw up.error;
     const ins2 = {room_id: rid, body, image_path: path}; if (replyTo) ins2.reply_to = replyTo.id;
     const {data: sent, error} = await sb.from("messages").insert(ins2).select().single(); sfx(error ? "err" : "sent"); if (!error && sent) { showSent(sent, rid); setReply(null); }
-    if (error) { sb.storage.from("chat-images").remove([path]); throw error; }
+    if (error) { media.remove([path]); throw error; }
     i.value = ""; setPend(null);
   } catch (err) { alert("Couldn't send: " + (err.message || err)); }
   busy = false; $("#send").disabled = false; $("#send").innerHTML = SENDI;
@@ -5564,7 +5613,12 @@ function openViewer(items, start, opts) {
     const it = items[i];
     if (!it.m) { const u = it.url || await imgUrl(it.path); try { const bl = await (await fetch(u)).blob(), a = document.createElement("a"); a.href = URL.createObjectURL(bl); a.download = "chatter-photo.jpg"; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); } catch (e) { window.open(u, "_blank", "noopener"); } return; }
     const name = "chatter-" + it.m.id + "." + (it.path.split(".").pop() || "jpg");
-    const {data, error} = await sb.storage.from("chat-images").createSignedUrl(it.path, 120, {download: name});
+    if (isR2(it.path)) {
+      try { const r = await fetch(r2url(it.path)); if (!r.ok) throw 0; const u = URL.createObjectURL(await r.blob()); const a = document.createElement("a"); a.href = u; a.download = name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 6e4); }
+      catch (e) { window.open(r2url(it.path), "_blank", "noopener"); }
+      return;
+    }
+    const {data, error} = await media.createSignedUrl(it.path, 120, {download: name});
     if (error || !data) return toast("Couldn't download.");
     const a = document.createElement("a"); a.href = data.signedUrl; a.download = name; document.body.append(a); a.click(); a.remove();
   };
@@ -5616,7 +5670,7 @@ async function deleteChat(rid) {
   try {
     const {data: im} = await sb.from("messages").select("image_path").eq("room_id", r.id).not("image_path", "is", null);
     const list = (im || []).map(x => x.image_path).filter(Boolean);
-    for (let i = 0; i < list.length; i += 100) await sb.storage.from("chat-images").remove(list.slice(i, i + 100));
+    for (let i = 0; i < list.length; i += 100) await media.remove(list.slice(i, i + 100));
     const {error} = await sb.rpc("delete_chat", {rid: r.id}); if (error) throw error;
     delete reads[r.id]; if (cur === r.id) resetChatView(); await loadChats();
   } catch (err) { alert("Couldn't delete chat: " + (err.message || err)); }
@@ -6053,16 +6107,16 @@ async function uploadPhoto(kind, file) {
   try {
     const bmp = await createImageBitmap(file), k = Math.min(1, (kind === "cover" ? 1920 : 1080) / Math.max(bmp.width, bmp.height));
     const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k); c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
-    const blob = await new Promise(r => c.toBlob(r, "image/jpeg", .9)), path = me.id + "/" + kind + "-" + Date.now() + ".jpg";
-    const up = await sb.storage.from("chat-images").upload(path, blob, {cacheControl: "31536000", contentType: "image/jpeg"}); if (up.error) throw up.error;
+    const blob = await new Promise(r => c.toBlob(r, "image/jpeg", .9)), path = rp(me.id + "/" + kind + "-" + Date.now() + ".jpg");
+    const up = await media.upload(path, blob, {cacheControl: "31536000", contentType: "image/jpeg"}); if (up.error) throw up.error;
     const {error} = await sb.rpc("set_profile_photo", {kind, path}); if (error) throw error;
     delete photoDone[me.id]; await loadPhotos([me.id]); render();
     // also share it on the newsfeed (own copy of the file, so deleting the post or the old photo never breaks either)
     try {
-      const p2 = me.id + "/post-" + Date.now() + ".jpg", up2 = await sb.storage.from("chat-images").upload(p2, blob, {cacheControl: "31536000", contentType: "image/jpeg"});
+      const p2 = rp(me.id + "/post-" + Date.now() + ".jpg"), up2 = await media.upload(p2, blob, {cacheControl: "31536000", contentType: "image/jpeg"});
       if (!up2.error) {
         const r = await sb.from("posts").insert({body: kind === "cover" ? "updated their cover photo." : "updated their profile picture.", media_path: p2, media_type: "image", kind: "post"});
-        if (r.error) sb.storage.from("chat-images").remove([p2]); else if (feedOn() && fmode === "post") loadFeed();
+        if (r.error) media.remove([p2]); else if (feedOn() && fmode === "post") loadFeed();
       }
     } catch (e) {}
   } catch (e) { alert("Couldn't upload photo: " + (e.message || e)); }
