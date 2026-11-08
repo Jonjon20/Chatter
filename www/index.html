@@ -979,7 +979,12 @@ html.dt .story-activity-panel{max-width:none}
 .cv-ai-support-card{margin:14px 8px 18px;padding:17px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent,#7c3aed) 12%,var(--bg)),var(--bg2))}
 .cv-ai-support-title{font-size:17px;font-weight:800;margin-bottom:5px;color:var(--tx)}
 .cv-ai-support-launch{width:100%;border-radius:13px;padding:13px 16px;margin-top:10px}
-.cv-ai-chat{display:flex;flex-direction:column;gap:10px;margin:14px 8px;padding:12px;border:1px solid var(--line);border-radius:18px;background:var(--bg);min-height:430px;max-height:70vh}
+.cv-ai-chat{display:flex;flex-direction:column;gap:10px;margin:0;padding:12px;border:0;border-radius:0;background:var(--bg);height:100%;min-height:430px;max-height:none;box-sizing:border-box}
+.sw2.cv-ai-chat-mode{height:100%;min-height:0;display:flex;flex-direction:column}
+.sw2.cv-ai-chat-mode>.mtop{display:none}
+.sw2.cv-ai-chat-mode>.stp{flex:1;min-height:0;display:flex;flex-direction:column}
+.sw2.cv-ai-chat-mode .cv-ai-chat{flex:1;min-height:0}
+.sw2.cv-ai-chat-mode .cv-ai-transcript{min-height:0}
 .cv-ai-chat-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:10px;border-bottom:1px solid var(--line)}
 .cv-ai-chat-name{font-weight:800;font-size:16px}.cv-ai-chat-sub,.cv-ai-status{font-size:12px;color:var(--mut)}
 .cv-ai-transcript{display:flex;flex:1;min-height:180px;overflow-y:auto;flex-direction:column;gap:9px;padding:6px 2px}
@@ -1666,6 +1671,90 @@ function showAuth() {
   $("#app").classList.add("hide"); $("#auth").classList.remove("hide");
   $("#af").classList.remove("hide"); $("#wiz").classList.add("hide");
 }
+// ---------- Account suspended screen ----------
+// Shown when a ban lands while the person is using the app (and when login says banned). Nothing else is usable:
+// only the appeal form and a profile menu that has just "Log out".
+var susp = null, suspTimer = null;
+function buildAppealForm(email) {
+  const appeal = el("div", "appeal-form"); appeal.style.cssText = "display:grid;gap:10px;width:100%;text-align:left";
+  const desc = el("div", "", "If you believe this decision was a mistake, you can submit an appeal for review.");
+  const reason = el("textarea");
+  reason.placeholder = "Explain why you believe your account should be reviewed…";
+  reason.maxLength = 3000;
+  reason.style.cssText = "width:100%;box-sizing:border-box;min-height:120px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card,transparent);color:inherit;font:inherit;resize:vertical";
+  const appealStatus = el("div", "help-status"); appealStatus.style.cssText = "font-size:13px;line-height:1.4;color:var(--mut)"; appealStatus.setAttribute("role", "status");
+  const submitAppeal = el("button", "primary", "Appeal Decision");
+  submitAppeal.type = "button";
+  submitAppeal.onclick = async () => {
+    const explanation = reason.value.trim();
+    if (explanation.length < 20) { appealStatus.textContent = "Please provide at least 20 characters."; return; }
+    submitAppeal.disabled = true; submitAppeal.textContent = "Submitting…";
+    try {
+      // plain fetch with only the headers the function allows (invoke() adds x-client-info, which the function's CORS list rejects)
+      let resp;
+      try {
+        resp = await fetch(SUPABASE_URL + "/functions/v1/account-appeals", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY },
+          body: JSON.stringify({ email, explanation })
+        });
+      } catch (netErr) { console.warn("account-appeals network/CORS error:", netErr); throw new Error("Couldn't reach the server (network or CORS error). Check your connection and try again."); }
+      const raw = await resp.text(); let payload = {}; try { payload = JSON.parse(raw); } catch (_) {}
+      if (!resp.ok) { console.warn("account-appeals failed:", resp.status, raw); throw new Error((payload.error || payload.message || payload.msg || raw || "Request failed").toString().slice(0, 220) + (payload.detail ? " — " + String(payload.detail).slice(0, 300) : "") + " (" + resp.status + ")"); }
+      reason.value = "";
+      appealStatus.textContent = (payload && payload.message) || "Your appeal has been submitted. Our team will review it.";
+      submitAppeal.textContent = "Appeal submitted";
+    } catch (appealError) {
+      appealStatus.textContent = appealError.message || "Unable to submit appeal.";
+      submitAppeal.disabled = false; submitAppeal.textContent = "Appeal Decision";
+    }
+  };
+  appeal.append(desc, reason, submitAppeal, appealStatus);
+  return appeal;
+}
+function showSuspended(email, fromLogin) {
+  if (susp) return; email = String(email || "").trim().toLowerCase();
+  let nm = email.split("@")[0] || "Account"; try { if (me && names[me.id]) nm = names[me.id]; } catch (e) {}
+  [() => { if (call) endCall(); }, dismissRing, closeMenu, closeProfile, closePov, closeSet, closeSheet, closeMpop, closeViewer, dtClose].forEach(f => { try { f(); } catch (e) {} });
+  try { sb.removeAllChannels(); } catch (e) {}
+  document.querySelectorAll(".sv,.pov,#ep,#ptr").forEach(o => o.remove());
+  if (!document.getElementById("susp-css")) {
+    const st = document.createElement("style"); st.id = "susp-css"; st.textContent = `
+#susp{position:fixed;inset:0;z-index:2147483000;background:var(--bg);color:var(--tx);display:flex;flex-direction:column;overflow:auto;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+#susp .sbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);position:relative;flex:none}
+#susp .sbar b{font-size:20px}
+#susp .spill{display:flex;align-items:center;gap:8px;background:var(--bg2);color:var(--tx);border-radius:999px;padding:5px 12px 5px 5px;max-width:60vw}
+#susp .spill i{width:32px;height:32px;border-radius:50%;background:var(--accent,#7c3aed);color:#fff;display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;flex:none}
+#susp .spill span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+#susp .smenu{position:absolute;right:12px;top:calc(100% + 6px);min-width:180px;background:var(--cd,var(--bg2));border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 34px rgba(0,0,0,.45);padding:6px;z-index:2}
+#susp .smenu button{display:block;width:100%;text-align:left;background:none;color:#ef4444;border-radius:10px;padding:12px 14px;font-size:15px;font-weight:600}
+#susp .smenu button:active{background:var(--bg2)}
+#susp .sbody{flex:1;display:flex;align-items:center;justify-content:center;padding:24px 18px}
+#susp .scard{width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+#susp .sico{width:72px;height:72px;border-radius:50%;background:rgba(239,68,68,.14);display:flex;align-items:center;justify-content:center;font-size:34px}
+#susp h2{margin:0;font-size:24px}
+#susp .snote{color:var(--mut);font-size:14px;line-height:1.5}`;
+    document.head.append(st);
+  }
+  const o = el("div"); o.id = "susp"; o.setAttribute("role", "alertdialog"); o.setAttribute("aria-label", "Account suspended");
+  const bar = el("div", "sbar"), pill = el("button", "spill"), av = el("i", "", (nm[0] || "?").toUpperCase()), pn = el("span", "", nm);
+  pill.type = "button"; pill.append(av, pn); bar.append(el("b", "", "Chatterverse"), pill);
+  const menu = el("div", "smenu"), lo = el("button", "", "Log out"); lo.type = "button"; menu.append(lo); menu.style.display = "none"; bar.append(menu);
+  pill.onclick = e => { e.stopPropagation(); menu.style.display = menu.style.display === "none" ? "block" : "none"; };
+  o.addEventListener("click", () => { menu.style.display = "none"; });
+  lo.onclick = async () => {
+    o.remove(); clearInterval(suspTimer); susp = null;
+    await hardOut();
+    if (fromLogin) { try { $("#pw").value = ""; $("#amsg").textContent = ""; } catch (e) {} }
+  };
+  const body = el("div", "sbody"), card = el("div", "scard");
+  const ic = el("div", "sico", "🚫"), h = el("h2", "", "Account suspended");
+  const note = el("div", "snote", "Your account has been suspended, so you can't use Chatterverse right now.");
+  card.append(ic, h, note, buildAppealForm(email)); body.append(card); o.append(bar, body); document.body.append(o);
+  susp = o;
+  // ban lifted while the person is still on this screen -> bring them straight back in
+  if (!fromLogin) suspTimer = setInterval(async () => { const r = await tryRestore(); if (r === "ok") location.reload(); else if (r === "dead") clearInterval(suspTimer); }, 30000);
+}
 let loggingIn = false;
 const isRateLimit = er => !!er && (er.status === 429 || /rate limit/i.test(er.message || "") || /rate_limit/i.test(er.code || ""));
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -1692,39 +1781,7 @@ $("#af").onsubmit = async e => {
         const em = String(error.message || "");
         if (/banned|ban_duration|user is banned/i.test(em)) {
           msg.textContent = "";
-          const appeal = el("div", "appeal-login-panel");
-          appeal.style.cssText = "margin-top:14px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--panel,rgba(127,127,127,.08));display:grid;gap:10px";
-          const title = el("strong", "", "Account suspended");
-          const desc = el("div", "", "If you believe this decision was a mistake, you can submit an appeal for review.");
-          const reason = el("textarea");
-          reason.placeholder = "Explain why you believe your account should be reviewed…";
-          reason.maxLength = 3000; reason.required = true;
-          reason.style.cssText = "width:100%;min-height:100px;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--card,transparent);color:inherit;font:inherit";
-          const appealStatus = el("div", "help-status");
-          const submitAppeal = el("button", "primary", "Appeal Decision");
-          submitAppeal.type = "button";
-          submitAppeal.onclick = async () => {
-            const explanation = reason.value.trim();
-            if (explanation.length < 20) { appealStatus.textContent = "Please provide at least 20 characters."; return; }
-            submitAppeal.disabled = true; submitAppeal.textContent = "Submitting…";
-            try {
-              const resp = await fetch("https://ykyphsopgnhfdnvytswp.supabase.co/functions/v1/account-appeals", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
-                body: JSON.stringify({ email: id, explanation })
-              });
-              const payload = await resp.json().catch(() => ({}));
-              if (!resp.ok) throw new Error(payload.error || "We couldn't submit your appeal.");
-              reason.value = "";
-              appealStatus.textContent = "Your appeal has been submitted. Our team will review it.";
-              submitAppeal.textContent = "Appeal submitted";
-            } catch (appealError) {
-              appealStatus.textContent = appealError.message || "Unable to submit appeal.";
-              submitAppeal.disabled = false; submitAppeal.textContent = "Appeal Decision";
-            }
-          };
-          appeal.append(title, desc, reason, submitAppeal, appealStatus);
-          msg.after(appeal);
+          showSuspended(id, true);
           break;
         }
         msg.textContent = error.message; break;
@@ -1877,7 +1934,27 @@ $("#wnext").onclick = async () => {
 var outNow = false, BK = "sb-backup-session";
 function saveBk(se) { try { if (se && se.refresh_token && S.save_login !== false) localStorage.setItem(BK, JSON.stringify({a: se.access_token, r: se.refresh_token})); } catch (e) {} }
 function dropBk() { try { localStorage.removeItem(BK); } catch (e) {} }
-function hardOut() { outNow = true; dropBk(); try { Object.keys(localStorage).filter(k => k.startsWith("imgurl:")).forEach(k => localStorage.removeItem(k)); } catch (e) {} return sb.auth.signOut(); }
+function sbKeys() { try { return Object.keys(localStorage).filter(k => /^sb-.*-auth-token/.test(k)); } catch (e) { return []; } }
+// Log out for real, even on a weak/offline phone connection: signOut() quietly does nothing when its request fails, so we also wipe the saved session ourselves.
+async function hardOut() {
+  outNow = true; dropBk(); try { Object.keys(localStorage).filter(k => k.startsWith("imgurl:")).forEach(k => localStorage.removeItem(k)); } catch (e) {}
+  try { await Promise.race([sb.auth.signOut({scope: "local"}), sleep(3500)]); } catch (e) {}
+  try { sbKeys().forEach(k => localStorage.removeItem(k)); sessionStorage.clear(); } catch (e) {}
+  if (me) loggedOut();
+}
+async function doLogout(close) { try { close && close(); } catch (e) {} try { await Promise.race([dropPush(), sleep(1500)]); } catch (e) {} await hardOut(); }
+// ---- banned while already logged in: the server stops refreshing the session, so we notice and show the suspended screen with the appeal form
+const isBanErr = er => !!er && /banned|ban_duration|user_banned/i.test(String(er.message || "") + " " + String(er.code || ""));
+var lastEmail = "", banBusy = false;
+async function banCheck() {
+  if (!me || outNow || susp || banBusy || navigator.onLine === false) return; banBusy = true;
+  try { const {error} = await sb.auth.refreshSession(); if (error && isBanErr(error)) showSuspended(lastEmail || (me && me.email) || ""); }
+  catch (e) { if (isBanErr(e)) showSuspended(lastEmail || (me && me.email) || ""); }
+  finally { banBusy = false; }
+}
+setInterval(banCheck, 45000);
+addEventListener("online", () => setTimeout(banCheck, 1500));
+addEventListener("focus", () => setTimeout(banCheck, 800));
 function loggedOut() {
   if (call) endCall(); dismissRing(); closeMenu(); closeProfile(); closePov();
   // everything that lives outside #app must be closed too, or it stays on top of the login screen
@@ -1898,26 +1975,30 @@ async function tryRestore() {
     const {data, error} = await sb.auth.setSession({access_token: raw.a, refresh_token: raw.r});
     if (data && data.session) return "ok";
     if (!error) return "retry";
+    if (isBanErr(error)) return "banned";
     const st = error.status || 0, m = String(error.message || "");
     return (st >= 400 && st < 500) || /invalid|expired|revoked|already used|not found/i.test(m) ? "dead" : "retry";
   } catch (e) { return "retry"; }
 }
 async function recover(n) {
+  if (susp) return;
   try { const {data} = await sb.auth.getSession(); if (data && data.session) return; } catch (e) {}
   if (navigator.onLine === false) { addEventListener("online", () => recover(0), {once: true}); return; }
   const r = await tryRestore();
   if (r === "ok") return;
+  if (r === "banned") { showSuspended(lastEmail || (me && me.email) || ""); return; }
   if (r === "retry") { if (n < 8) setTimeout(() => recover(n + 1), 4000); return; }
   loggedOut();
 }
 sb.auth.onAuthStateChange((ev, session) => {
-  if (session) { outNow = false; saveBk(session); if (!me && !W.reset) start(session.user); return; }
+  if (session) { outNow = false; saveBk(session); if (session.user && session.user.email) lastEmail = session.user.email; if (susp) return; if (!me && !W.reset) start(session.user); return; }
+  if (susp) return;
   if (ev !== "SIGNED_OUT" && ev !== "INITIAL_SESSION") return;
   if (outNow) { loggedOut(); return; }
   // never log the user out on our own: try to get the session back first
   setTimeout(() => recover(0), ev === "INITIAL_SESSION" ? 0 : 800);
 });
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && me) sb.auth.getSession().then(({data}) => { if (!data.session) recover(0); }).catch(() => {}); });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && me) banCheck(); if (document.visibilityState === "visible" && me) sb.auth.getSession().then(({data}) => { if (!data.session) recover(0); }).catch(() => {}); });
 
 // ---------- DATA ----------
 async function ensureNames(ids) {
@@ -4475,7 +4556,7 @@ function dtDD() {
   row(MI.gear, "Settings", () => openSettings());
   row(MI.access, "Display & accessibility", () => { stCat = "Display & accessibility"; stItem = null; $("#st").classList.remove("hide"); drawSet(); });
   row(DDI.help, "Help & Feedback", () => { stCat = "Help & Feedback"; stItem = null; $("#st").classList.remove("hide"); drawSet(); });
-  const lo = el("button", "dlo", "Log out"); lo.type = "button"; lo.onclick = async () => { dtClose(); await dropPush(); hardOut(); };
+  const lo = el("button", "dlo", "Log out"); lo.type = "button"; lo.onclick = () => doLogout(dtClose);
   d.append(el("div", "dsp"), lo);
 }
 $("#dtme").onclick = e => { e.stopPropagation(); const d = $("#dtdd"); if (d.classList.contains("hide")) { dtDD(); d.classList.remove("hide"); } else dtClose(); };
@@ -4526,7 +4607,7 @@ function drawMenu() {
   hs.append(el("span", "mt", "Help & Feedback"));
   hs.onclick = () => { closeMenu(); stCat = "Help & Feedback"; stItem = null; $("#st").classList.remove("hide"); drawSet(); };
   w.append(hs);
-  const lo = el("button", "mlog", "Log out"); lo.type = "button"; lo.onclick = async () => { closeMenu(); await dropPush(); hardOut(); };
+  const lo = el("button", "mlog", "Log out"); lo.type = "button"; lo.onclick = () => doLogout(closeMenu);
   w.append(el("div", "msp"), lo); o.append(w); o.scrollTop = y;
 }
 
@@ -4685,14 +4766,14 @@ function drawSet() {
   else w.append(setDetail(stItem, row));
   o.append(w);
 }
-
 async function openChatterverseSupport(container) {
+  const shell=container.closest(".sw2"); if(shell) shell.classList.add("cv-ai-chat-mode");
   const panel=el("div","cv-ai-chat"), head=el("div","cv-ai-chat-head"), title=el("div");
   title.append(el("div","cv-ai-chat-name","Chatterverse AI Assistant"),el("div","cv-ai-chat-sub","AI support · Human support available"));
-  const close=el("button","gray","Close"); close.type="button"; close.onclick=()=>panel.remove(); head.append(title,close);
+  const close=el("button","gray","Back"); close.type="button"; close.onclick=()=>drawSet(); head.append(title,close);
   const transcript=el("div","cv-ai-transcript"), composer=el("div","cv-ai-composer"), input=el("input"), send=el("button","","Send"), status=el("div","cv-ai-status");
   input.placeholder="Type a message…"; input.maxLength=2000; send.type="button";
-  composer.append(input,send); panel.append(head,transcript,composer,status); container.append(panel);
+  composer.append(input,send); panel.append(head,transcript,composer,status); container.replaceChildren(panel); input.focus();
   let conversationId=null,busy=false,waiting=false,lastSeen=0,supportAgentJoined=false;
   const bubble=(role,text)=>{const b=el("div","cv-ai-bubble "+role);b.textContent=text;transcript.append(b);transcript.scrollTop=transcript.scrollHeight};
   const announceSupportJoined=(firstName)=>{if(supportAgentJoined)return;supportAgentJoined=true;const name=String(firstName||"").trim().split(/\s+/)[0];bubble("system",name?`${name} joined the conversation`:"A support representative joined the conversation");status.textContent="Connected to human support.";};
