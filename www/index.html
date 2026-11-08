@@ -2790,11 +2790,92 @@ function pickMedia(more) {
     fdraft.file = fdraft.files[0]; fdraft.url = fdraft.urls[0]; if (document.getElementById("cmpov")) paintComposer(); else openComposer();
   }; i.click();
 }
+// ---- Video compression: shrinks big videos on the device before upload (max 720p, ~2 Mbps). If it can't help, the original is sent. ----
+const VID_MAX_SEC = 180, VID_MAX_BYTES = 90 * 1048576;
+function vidStatus(p) {
+  let d = document.getElementById("vprog");
+  if (p === null || p === undefined) { if (d) d.remove(); return; }
+  if (!d) { d = el("div", "toast"); d.id = "vprog"; document.body.append(d); }
+  d.textContent = "Compressing video… " + Math.min(99, Math.round(p * 100)) + "%";
+}
+function vidMime() {
+  if (!window.MediaRecorder) return null;
+  for (const [m, e] of [["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "mp4"], ["video/mp4;codecs=avc1,mp4a.40.2", "mp4"], ["video/mp4;codecs=avc1", "mp4"], ["video/webm;codecs=vp9,opus", "webm"], ["video/webm;codecs=vp8,opus", "webm"], ["video/webm", "webm"]]) {
+    try { if (MediaRecorder.isTypeSupported(m)) return {mime: m, ext: e}; } catch (x) {}
+  }
+  return null;
+}
+async function compressVideo(file, onProg) {
+  const orig = {blob: file, type: file.type || "video/mp4", ext: /webm/i.test(file.type || "") ? "webm" : "mp4"};
+  const mt = vidMime(), url = URL.createObjectURL(file), v = document.createElement("video");
+  v.preload = "auto"; v.playsInline = true; v.src = url;
+  let ready = false;
+  try { await new Promise((ok, no) => { v.onloadedmetadata = ok; v.onerror = () => no(new Error("meta")); setTimeout(() => no(new Error("meta")), 15000); }); ready = true; } catch (e) {}
+  if (ready && isFinite(v.duration) && v.duration > VID_MAX_SEC) { URL.revokeObjectURL(url); throw new Error("Video is too long (max " + (VID_MAX_SEC / 60) + " minutes)."); }
+  const AC = window.AudioContext || window.webkitAudioContext, dur = v.duration, w = v.videoWidth, h = v.videoHeight, short = Math.min(w, h);
+  if (!ready || !mt || !AC || !HTMLCanvasElement.prototype.captureStream || !isFinite(dur) || !w || !h || file.size < 6 * 1048576 || (file.size * 8 / dur < 2.6e6 && short <= 720)) { URL.revokeObjectURL(url); return orig; }
+  let ctx = null, stream = null, rec = null, onVis = null;
+  try {
+    const sc = Math.min(1, 720 / short), cw = Math.round(w * sc / 2) * 2, ch = Math.round(h * sc / 2) * 2;
+    const cv = document.createElement("canvas"); cv.width = cw; cv.height = ch;
+    const g = cv.getContext("2d", {alpha: false});
+    ctx = new AC();
+    const src = ctx.createMediaElementSource(v), dst = ctx.createMediaStreamDestination(); src.connect(dst);   // sound goes to the recording only, nothing is played out loud
+    if (ctx.state !== "running") await ctx.resume().catch(() => {});
+    if (ctx.state !== "running") throw new Error("audio blocked");
+    stream = cv.captureStream(30);
+    dst.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+    rec = new MediaRecorder(stream, {mimeType: mt.mime, videoBitsPerSecond: Math.round(Math.min(2.5e6, Math.max(1.2e6, cw * ch * 2.2))), audioBitsPerSecond: 96000});
+    const chunks = [], stopped = new Promise(ok => { rec.onstop = ok; });
+    rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+    let alive = true;
+    const draw = () => { if (!alive) return; try { g.drawImage(v, 0, 0, cw, ch); } catch (e) {} if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(draw); else requestAnimationFrame(draw); };
+    v.currentTime = 0; await v.play(); draw(); rec.start(1000);
+    // leaving the app/tab PAUSES the compression (nothing is uploaded meanwhile) and it continues when you come back
+    let paused = false, lastAt = Date.now();
+    onVis = () => {
+      if (document.hidden) { paused = true; try { v.pause(); } catch (e) {} try { if (rec.state === "recording") rec.pause(); } catch (e) {} }
+      else if (paused) { paused = false; lastAt = Date.now(); try { if (rec.state === "paused") rec.resume(); } catch (e) {} v.play().catch(() => {}); }
+    };
+    document.addEventListener("visibilitychange", onVis);
+    if (document.hidden) onVis();
+    await new Promise((ok, no) => {
+      let last = -1;
+      const iv = setInterval(() => {
+        if (v.ended) { clearInterval(iv); ok(); return; }
+        if (v.currentTime !== last) { last = v.currentTime; lastAt = Date.now(); if (onProg) onProg(last / dur); }
+        else if (!paused && Date.now() - lastAt > 20000) { clearInterval(iv); no(new Error("stalled")); }
+      }, 400);
+      v.onended = () => { clearInterval(iv); ok(); };
+      v.onerror = () => { clearInterval(iv); no(new Error("playback")); };
+    });
+    alive = false; await new Promise(r => setTimeout(r, 250));
+    if (rec.state !== "inactive") rec.stop();
+    await stopped;
+    const out = new Blob(chunks, {type: mt.mime.split(";")[0]});
+    if (!out.size || out.size > file.size * 0.9) return orig;   // not smaller: keep the original
+    return {blob: out, type: out.type, ext: mt.ext};
+  } catch (e) {
+    console.warn("video compression skipped:", e && e.message);
+    return orig;
+  } finally {
+    if (onVis) document.removeEventListener("visibilitychange", onVis);
+    try { if (rec && rec.state !== "inactive") rec.stop(); } catch (e) {}
+    try { v.pause(); } catch (e) {} try { URL.revokeObjectURL(url); } catch (e) {}
+    try { if (stream) stream.getTracks().forEach(t => t.stop()); } catch (e) {} try { if (ctx) ctx.close(); } catch (e) {}
+    vidStatus(null);
+  }
+}
 async function postMedia(f, body, kind, vis, tags, extra) {
   let path = null, extraPaths = [];
   try {
     let vid = false;
-    const up1 = async (file, isVid) => { const pa = rp(me.id + "/" + uid() + (isVid ? ".mp4" : ".jpg")), blob = isVid ? file : await shrink(file), up = await media.upload(pa, blob, {cacheControl: "31536000", contentType: isVid ? (file.type || "video/mp4") : "image/jpeg"}); if (up.error) throw up.error; return pa; };
+    const up1 = async (file, isVid) => {
+      let blob, ct = "image/jpeg", ext = "jpg";
+      if (isVid) { const r = await compressVideo(file, vidStatus); blob = r.blob; ct = r.type; ext = r.ext; } else blob = await shrink(file);
+      if (blob.size > VID_MAX_BYTES) throw new Error("Video is too big (max 90 MB after compression).");
+      const pa = rp(me.id + "/" + uid() + "." + ext), up = await media.upload(pa, blob, {cacheControl: "31536000", contentType: ct}); if (up.error) throw up.error; return pa;
+    };
     if (f) vid = f.type.startsWith("video");
     // main file and extra photos upload at the same time instead of one after another
     const ups = await Promise.allSettled([f ? up1(f, vid) : Promise.resolve(null), ...((f && !vid && extra) ? extra : []).map(x => up1(x, false))]);
@@ -5339,10 +5420,13 @@ $("#f").onsubmit = async e => {
   }
   busy = true; $("#send").disabled = true;
   try {
-    const vid = pend.file.type.startsWith("video/"), ext = vid ? (/webm/.test(pend.file.type) ? "webm" : "mp4") : "jpg";
+    const vid = pend.file.type.startsWith("video/");
     if (vid) $("#send").textContent = "…";
-    const blob = vid ? pend.file : await shrink(pend.file), path = rp(me.id + "/" + uid() + "." + ext);
-    const up = await media.upload(path, blob, {cacheControl: "31536000", contentType: vid ? (ext === "webm" ? "video/webm" : "video/mp4") : "image/jpeg"});
+    let blob, ct = "image/jpeg", ext = "jpg";
+    if (vid) { const r = await compressVideo(pend.file, vidStatus); blob = r.blob; ct = r.type; ext = r.ext; } else blob = await shrink(pend.file);
+    if (blob.size > VID_MAX_BYTES) throw new Error("Video is too big (max 90 MB after compression).");
+    const path = rp(me.id + "/" + uid() + "." + ext);
+    const up = await media.upload(path, blob, {cacheControl: "31536000", contentType: ct});
     if (up.error) throw up.error;
     const ins2 = {room_id: rid, body, image_path: path}; if (replyTo) ins2.reply_to = replyTo.id;
     const {data: sent, error} = await sb.from("messages").insert(ins2).select().single(); sfx(error ? "err" : "sent"); if (!error && sent) { showSent(sent, rid); setReply(null); }
