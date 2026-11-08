@@ -4838,7 +4838,7 @@ async function loadBdays() {
 }
 let S = {}, stCat = null, stItem = null;
 const ST = {
-  "Account Basics": ["Name", "Username", "Contact Information", "Password and safety", "Language and Region", "Deactivate or delete", "Account control"],
+  "Account Basics": ["Name", "Username", "Contact Information", "Request verification", "Password and safety", "Language and Region", "Deactivate or delete", "Account control"],
   "Privacy Settings": ["Message delivery", "Who can see your new posts?", "Review your posts and tags", "Who can follow you?", "Who can view your friends?", "Can people find you by your email?", "Can people find you by your phone number?", "Should your profile show up in search engines?", "Who can comment on your public posts?", "Who can see your profile information?"],
   "Security & Sign-in": ["Change password", "Active sessions", "Sign out of devices", "Remember this device", "Two-factor authentication", "Alerts for new sign-ins", "Trusted devices", "Recovery contact"],
   "Notifications": ["Sounds", "Custom sounds", "Comments", "Likes", "Replies to comments", "Tags", "Mentions", "Messages", "Reminders", "New followers", "New friends", "Suggested people", "Birthdays", "Group activity", "Profile activity", "Clips", "Push notifications", "Email notifications", "In-app notifications", "Notification sounds"],
@@ -5251,6 +5251,19 @@ function setDetail(it, row) {
       status.textContent = notes.length ? "Some activity types could not be loaded: " + notes.join(", ") + "." : "Recent activity";
     })();
   } else if (INFO[it]) { cap(INFO[it]);
+  } else if (it === "Request verification") {
+    cap("Submit a request for a verified badge. The Chatterverse team will review your account. You can have one pending request at a time.");
+    const reason = el("textarea"); reason.placeholder = "Explain why your account should be verified (10–500 characters)."; reason.maxLength = 500; reason.style.cssText = "width:100%;min-height:110px;padding:12px;border-radius:10px";
+    d.append(reason, msg, btn("Submit verification request", async b => {
+      const value = reason.value.trim(); if (value.length < 10) return msg.textContent = "Please enter at least 10 characters.";
+      b.disabled = true; msg.textContent = "Submitting request…";
+      try {
+        const {data, error} = await sb.rpc("submit_my_verification_request", {p_reason: value});
+        b.disabled = false;
+        if (error) msg.textContent = /already have a pending/i.test(error.message) ? "You already have a pending verification request." : error.message;
+        else { reason.value = ""; msg.textContent = "Your verification request was submitted successfully."; toast("Verification request submitted"); }
+      } catch (e) { b.disabled = false; msg.textContent = e.message || "Unable to submit verification request."; }
+    }));
   } else if (it === "Contact Information") {
     const e = inp("Email", "email", me.email || ""), c = inp("Mobile number (09…)", "tel", me.phone ? "+" + me.phone.replace(/^\+/, "") : ""), code = inp("6-digit code", "text"); let ty = null, tg = null;
     cap("Changing your email or number sends a confirmation code."); code.className = "hide";
