@@ -4975,7 +4975,7 @@ const urls = {}, uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now
 const URL_TTL = 7 * 864e5, URL_KEY = "imgurl:";
 // ---- Media storage: new uploads go to Cloudflare R2 (through the chatterverse-media Worker). Old files stay in Supabase until migrated. ----
 const MEDIA_API = "https://chatterverse-media.jonjonsanjose11.workers.dev", R2_PUB = "https://pub-0f7697fe43874d44a9d4852d343efdaa.r2.dev";
-const R2_ALL = false; // set to true AFTER running migrate-to-r2.mjs, so old files are also read from R2
+const R2_ALL = true;  // set to true AFTER running migrate-to-r2.mjs, so old files are also read from R2
 const isR2 = p => R2_ALL || /(^|\/)r_[^/]*$/.test(p || "");
 const rp = p => p.replace(/([^/]+)$/, "r_$1");
 const r2url = p => R2_PUB + "/" + String(p).split("/").map(encodeURIComponent).join("/");
