@@ -113,7 +113,7 @@ async function supportApi(req, env, auth, body) {
     const systemPrompt = "You are Chatterverse's friendly support assistant. Answer in the user's language (Tagalog, English, or Taglish). Help with using the social app, profile, messages, posts, stories, clips, privacy, and settings. Be concise. Never claim you performed account actions or accessed private data. Never ask for passwords, OTPs, recovery codes, or payment details. For account-specific matters, offer human support. Do not invent features or policies.";
     const model = env.GEMINI_MODEL || "gemini-2.5-flash";
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 25000);
+    const timer = setTimeout(() => controller.abort(), 60000);
     let response, result;
     try {
       response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, { method: "POST", headers: { "x-goog-api-key": key, "Content-Type": "application/json" }, body: JSON.stringify({ systemInstruction: { parts: [{ text: systemPrompt }] }, contents, generationConfig: { maxOutputTokens: 500, temperature: 0.4 } }), signal: controller.signal });
