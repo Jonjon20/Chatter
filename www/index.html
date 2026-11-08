@@ -19,7 +19,16 @@
   }
   try { apply(); window.addEventListener("resize", apply); } catch (e) {}
 })();</script>
-<title>Chatterverse</title>
+<title>Chatterverse – Chat, share posts, clips and stories with friends</title>
+<meta name="description" content="Chatterverse is a social app for chatting with friends, group chats, sharing posts, clips and stories. Sign up free.">
+<link rel="canonical" href="https://chatterverse.jonjonsanjose11.workers.dev/">
+<meta name="robots" content="index,follow">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Chatterverse">
+<meta property="og:title" content="Chatterverse – Chat, share posts, clips and stories">
+<meta property="og:description" content="Chat with friends, join group chats, and share posts, clips and stories on Chatterverse.">
+<meta property="og:url" content="https://chatterverse.jonjonsanjose11.workers.dev/">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#000000">
 <style>
 :root{--bg:#fff;--bg2:#f0f2f5;--tx:#050505;--mut:#65676b;--me:var(--accent,#7c3aed);--metx:#fff;--oth:#e9ebee;--line:#e2e4e8;--dot:var(--accent,#7c3aed)}
 :root{color-scheme:light}:root[data-theme="light"]{color-scheme:light}
@@ -944,7 +953,6 @@ html.dt .story-activity-panel{max-width:none}
 /* keep the "X reposted" label clear of the back arrow */
 .clipbox .rpl{left:60px}
 .ui-svg{display:block;flex:none}
-.vbadge{display:inline-flex;align-items:center;justify-content:center;flex:0 0 17px;width:17px;height:18px;margin-left:5px;vertical-align:middle;line-height:1;color:#858b94;filter:drop-shadow(0 1px 1px rgba(0,0,0,.16))}.vbadge svg{display:block;width:17px;height:18px;overflow:visible}
 </style><style>.chatter-reduce-motion *, .chatter-reduce-motion *::before, .chatter-reduce-motion *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }.pfx .phd{display:flex;gap:14px;align-items:flex-start;padding:0 14px}
 .pfx .pav{margin:-52px 0 0;width:112px;flex:none}.pfx .pav::before{inset:-4px;background:var(--accent);box-shadow:none}
 .pfx .pav .av{width:112px;height:112px;font-size:44px;border-width:4px}
@@ -967,33 +975,51 @@ html.dt .story-activity-panel{max-width:none}
 #st .nmbar{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:640px;padding:14px 18px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--bg);display:flex;flex-direction:column;gap:10px;z-index:3}
 #st .nmbtn{width:100%;padding:18px;font-size:19px;font-weight:600;border-radius:32px;background:var(--me);color:#fff}#st .nmbtn:disabled{opacity:.4}#st .nmgray{background:var(--bg2);color:var(--tx)}
 </style>
+<style id="cv-ai-support-css">
+.cv-ai-support-card{margin:14px 8px 18px;padding:17px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent,#7c3aed) 12%,var(--bg)),var(--bg2))}
+.cv-ai-support-title{font-size:17px;font-weight:800;margin-bottom:5px;color:var(--tx)}
+.cv-ai-support-launch{width:100%;border-radius:13px;padding:13px 16px;margin-top:10px}
+.cv-ai-chat{display:flex;flex-direction:column;gap:10px;margin:0;padding:12px;border:0;border-radius:0;background:var(--bg);height:100%;min-height:430px;max-height:none;box-sizing:border-box}
+.sw2.cv-ai-chat-mode{height:100%;min-height:0;display:flex;flex-direction:column}
+.sw2.cv-ai-chat-mode>.mtop{display:none}
+.sw2.cv-ai-chat-mode>.stp{flex:1;min-height:0;display:flex;flex-direction:column}
+.sw2.cv-ai-chat-mode .cv-ai-chat{flex:1;min-height:0}
+.sw2.cv-ai-chat-mode .cv-ai-transcript{min-height:0}
+.cv-ai-chat-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.cv-ai-chat-name{font-weight:800;font-size:16px}.cv-ai-chat-sub,.cv-ai-status{font-size:12px;color:var(--mut)}
+.cv-ai-transcript{display:flex;flex:1;min-height:180px;overflow-y:auto;flex-direction:column;gap:9px;padding:6px 2px}
+.cv-ai-bubble{max-width:88%;padding:10px 13px;border-radius:16px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.45}
+.cv-ai-bubble.bot{align-self:flex-start;background:var(--bg2);color:var(--tx);border-bottom-left-radius:5px}
+.cv-ai-bubble.user{align-self:flex-end;background:var(--me);color:var(--metx);border-bottom-right-radius:5px}
+.cv-ai-bubble.system{align-self:center;max-width:96%;padding:7px 12px;border-radius:999px;background:var(--bg2);color:var(--mut);font-size:12px;text-align:center}
+.cv-ai-composer{display:flex;gap:7px;align-items:center}.cv-ai-composer input{flex:1;width:100%;height:44px;border:1px solid var(--line);background:var(--bg2)}.cv-ai-composer button{padding:10px 13px}
+.cv-ai-chat>button{border-radius:12px}
+</style>
 
 <style>
+.vbadge{display:inline-flex;align-items:center;justify-content:center;flex:0 0 17px;width:17px;height:18px;margin-left:5px;vertical-align:middle;line-height:1;color:#858b94;filter:drop-shadow(0 1px 1px rgba(0,0,0,.16))}
+.vbadge svg{display:block;width:17px;height:18px;overflow:visible}
 .profile-transparency{padding:14px 16px 24px}
 .pt-intro{font-size:14px;line-height:1.5;color:var(--mut);padding:4px 2px 14px}
-.pt-card{background:var(--cd);border:1px solid var(--line);border-radius:18px;padding:6px 14px;margin:0 0 16px;overflow:hidden}
+.pt-card{background:var(--cd,var(--bg2));border:1px solid var(--line);border-radius:18px;padding:6px 14px;margin:0 0 16px;overflow:hidden}
 .pt-row{display:flex;align-items:center;gap:14px;min-height:66px;padding:11px 2px;border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
 .pt-row:last-child{border-bottom:0}
 .pt-icon{width:30px;height:30px;flex:0 0 30px;display:flex;align-items:center;justify-content:center;color:var(--tx)}
-.pt-icon svg,.pt-policy-icon svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.pt-icon svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .pt-copy{min-width:0;flex:1}
 .pt-label{font-size:15px;font-weight:650;color:var(--tx);line-height:1.3}
 .pt-value{font-size:14px;color:var(--mut);line-height:1.45;margin-top:3px;overflow-wrap:anywhere}
 .pt-verified{padding:14px 2px;align-items:flex-start}
 .pt-verified .pt-icon{width:36px;height:36px;flex-basis:36px;color:#858b94}
-.pt-verified .pt-icon svg{width:34px;height:34px;stroke:none}.pt-verified .pt-icon svg path:first-child{fill:currentColor;stroke:none}
+.pt-verified .pt-icon svg{width:34px;height:34px;stroke:none}
+.pt-verified .pt-icon svg path:first-child{fill:currentColor;stroke:none}
 .pt-verified .pt-label{font-size:16px}
 .pt-verified-detail{color:var(--mut)}
+.pt-unverified .pt-icon{color:var(--mut)}
 .pt-section-title{font-size:18px;font-weight:750;margin:18px 2px 10px}
-.pt-policy{display:flex;align-items:center;gap:12px;width:100%;padding:15px 14px;border:1px solid var(--line);border-radius:16px;background:var(--cd);color:var(--tx);text-align:left;font-size:15px;font-weight:700}
-.pt-policy-icon{display:flex;color:var(--mut)}
-.pt-chevron{margin-left:auto;font-size:24px;color:var(--mut)}
+.pname{cursor:pointer}.pname .vbadge{cursor:pointer}
 </style>
 
-<style>
-.pname{cursor:pointer}
-.pname .vbadge{cursor:pointer}
-</style>
 </head>
 <body>
 <style>
@@ -1392,6 +1418,23 @@ html.dt .sheetbg.dtpanel .sheet{height:100%;max-height:none;border-radius:0}
 .cli{display:flex;align-items:center;justify-content:center;color:var(--accent,#7c3aed)}
 .sn-i{color:var(--accent,#7c3aed)}
 .cav-g{color:var(--tx)}
+#mv .st{touch-action:none;overflow:hidden;user-select:none;-webkit-user-select:none}
+#mv .st img{will-change:transform;transform-origin:center center;-webkit-user-drag:none;animation:mvIn .2s ease-out}
+@keyframes mvIn{from{opacity:0;scale:.94}to{opacity:1;scale:1}}
+#mv .mb.c{justify-content:center}#mv button.chg{all:unset;box-sizing:border-box;cursor:pointer;padding:12px 24px;border-radius:26px;background:var(--accent,#7c3aed);color:#fff;font-weight:600;font-size:15px}
+#pe{position:fixed;inset:0;z-index:100000;background:#000;color:#fff;display:flex;flex-direction:column}
+#pe .pet{display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px}
+#pe .pet button{all:unset;cursor:pointer;padding:9px 16px;border-radius:20px;font-weight:600;font-size:15px}
+#pe .pet .pes{background:var(--accent,#7c3aed)}#pe .pet .pes:disabled{opacity:.5}#pe .pett{flex:1;text-align:center;font-weight:600}
+#pe .pest{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:0 14px 30px}
+#pe .pef{position:relative;overflow:hidden;background:#111;touch-action:none;cursor:grab}
+#pe .pef.cov{width:min(94vw,640px);aspect-ratio:2/1;border-radius:20px}#pe .pef.avt{width:min(78vw,380px);aspect-ratio:1/1;border-radius:28%}
+#pe .pef img{user-select:none;-webkit-user-drag:none}#pe .pesl{width:min(80vw,380px);accent-color:var(--accent,#7c3aed)}#pe .peh{color:#aaa;font-size:13px;text-align:center}
+</style>
+<style id="photo2">
+#mv .st{position:relative}
+#mv .mcap{position:absolute;left:0;right:0;bottom:12px;text-align:center;font-size:13px;font-weight:600;color:#fff;text-shadow:0 1px 8px #000b;pointer-events:none}
+.camb svg{display:block}
 </style>
 <div id="boot"><svg id="bt-logo" class="bt-svg" viewBox="60 60 1130 1130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Chatterverse"><defs>
 <linearGradient id="bt-eg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" class="cv-a"/><stop offset=".35" class="cv-a" stop-opacity="0"/><stop offset=".65" class="cv-a" stop-opacity="0"/><stop offset="1" class="cv-a"/></linearGradient>
@@ -1642,7 +1685,7 @@ const pvText = l => l.deleted_at ? "Message taken back" : sysText(l) || callPv(l
 let rd = {}; try { rd = JSON.parse(localStorage.getItem("rd") || "{}"); } catch (e) {}
 const markRead = (rid, ts) => { rd[rid] = ts; try { localStorage.setItem("rd", JSON.stringify(rd)); } catch (e) {} };
 
-let me, names = {}, verifiedUsers = {}, verifiedLoaded = new Set(), accountStatus = "active", accountStatusTimer = null, accountStatusNotice = false, rooms = [], members = {}, latest = {}, fr = [], online = new Set(), reads = {}, blocked = new Set(), infoProfile = null, lastSeen = {}, lastTs = 0, pfilter = "all", photoUrl = {}, coverUrl = {}, photoDone = {}, pymk = null, pymkAll = false;
+let me, names = {}, verifiedUsers = {}, verifiedLoaded = new Set(), rooms = [], members = {}, latest = {}, fr = [], online = new Set(), reads = {}, blocked = new Set(), infoProfile = null, lastSeen = {}, lastTs = 0, pfilter = "all", photoUrl = {}, coverUrl = {}, photoDone = {}, pymk = null, pymkAll = false;
 let pref = {rcpt: true, typ: true, mute: {}}; try { Object.assign(pref, JSON.parse(localStorage.getItem("pf") || "{}")); } catch (e) {}
 let tab = "chats", filter = "all", query = "", results = null, cur = null, seen = new Set(), lastUid = null, signup = false;
 
@@ -1652,6 +1695,90 @@ function showAuth() {
   bootOff(); W.reset = false;
   $("#app").classList.add("hide"); $("#auth").classList.remove("hide");
   $("#af").classList.remove("hide"); $("#wiz").classList.add("hide");
+}
+// ---------- Account suspended screen ----------
+// Shown when a ban lands while the person is using the app (and when login says banned). Nothing else is usable:
+// only the appeal form and a profile menu that has just "Log out".
+var susp = null, suspTimer = null;
+function buildAppealForm(email) {
+  const appeal = el("div", "appeal-form"); appeal.style.cssText = "display:grid;gap:10px;width:100%;text-align:left";
+  const desc = el("div", "", "If you believe this decision was a mistake, you can submit an appeal for review.");
+  const reason = el("textarea");
+  reason.placeholder = "Explain why you believe your account should be reviewed…";
+  reason.maxLength = 3000;
+  reason.style.cssText = "width:100%;box-sizing:border-box;min-height:120px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card,transparent);color:inherit;font:inherit;resize:vertical";
+  const appealStatus = el("div", "help-status"); appealStatus.style.cssText = "font-size:13px;line-height:1.4;color:var(--mut)"; appealStatus.setAttribute("role", "status");
+  const submitAppeal = el("button", "primary", "Appeal Decision");
+  submitAppeal.type = "button";
+  submitAppeal.onclick = async () => {
+    const explanation = reason.value.trim();
+    if (explanation.length < 20) { appealStatus.textContent = "Please provide at least 20 characters."; return; }
+    submitAppeal.disabled = true; submitAppeal.textContent = "Submitting…";
+    try {
+      // plain fetch with only the headers the function allows (invoke() adds x-client-info, which the function's CORS list rejects)
+      let resp;
+      try {
+        resp = await fetch(SUPABASE_URL + "/functions/v1/account-appeals", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY },
+          body: JSON.stringify({ email, explanation })
+        });
+      } catch (netErr) { console.warn("account-appeals network/CORS error:", netErr); throw new Error("Couldn't reach the server (network or CORS error). Check your connection and try again."); }
+      const raw = await resp.text(); let payload = {}; try { payload = JSON.parse(raw); } catch (_) {}
+      if (!resp.ok) { console.warn("account-appeals failed:", resp.status, raw); throw new Error((payload.error || payload.message || payload.msg || raw || "Request failed").toString().slice(0, 220) + (payload.detail ? " — " + String(payload.detail).slice(0, 300) : "") + " (" + resp.status + ")"); }
+      reason.value = "";
+      appealStatus.textContent = (payload && payload.message) || "Your appeal has been submitted. Our team will review it.";
+      submitAppeal.textContent = "Appeal submitted";
+    } catch (appealError) {
+      appealStatus.textContent = appealError.message || "Unable to submit appeal.";
+      submitAppeal.disabled = false; submitAppeal.textContent = "Appeal Decision";
+    }
+  };
+  appeal.append(desc, reason, submitAppeal, appealStatus);
+  return appeal;
+}
+function showSuspended(email, fromLogin) {
+  if (susp) return; email = String(email || "").trim().toLowerCase();
+  let nm = email.split("@")[0] || "Account"; try { if (me && names[me.id]) nm = names[me.id]; } catch (e) {}
+  [() => { if (call) endCall(); }, dismissRing, closeMenu, closeProfile, closePov, closeSet, closeSheet, closeMpop, closeViewer, dtClose].forEach(f => { try { f(); } catch (e) {} });
+  try { sb.removeAllChannels(); } catch (e) {}
+  document.querySelectorAll(".sv,.pov,#ep,#ptr").forEach(o => o.remove());
+  if (!document.getElementById("susp-css")) {
+    const st = document.createElement("style"); st.id = "susp-css"; st.textContent = `
+#susp{position:fixed;inset:0;z-index:2147483000;background:var(--bg);color:var(--tx);display:flex;flex-direction:column;overflow:auto;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+#susp .sbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);position:relative;flex:none}
+#susp .sbar b{font-size:20px}
+#susp .spill{display:flex;align-items:center;gap:8px;background:var(--bg2);color:var(--tx);border-radius:999px;padding:5px 12px 5px 5px;max-width:60vw}
+#susp .spill i{width:32px;height:32px;border-radius:50%;background:var(--accent,#7c3aed);color:#fff;display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;flex:none}
+#susp .spill span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+#susp .smenu{position:absolute;right:12px;top:calc(100% + 6px);min-width:180px;background:var(--cd,var(--bg2));border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 34px rgba(0,0,0,.45);padding:6px;z-index:2}
+#susp .smenu button{display:block;width:100%;text-align:left;background:none;color:#ef4444;border-radius:10px;padding:12px 14px;font-size:15px;font-weight:600}
+#susp .smenu button:active{background:var(--bg2)}
+#susp .sbody{flex:1;display:flex;align-items:center;justify-content:center;padding:24px 18px}
+#susp .scard{width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+#susp .sico{width:72px;height:72px;border-radius:50%;background:rgba(239,68,68,.14);display:flex;align-items:center;justify-content:center;font-size:34px}
+#susp h2{margin:0;font-size:24px}
+#susp .snote{color:var(--mut);font-size:14px;line-height:1.5}`;
+    document.head.append(st);
+  }
+  const o = el("div"); o.id = "susp"; o.setAttribute("role", "alertdialog"); o.setAttribute("aria-label", "Account suspended");
+  const bar = el("div", "sbar"), pill = el("button", "spill"), av = el("i", "", (nm[0] || "?").toUpperCase()), pn = el("span", "", nm);
+  pill.type = "button"; pill.append(av, pn); bar.append(el("b", "", "Chatterverse"), pill);
+  const menu = el("div", "smenu"), lo = el("button", "", "Log out"); lo.type = "button"; menu.append(lo); menu.style.display = "none"; bar.append(menu);
+  pill.onclick = e => { e.stopPropagation(); menu.style.display = menu.style.display === "none" ? "block" : "none"; };
+  o.addEventListener("click", () => { menu.style.display = "none"; });
+  lo.onclick = async () => {
+    o.remove(); clearInterval(suspTimer); susp = null;
+    await hardOut();
+    if (fromLogin) { try { $("#pw").value = ""; $("#amsg").textContent = ""; } catch (e) {} }
+  };
+  const body = el("div", "sbody"), card = el("div", "scard");
+  const ic = el("div", "sico", "🚫"), h = el("h2", "", "Account suspended");
+  const note = el("div", "snote", "Your account has been suspended, so you can't use Chatterverse right now.");
+  card.append(ic, h, note, buildAppealForm(email)); body.append(card); o.append(bar, body); document.body.append(o);
+  susp = o;
+  // ban lifted while the person is still on this screen -> bring them straight back in
+  if (!fromLogin) suspTimer = setInterval(async () => { const r = await tryRestore(); if (r === "ok") location.reload(); else if (r === "dead") clearInterval(suspTimer); }, 30000);
 }
 let loggingIn = false;
 const isRateLimit = er => !!er && (er.status === 429 || /rate limit/i.test(er.message || "") || /rate_limit/i.test(er.code || ""));
@@ -1675,7 +1802,15 @@ $("#af").onsubmit = async e => {
       try { ({error} = await sb.auth.signInWithPassword({email: id, password: pw})); } catch (er) { error = er || new Error("Couldn't log in."); }
       if (!error) { ok = true; break; }
       if (cancelled) { msg.textContent = "Login cancelled."; break; }
-      if (!isRetryable(error)) { msg.textContent = error.message; break; }
+      if (!isRetryable(error)) {
+        const em = String(error.message || "");
+        if (/banned|ban_duration|user is banned/i.test(em)) {
+          msg.textContent = "";
+          showSuspended(id, true);
+          break;
+        }
+        msg.textContent = error.message; break;
+      }
       msg.textContent = "Logging in…";
       if (navigator.onLine === false) await Promise.race([new Promise(r => addEventListener("online", r, {once: true})), sleep(4000)]);
       else await sleep(wait + Math.random() * 600);
@@ -1824,7 +1959,27 @@ $("#wnext").onclick = async () => {
 var outNow = false, BK = "sb-backup-session";
 function saveBk(se) { try { if (se && se.refresh_token && S.save_login !== false) localStorage.setItem(BK, JSON.stringify({a: se.access_token, r: se.refresh_token})); } catch (e) {} }
 function dropBk() { try { localStorage.removeItem(BK); } catch (e) {} }
-function hardOut() { outNow = true; if (accountStatusTimer) { clearInterval(accountStatusTimer); accountStatusTimer = null; } dropBk(); try { Object.keys(localStorage).filter(k => k.startsWith("imgurl:")).forEach(k => localStorage.removeItem(k)); } catch (e) {} return sb.auth.signOut(); }
+function sbKeys() { try { return Object.keys(localStorage).filter(k => /^sb-.*-auth-token/.test(k)); } catch (e) { return []; } }
+// Log out for real, even on a weak/offline phone connection: signOut() quietly does nothing when its request fails, so we also wipe the saved session ourselves.
+async function hardOut() {
+  outNow = true; dropBk(); try { Object.keys(localStorage).filter(k => k.startsWith("imgurl:")).forEach(k => localStorage.removeItem(k)); } catch (e) {}
+  try { await Promise.race([sb.auth.signOut({scope: "local"}), sleep(3500)]); } catch (e) {}
+  try { sbKeys().forEach(k => localStorage.removeItem(k)); sessionStorage.clear(); } catch (e) {}
+  if (me) loggedOut();
+}
+async function doLogout(close) { try { close && close(); } catch (e) {} try { await Promise.race([dropPush(), sleep(1500)]); } catch (e) {} await hardOut(); }
+// ---- banned while already logged in: the server stops refreshing the session, so we notice and show the suspended screen with the appeal form
+const isBanErr = er => !!er && /banned|ban_duration|user_banned/i.test(String(er.message || "") + " " + String(er.code || ""));
+var lastEmail = "", banBusy = false;
+async function banCheck() {
+  if (!me || outNow || susp || banBusy || navigator.onLine === false) return; banBusy = true;
+  try { const {error} = await sb.auth.refreshSession(); if (error && isBanErr(error)) showSuspended(lastEmail || (me && me.email) || ""); }
+  catch (e) { if (isBanErr(e)) showSuspended(lastEmail || (me && me.email) || ""); }
+  finally { banBusy = false; }
+}
+setInterval(banCheck, 45000);
+addEventListener("online", () => setTimeout(banCheck, 1500));
+addEventListener("focus", () => setTimeout(banCheck, 800));
 function loggedOut() {
   if (call) endCall(); dismissRing(); closeMenu(); closeProfile(); closePov();
   // everything that lives outside #app must be closed too, or it stays on top of the login screen
@@ -1845,26 +2000,30 @@ async function tryRestore() {
     const {data, error} = await sb.auth.setSession({access_token: raw.a, refresh_token: raw.r});
     if (data && data.session) return "ok";
     if (!error) return "retry";
+    if (isBanErr(error)) return "banned";
     const st = error.status || 0, m = String(error.message || "");
     return (st >= 400 && st < 500) || /invalid|expired|revoked|already used|not found/i.test(m) ? "dead" : "retry";
   } catch (e) { return "retry"; }
 }
 async function recover(n) {
+  if (susp) return;
   try { const {data} = await sb.auth.getSession(); if (data && data.session) return; } catch (e) {}
   if (navigator.onLine === false) { addEventListener("online", () => recover(0), {once: true}); return; }
   const r = await tryRestore();
   if (r === "ok") return;
+  if (r === "banned") { showSuspended(lastEmail || (me && me.email) || ""); return; }
   if (r === "retry") { if (n < 8) setTimeout(() => recover(n + 1), 4000); return; }
   loggedOut();
 }
 sb.auth.onAuthStateChange((ev, session) => {
-  if (session) { outNow = false; saveBk(session); if (!me && !W.reset) start(session.user); return; }
+  if (session) { outNow = false; saveBk(session); if (session.user && session.user.email) lastEmail = session.user.email; if (susp) return; if (!me && !W.reset) start(session.user); return; }
+  if (susp) return;
   if (ev !== "SIGNED_OUT" && ev !== "INITIAL_SESSION") return;
   if (outNow) { loggedOut(); return; }
   // never log the user out on our own: try to get the session back first
   setTimeout(() => recover(0), ev === "INITIAL_SESSION" ? 0 : 800);
 });
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && me) { sb.auth.getSession().then(({data}) => { if (!data.session) recover(0); else refreshAccountStatus(true).catch(() => {}); }).catch(() => {}); } });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && me) banCheck(); if (document.visibilityState === "visible" && me) sb.auth.getSession().then(({data}) => { if (!data.session) recover(0); }).catch(() => {}); });
 
 // ---------- DATA ----------
 async function ensureNames(ids) {
@@ -1939,6 +2098,32 @@ async function refreshAccountStatus(showNotice = true) {
   }
   if (next !== "restricted") accountStatusNotice = false;
   return true;
+}
+function verifiedBadge(uid) {
+  if (!verifiedUsers[uid]) return null;
+  const b = el("span", "vbadge");
+  b.title = "Verified account";
+  b.setAttribute("aria-label", "Verified account");
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-hidden", "true");
+  const circle = document.createElementNS(ns, "circle");
+  circle.setAttribute("cx", "12");
+  circle.setAttribute("cy", "12");
+  circle.setAttribute("r", "11");
+  circle.setAttribute("fill", "#858b94");
+  const check = document.createElementNS(ns, "path");
+  check.setAttribute("d", "m6.8 12.2 3.3 3.2 7.1-7.1");
+  check.setAttribute("fill", "none");
+  check.setAttribute("stroke", "#fff");
+  check.setAttribute("stroke-width", "2.2");
+  check.setAttribute("stroke-linecap", "round");
+  check.setAttribute("stroke-linejoin", "round");
+  svg.append(circle, check);
+  b.append(svg);
+  return b;
 }
 const rel = uid => {
   const f = fr.find(f => (f.requester === me.id && f.addressee === uid) || (f.requester === uid && f.addressee === me.id));
@@ -2259,11 +2444,8 @@ async function loadFriends() {
   render(); actSoon(); liveClips();
 }
 async function start(user) {
-  me = user; reads = {}; blocked = new Set(); accountStatus = "active"; accountStatusNotice = false; await loadSettings();
+  me = user; reads = {}; blocked = new Set(); await loadSettings();
   if (!(await mfaGate())) { me = null; return; }
-  if (!(await refreshAccountStatus(true))) { me = null; return; }
-  if (accountStatusTimer) clearInterval(accountStatusTimer);
-  accountStatusTimer = setInterval(() => { if (me) refreshAccountStatus(true).catch(() => {}); }, 30000);
   initPush();
   try { Object.keys(SFX).forEach(sfxGet); } catch (e) {}
   if (me.user_metadata && me.user_metadata.birthday) sb.from("profiles").update({birthday: me.user_metadata.birthday}).eq("id", me.id).is("birthday", null).then(() => {}, () => {});
@@ -2697,6 +2879,8 @@ function feedRender() {
     r.append(sel, no, go); d.append(r); top.append(d);
   }
   if (fmode === "post") box.append(storiesRow());
+  // Facebook-style "Posting… Keep Chatter open." card while the upload runs in the background
+  ppend.filter(e => e.kind === fmode).forEach(e => (fmode === "clip" ? top : box).append(pendBanner(e)));
   const vis = fposts.filter(p => !fhide.has(p.id) && !isGone(p));
   if (!vis.length) box.append(floading ? spinEl() : el("div", "hint", fmode === "clip" ? "No clips yet. Add the first one!" : "No posts yet. Follow people or post something."));
   if (fmode === "clip") { box.style.setProperty("--ftop", top.offsetHeight + "px"); vis.forEach(p => reel(p)); watchReels(); return; }
@@ -2859,20 +3043,104 @@ function pickMedia(more) {
     fdraft.file = fdraft.files[0]; fdraft.url = fdraft.urls[0]; if (document.getElementById("cmpov")) paintComposer(); else openComposer();
   }; i.click();
 }
+// ---- Video compression: shrinks big videos on the device before upload (max 720p, ~2 Mbps). If it can't help, the original is sent. ----
+const VID_MAX_SEC = 180, VID_MAX_BYTES = 90 * 1048576;
+function vidStatus(p) {
+  let d = document.getElementById("vprog");
+  if (p === null || p === undefined) { if (d) d.remove(); return; }
+  if (!d) { d = el("div", "toast"); d.id = "vprog"; document.body.append(d); }
+  d.textContent = "Compressing video… " + Math.min(99, Math.round(p * 100)) + "%";
+}
+function vidMime() {
+  if (!window.MediaRecorder) return null;
+  for (const [m, e] of [["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "mp4"], ["video/mp4;codecs=avc1,mp4a.40.2", "mp4"], ["video/mp4;codecs=avc1", "mp4"], ["video/webm;codecs=vp9,opus", "webm"], ["video/webm;codecs=vp8,opus", "webm"], ["video/webm", "webm"]]) {
+    try { if (MediaRecorder.isTypeSupported(m)) return {mime: m, ext: e}; } catch (x) {}
+  }
+  return null;
+}
+async function compressVideo(file, onProg) {
+  const orig = {blob: file, type: file.type || "video/mp4", ext: /webm/i.test(file.type || "") ? "webm" : "mp4"};
+  const mt = vidMime(), url = URL.createObjectURL(file), v = document.createElement("video");
+  v.preload = "auto"; v.playsInline = true; v.src = url;
+  let ready = false;
+  try { await new Promise((ok, no) => { v.onloadedmetadata = ok; v.onerror = () => no(new Error("meta")); setTimeout(() => no(new Error("meta")), 15000); }); ready = true; } catch (e) {}
+  if (ready && isFinite(v.duration) && v.duration > VID_MAX_SEC) { URL.revokeObjectURL(url); throw new Error("Video is too long (max " + (VID_MAX_SEC / 60) + " minutes)."); }
+  const AC = window.AudioContext || window.webkitAudioContext, dur = v.duration, w = v.videoWidth, h = v.videoHeight, short = Math.min(w, h);
+  const skip = why => { try { console.warn("video sent as-is:", why); toast("Video sent as-is (" + why + ")"); } catch (e) {} return orig; };
+  if (!ready || !mt || !AC || !HTMLCanvasElement.prototype.captureStream || !isFinite(dur) || !w || !h || file.size < 6 * 1048576 || (file.size * 8 / dur < 2.6e6 && short <= 720)) {
+    URL.revokeObjectURL(url);
+    return skip(!ready ? "this browser can't read the video" : !mt ? "no video recorder support" : !AC ? "no audio support" : !HTMLCanvasElement.prototype.captureStream ? "no canvas capture support" : file.size < 6 * 1048576 ? "already small" : "already low quality");
+  }
+  let ctx = null, stream = null, rec = null, onVis = null;
+  try {
+    const sc = Math.min(1, 720 / short), cw = Math.round(w * sc / 2) * 2, ch = Math.round(h * sc / 2) * 2;
+    const cv = document.createElement("canvas"); cv.width = cw; cv.height = ch;
+    const g = cv.getContext("2d", {alpha: false});
+    ctx = new AC();
+    const src = ctx.createMediaElementSource(v), dst = ctx.createMediaStreamDestination(); src.connect(dst);   // sound goes to the recording only, nothing is played out loud
+    if (ctx.state !== "running") await ctx.resume().catch(() => {});
+    if (ctx.state !== "running") throw new Error("audio blocked");
+    stream = cv.captureStream(30);
+    dst.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+    rec = new MediaRecorder(stream, {mimeType: mt.mime, videoBitsPerSecond: Math.round(Math.min(2.5e6, Math.max(1.2e6, cw * ch * 2.2))), audioBitsPerSecond: 96000});
+    const chunks = [], stopped = new Promise(ok => { rec.onstop = ok; });
+    rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+    let alive = true;
+    const draw = () => { if (!alive) return; try { g.drawImage(v, 0, 0, cw, ch); } catch (e) {} if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(draw); else requestAnimationFrame(draw); };
+    v.currentTime = 0; await v.play(); draw(); rec.start(1000);
+    // leaving the app/tab PAUSES the compression (nothing is uploaded meanwhile) and it continues when you come back
+    let paused = false, lastAt = Date.now();
+    onVis = () => {
+      if (document.hidden) { paused = true; try { v.pause(); } catch (e) {} try { if (rec.state === "recording") rec.pause(); } catch (e) {} }
+      else if (paused) { paused = false; lastAt = Date.now(); try { if (rec.state === "paused") rec.resume(); } catch (e) {} v.play().catch(() => {}); }
+    };
+    document.addEventListener("visibilitychange", onVis);
+    if (document.hidden) onVis();
+    await new Promise((ok, no) => {
+      let last = -1;
+      const iv = setInterval(() => {
+        if (v.ended) { clearInterval(iv); ok(); return; }
+        if (v.currentTime !== last) { last = v.currentTime; lastAt = Date.now(); if (onProg) onProg(last / dur); }
+        else if (!paused && Date.now() - lastAt > 20000) { clearInterval(iv); no(new Error("stalled")); }
+      }, 400);
+      v.onended = () => { clearInterval(iv); ok(); };
+      v.onerror = () => { clearInterval(iv); no(new Error("playback")); };
+    });
+    alive = false; await new Promise(r => setTimeout(r, 250));
+    if (rec.state !== "inactive") rec.stop();
+    await stopped;
+    const out = new Blob(chunks, {type: mt.mime.split(";")[0]});
+    if (!out.size || out.size > file.size * 0.9) return skip("couldn't make it smaller");   // keep the original
+    return {blob: out, type: out.type, ext: mt.ext};
+  } catch (e) {
+    return skip(e && e.message === "audio blocked" ? "audio blocked by the browser" : e && e.message === "stalled" ? "compression stalled" : "compression failed: " + (e && e.message || e));
+  } finally {
+    if (onVis) document.removeEventListener("visibilitychange", onVis);
+    try { if (rec && rec.state !== "inactive") rec.stop(); } catch (e) {}
+    try { v.pause(); } catch (e) {} try { URL.revokeObjectURL(url); } catch (e) {}
+    try { if (stream) stream.getTracks().forEach(t => t.stop()); } catch (e) {} try { if (ctx) ctx.close(); } catch (e) {}
+    vidStatus(null);
+  }
+}
 async function postMedia(f, body, kind, vis, tags, extra) {
   let path = null, extraPaths = [];
   try {
     let vid = false;
-    const up1 = async (file, isVid) => { const pa = me.id + "/" + uid() + (isVid ? ".mp4" : ".jpg"), blob = isVid ? file : await shrink(file), up = await sb.storage.from("chat-images").upload(pa, blob, {cacheControl: "31536000", contentType: isVid ? (file.type || "video/mp4") : "image/jpeg"}); if (up.error) throw up.error; return pa; };
+    const up1 = async (file, isVid) => {
+      let blob, ct = "image/jpeg", ext = "jpg";
+      if (isVid) { const r = await compressVideo(file, vidStatus); blob = r.blob; ct = r.type; ext = r.ext; } else blob = await shrink(file);
+      if (blob.size > VID_MAX_BYTES) throw new Error("Video is too big (max 90 MB after compression).");
+      const pa = rp(me.id + "/" + uid() + "." + ext), up = await media.upload(pa, blob, {cacheControl: "31536000", contentType: ct}); if (up.error) throw up.error; return pa;
+    };
     if (f) vid = f.type.startsWith("video");
     // main file and extra photos upload at the same time instead of one after another
     const ups = await Promise.allSettled([f ? up1(f, vid) : Promise.resolve(null), ...((f && !vid && extra) ? extra : []).map(x => up1(x, false))]);
     const done = ups.filter(x => x.status === "fulfilled" && x.value).map(x => x.value), bad = ups.find(x => x.status === "rejected");
-    if (bad) { if (done.length) sb.storage.from("chat-images").remove(done); throw bad.reason; }
+    if (bad) { if (done.length) media.remove(done); throw bad.reason; }
     path = ups[0].value; extraPaths = ups.slice(1).map(x => x.value);
     const all = [path, ...extraPaths].filter(Boolean);
     const {error} = await sb.from("posts").insert({body, media_path: path, media_type: f ? (vid ? "video" : "image") : null, kind, visibility: vis || "public", ...(tags && tags.length ? {tags} : {}), ...(all.length > 1 ? {media_paths: all} : {})});
-    if (error) { if (all.length) sb.storage.from("chat-images").remove(all); throw error; }
+    if (error) { if (all.length) media.remove(all); throw error; }
     return true;
   } catch (e) {
     const m = e.message || String(e);
@@ -2880,30 +3148,82 @@ async function postMedia(f, body, kind, vis, tags, extra) {
     return false;
   }
 }
-// ---------- "Posting…" notice: same C loader used for refresh / loading ----------
+// ---------- Background posting (Facebook-style) ----------
+// Tap Post -> composer closes -> a "Posting… Keep Chatter open." card sits at the top of the Feed / Clips
+// while the upload runs -> the card goes away, the new post is at the top, and a "Your post was shared. View post" toast shows.
+let ppend = [], spend = [], ppid = 0;
 (function () { const st = document.createElement("style"); st.textContent = `
-.postbar{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:10px;padding:6px 20px 6px 10px;border-radius:999px;background:var(--bg2,#1d1d25);color:var(--tx,#fff);font-size:14px;font-weight:700;white-space:nowrap;border:1px solid color-mix(in srgb,var(--accent,#7c3aed) 45%,transparent);box-shadow:0 8px 26px rgba(0,0,0,.45);animation:pbin .28s cubic-bezier(.2,.9,.3,1.2) both}
-@keyframes pbin{from{opacity:0;transform:translate(-50%,-14px) scale(.92)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+.pbn{position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;margin:8px 12px;padding:10px 12px;border-radius:14px;background:var(--bg2,#1d1d25);color:var(--tx,#fff);border:1px solid var(--line);animation:pbin .25s ease both}
+.pbn::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:38%;background:var(--accent,#7c3aed);border-radius:3px;animation:pbs 1.3s ease-in-out infinite}
+@keyframes pbs{0%{transform:translateX(-100%)}100%{transform:translateX(265%)}}
+@keyframes pbin{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.pbn .pbt{position:relative;width:44px;height:44px;flex:none;border-radius:10px;overflow:hidden;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:20px}
+.pbn .pbt img,.pbn .pbt video{width:100%;height:100%;object-fit:cover;display:block}
+.pbn .pbt i{position:absolute;right:2px;bottom:2px;min-width:16px;height:16px;padding:0 3px;box-sizing:border-box;border-radius:8px;background:rgba(0,0,0,.65);color:#fff;font:700 10px/16px system-ui,sans-serif;font-style:normal;text-align:center}
+.pbn .pbx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.pbn .pbx b{font-size:15px}
+.pbn .pbx span{font-size:13px;color:var(--mut)}
+.pbn .spn{width:30px;height:30px;flex:none}
+.cs.sharing .ct{position:relative}
+.cs.sharing .spw{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.38);z-index:2}
+.cs.sharing .spw .spn{width:38px;height:38px}
+.cgrid .cv{position:absolute;right:6px;bottom:5px;color:#fff;font-size:12px;text-shadow:0 1px 3px #000}
+.toast.act{display:flex;align-items:center;justify-content:space-between;gap:18px;width:min(92vw,420px);box-sizing:border-box;padding:12px 16px;border-radius:12px;background:#2a2b2e;font-size:14px}
+.toast.act button{border:0;background:transparent;color:#6ea8ff;font:inherit;font-weight:700;cursor:pointer;padding:0;white-space:nowrap}
+.postbar{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:10px;padding:6px 20px 6px 10px;border-radius:999px;background:var(--bg2,#1d1d25);color:var(--tx,#fff);font-size:14px;font-weight:700;white-space:nowrap;border:1px solid color-mix(in srgb,var(--accent,#7c3aed) 45%,transparent);box-shadow:0 8px 26px rgba(0,0,0,.45)}
 .postbar .spn{width:34px;height:34px;flex:none}
 `; document.head.append(st); })();
-function postingBar(kind) {
+window.addEventListener("beforeunload", e => { if (ppend.length || spend.length) { e.preventDefault(); e.returnValue = ""; } });
+function toastAct(t, label, fn) {
+  const d = el("div", "toast act"), s = el("span", null, t), b = el("button", null, label); b.type = "button";
+  b.onclick = () => { d.remove(); fn(); }; d.append(s, b); document.body.append(d); setTimeout(() => d.remove(), 7000);
+}
+function postingBar(kind) {   // fallback pill when the person is not looking at the Feed / Clips
   const b = el("div", "postbar"), s = el("div", "spn"); b.setAttribute("role", "status"); s.innerHTML = cSpin();
   b.append(s, el("span", null, "Posting your " + (kind === "clip" ? "clip" : "post") + "…")); document.body.append(b); return b;
+}
+function pendBanner(e) {
+  const d = el("div", "pbn"), t = el("div", "pbt"), x = el("div", "pbx"), s = el("div", "spn"); d.setAttribute("role", "status");
+  if (e.thumb && e.vid) { const v = el("video"); v.muted = true; v.playsInline = true; v.preload = "metadata"; v.src = e.thumb + "#t=0.1"; t.append(v); }
+  else if (e.thumb) { const im = el("img"); im.src = e.thumb; im.alt = ""; t.append(im); }
+  else t.textContent = "✏️";
+  if (e.n > 1) t.append(el("i", null, String(e.n)));
+  x.append(el("b", null, "Posting…"), el("span", null, "Keep Chatter open.")); s.innerHTML = cSpin(); d.append(t, x, s); return d;
+}
+async function viewMine(kind) {
+  const {data} = await sb.from("posts").select("*").eq("kind", kind).eq("user_id", me.id).order("created_at", {ascending: false}).limit(1), p = data && data[0];
+  if (!p) return;
+  if (kind === "clip") {
+    if (!feedOn()) setTab("feed");
+    if (fmode !== "clip") { fmode = "clip"; fposts = []; floading = true; feedDirty = true; render(); await loadFeed(); }
+    const b = fb(); if (b) b.scrollTo({top: 0, behavior: "smooth"});
+  } else { await postUrls(p); openPost(p.id, p); }
 }
 async function doPost() {
   const kind = fmode, meta = kind === "clip" ? "" : [fdraft.feel, fdraft.loc ? "📍 " + fdraft.loc : ""].filter(Boolean).join(" · "), txt = (fdraft.txt.trim() + (meta ? (fdraft.txt.trim() ? "\n\n— " : "— ") + meta : "")).trim(), f = fdraft.file;
   if (fbusy || (kind === "clip" ? !f : (!f && !fdraft.txt.trim() && !meta))) return;
   if (kind === "post" && f && f.type.startsWith("video")) return alert("Feed is for photos only. To share a video, post it in Clips.");
   if (kind === "clip" && f && !f.type.startsWith("video")) return alert("Please choose a video for your clip.");
-  // post in the background: close the composer right away and show a small "Posting…" notice
+  // post in the background: close the composer right away and show the "Posting…" card at the top of the feed
   const snap = {txt: fdraft.txt, file: fdraft.file, url: fdraft.url, files: fdraft.files || [], urls: fdraft.urls || [], vis: fdraft.vis, tags: fdraft.tags || [], feel: fdraft.feel, loc: fdraft.loc};
   fdraft.file = null; fdraft.url = null; fdraft.files = []; fdraft.urls = []; fdraft.txt = ""; fdraft.tags = []; fdraft.feel = ""; fdraft.loc = ""; fdraft.open = false; fdraft.tagOpen = false;
   closeComposer();
-  const bar = postingBar(kind);
+  const pe = {id: ++ppid, kind, thumb: snap.urls[0] || null, vid: !!(f && f.type.startsWith("video")), n: snap.files.length};
+  ppend.push(pe);
+  let bar = null;
+  if (feedOn() && fmode === kind) { feedDirty = true; render(); const b = fb(); if (b) b.scrollTop = 0; } else bar = postingBar(kind);
   const ok = await postMedia(f, txt, kind, snap.vis, snap.tags, snap.files.slice(1));
-  bar.remove();
-  if (ok) { snap.urls.forEach(u => { try { URL.revokeObjectURL(u); } catch (e) {} }); toast(kind === "clip" ? "Clip posted" : "Post shared"); feedDirty = true; loadFeed(); actSoon(); }
-  else if (!fdraft.file && !fdraft.txt.trim()) { Object.assign(fdraft, {txt: snap.txt, file: snap.file, url: snap.url, files: snap.files, urls: snap.urls, vis: snap.vis, tags: snap.tags, feel: snap.feel, loc: snap.loc}); if (fmode === kind) openComposer(); }
+  if (ok) { try { await loadFeed(); } catch (e) {} }   // new post is loaded under the card, then the card goes away
+  ppend = ppend.filter(x => x !== pe); if (bar) bar.remove();
+  if (ok) {
+    snap.urls.forEach(u => { try { URL.revokeObjectURL(u); } catch (e) {} });
+    feedDirty = true; if (feedOn()) { const b = fb(), keep = b && b.scrollTop > 200 ? b.scrollTop : 0; render(); if (b) b.scrollTop = keep; }
+    actSoon();
+    toastAct(kind === "clip" ? "Your clip was shared." : "Your post was shared.", kind === "clip" ? "View clip" : "View post", () => viewMine(kind));
+  } else {
+    feedDirty = true; if (feedOn()) render();
+    if (!fdraft.file && !fdraft.txt.trim()) { Object.assign(fdraft, {txt: snap.txt, file: snap.file, url: snap.url, files: snap.files, urls: snap.urls, vis: snap.vis, tags: snap.tags, feel: snap.feel, loc: snap.loc}); if (fmode === kind) openComposer(); }
+  }
 }
 // ----- stories (kind = "story", visible for 24 hours) -----
 function pickStory() {
@@ -2911,13 +3231,26 @@ function pickStory() {
   i.onchange = async () => {
     const f = i.files[0]; if (!f) return; if (f.size > 45 * 1048576) return alert("File is too big (max 45 MB).");
     const audience = S.story_audience === "public" ? "public" : "friends";
-    toast("Posting story…"); if (await postMedia(f, "", "story", audience)) { toast("Story posted"); await loadStories(); }
+    // Facebook-style: your story card shows up right away with the photo and "Sharing…" until the upload is done
+    const pe = {id: ++ppid, thumb: URL.createObjectURL(f), vid: f.type.startsWith("video")}, onFeed = () => feedOn() && fmode === "post";
+    spend.push(pe); if (onFeed()) { feedDirty = true; render(); const r = fb() && fb().querySelector(".str"); if (r) r.scrollLeft = 0; } else toast("Sharing story…");
+    const ok = await postMedia(f, "", "story", audience);
+    if (ok) { try { await loadStories(); } catch (e) {} }
+    spend = spend.filter(x => x !== pe); try { URL.revokeObjectURL(pe.thumb); } catch (e) {}
+    feedDirty = true; if (onFeed()) render();
+    if (ok) toast("Your story was shared.");
   }; i.click();
+}
+function sharingCard(e) {
+  const c = el("div", "cs sharing"), t = el("div", "ct"), av = el("div", "cav"), w = el("div", "spw"), sp = el("div", "spn");
+  const m = el(e.vid ? "video" : "img"); if (e.vid) { m.muted = true; m.playsInline = true; m.preload = "metadata"; m.src = e.thumb + "#t=0.1"; } else m.src = e.thumb;
+  sp.innerHTML = cSpin(); w.append(sp); t.append(m, w); av.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase()));
+  c.setAttribute("role", "status"); c.append(t, av, el("div", "cn", "Sharing…")); return c;
 }
 function storiesRow() {
   const row = el("div", "str"), mk = el("div", "cs add"), t = el("div", "ct"), pl = el("div", "pl"), av = el("div", "cav");
   pl.innerHTML = FI.plus; t.append(pl); av.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase()));
-  mk.append(t, av, el("div", "cn", "Add story")); mk.onclick = pickStory; row.append(mk);
+  mk.append(t, av, el("div", "cn", "Add story")); mk.onclick = pickStory; row.append(mk); spend.forEach(e => row.append(sharingCard(e)));
   const seenU = new Set(), latestOf = fstories.filter(s => !seenU.has(s.user_id) && seenU.add(s.user_id));
   latestOf.sort((a, b) => (b.user_id === me.id) - (a.user_id === me.id)).forEach(s => row.append(storyCard(s)));
   return row;
@@ -2930,7 +3263,9 @@ function storyCard(s) {
     t.append(m);
   }
   av.append(avatar(u, nm[0].toUpperCase()));
-  const storyName = el("div", "cn", u === me.id ? "Your story" : nm); const storyBadge = u !== me.id ? verifiedBadge(u) : null; if (storyBadge) storyName.append(storyBadge);
+  const storyName = el("div", "cn", u === me.id ? "Your story" : nm);
+  const storyBadge = u !== me.id ? verifiedBadge(u) : null;
+  if (storyBadge) storyName.append(storyBadge);
   c.append(t, av, storyName);
   c.onclick = () => openStory(u); return c;
 }
@@ -3003,7 +3338,7 @@ async function openStory(u, custom) {
       item(icDelete, "Delete " + what, "", "", () => {
         dismiss(false);
         confirmBox("Delete " + what + " from your story?", "If you want to remove this " + what + " from your story without losing it, you can cancel and archive it instead.", "DELETE", async () => {
-          if (s.media_path) await sb.storage.from("chat-images").remove([s.media_path]);
+          if (s.media_path) await media.remove([s.media_path]);
           const {error} = await sb.from("posts").delete().eq("id", s.id);
           if (error) { toast("Couldn\u2019t delete: " + error.message); return resumeStory(); }
           afterRemove();
@@ -3308,7 +3643,7 @@ async function purgeTrash() {
   const cutoff = new Date(Date.now() - 30 * 864e5).toISOString();
   const {data, error} = await sb.from("posts").select("*").eq("user_id", me.id).lt("trashed_at", cutoff).limit(50);
   if (error || !data) return;
-  for (const x of data) { const ps = postAllPaths(x); if (ps.length) sb.storage.from("chat-images").remove(ps); await sb.from("posts").delete().eq("id", x.id); }
+  for (const x of data) { const ps = postAllPaths(x); if (ps.length) media.remove(ps); await sb.from("posts").delete().eq("id", x.id); }
 }
 // Settings > Your Chatterverse Data > Post archive / Trash
 async function renderPostBox(d, kind) {
@@ -3333,7 +3668,7 @@ async function renderPostBox(d, kind) {
       bt.append(back);
       const more = el("button", "gray sm red", trash ? "Delete" : "Trash"); more.type = "button";
       more.onclick = async () => {
-        if (trash) { if (!(await appConfirm("Delete for good?", "This post will be deleted for good. This can't be undone.", "Delete"))) return; const ps = postAllPaths(x); if (ps.length) sb.storage.from("chat-images").remove(ps); const r = await sb.from("posts").delete().eq("id", x.id); if (r.error) return toast(r.error.message); }
+        if (trash) { if (!(await appConfirm("Delete for good?", "This post will be deleted for good. This can't be undone.", "Delete"))) return; const ps = postAllPaths(x); if (ps.length) media.remove(ps); const r = await sb.from("posts").delete().eq("id", x.id); if (r.error) return toast(r.error.message); }
         else { const r = await sb.from("posts").update({trashed_at: new Date().toISOString()}).eq("id", x.id); if (r.error) return toast(r.error.message); }
         data.splice(data.indexOf(x), 1); toast(trash ? "Deleted" : "Moved to trash"); draw();
       };
@@ -3346,7 +3681,8 @@ function postCard(p, inProfile, noRp, full) {
   const u = p.user_id, nm = names[u] || "Someone", c = el("div", "pc"), h = el("div", "ph1"), n = el("div", "pn"), cm = fcm[p.id] || [], L = flikes[p.id] || [], on = L.includes(me.id);
   const av = avatar(u, nm[0].toUpperCase(), "fa"); av.style.cursor = "pointer"; av.onclick = e => { e.stopPropagation(); openProfile(u); };
   const l1 = el("div", "l1"), r = u === me.id ? null : rel(u);
-  const nb = el("b", null, nm); nb.style.cursor = "pointer"; nb.onclick = () => openProfile(u); l1.append(nb); const postBadge = verifiedBadge(u); if (postBadge) l1.append(postBadge);
+  const nb = el("b", null, nm); nb.style.cursor = "pointer"; nb.onclick = () => openProfile(u); l1.append(nb);
+  const postBadge = verifiedBadge(u); if (postBadge) l1.append(postBadge);
   // "updated their profile picture / cover photo" posts read like Facebook: it goes right after the name, not as a caption under it
   const sysM = /^updated (?:their|his|her) (profile picture|cover photo)\.$/.exec(p.body || "");
   if (sysM) { l1.classList.add("sysu"); l1.append(el("span", "mut", " updated their " + sysM[1] + ".")); }
@@ -3368,7 +3704,7 @@ function postCard(p, inProfile, noRp, full) {
   const phs = postPhotoUrls(p); let mediaNode = null;
   if (p.url && p.media_type === "video") { const m = el("video"); m.src = p.url; m.controls = true; m.playsInline = true; m.preload = "metadata"; mediaNode = m; }
   else if (phs.length) {
-    if (full) { mediaNode = el("div", "pcs"); phs.forEach(u => { const im = el("img"); im.src = u; im.alt = ""; im.loading = "lazy"; mediaNode.append(im); }); }
+    if (full) { mediaNode = el("div", "pcs"); phs.forEach((u, k) => { const im = el("img"); im.src = u; im.alt = ""; im.loading = "lazy"; im.style.cursor = "zoom-in"; im.onclick = e => { e.stopPropagation(); openViewer(phs.map(x => ({url: x, postId: p.id})), k, {plain: true}); }; mediaNode.append(im); }); }
     else if (phs.length === 1) { const im = el("img", "pcimg"); im.src = phs[0]; im.alt = ""; im.onclick = () => openPost(p.id, p, 0); mediaNode = im; }
     else mediaNode = collage(p, phs);
   }
@@ -3394,7 +3730,7 @@ function postCard(p, inProfile, noRp, full) {
   return c;
 }
 function reel(p, into, onGone) {
-  const r = el("div", "rl"), v = el("video"), ov = el("div", "ov"), sd = el("div", "sd");
+  const r = el("div", "rl"), v = el("video"), ov = el("div", "ov"), sd = el("div", "sd"); r.dataset.pid = p.id;
   v.src = p.url || ""; v.loop = true; v.muted = clipMuted; v.playsInline = true; v.preload = "metadata"; v.autoplay = false;
   const who = el("div", "ovh"); who.append(el("div", "t1", names[p.user_id] || "Someone")); who.onclick = e => { e.stopPropagation(); openProfile(p.user_id); };
   const bub = el("div", "bubs"), rpr = el("div", "rpr"), rpl = el("div", "rpl"); rpr.onclick = e => { e.stopPropagation(); openReposts(p); }; ov.append(bub, rpr, who); if (p.visibility === "friends") { const ft = el("div", "", "👥 Friends only"); ft.style.cssText = "font-size:12px;opacity:.85;margin-bottom:2px"; ov.append(ft); } ov.append(mEl("", p.body || "", "profile"));
@@ -3857,9 +4193,26 @@ function heartBurst(r, x, y) {
   r.append(h); setTimeout(() => h.remove(), 900);
 }
 let reelObs = null;
+// ---------- Clip views: one view per person per clip (counted after ~1.5s of watching) ----------
+let fviews = {}, viewSeen = new Set(), viewsOK = null;
+async function loadViews(ids) {
+  ids = (ids || []).filter(Boolean); if (!ids.length) return;
+  const {data, error} = await sb.from("post_views").select("post_id").in("post_id", ids).limit(20000);
+  if (error) { viewsOK = false; return; }
+  viewsOK = true; ids.forEach(i => fviews[i] = 0); (data || []).forEach(x => fviews[x.post_id] = (fviews[x.post_id] || 0) + 1);
+}
+async function recView(pid) {
+  if (!pid || viewSeen.has(pid) || viewsOK === false) return; viewSeen.add(pid);
+  const {error} = await sb.from("post_views").upsert({post_id: pid, viewer_id: me.id}, {onConflict: "post_id,viewer_id", ignoreDuplicates: true});
+  if (error) { viewsOK = false; console.warn("Clip view not saved. Run post_views.sql in Supabase:", error.message); }
+}
+function viewWatch(e) {
+  const r = e.target; clearTimeout(r._vt);
+  if (e.isIntersecting && r.dataset.pid) r._vt = setTimeout(() => recView(r.dataset.pid), 1500);
+}
 function watchReels() {
   const box = fb(); box.style.scrollSnapType = "y mandatory"; if (reelObs) reelObs.disconnect();
-  reelObs = new IntersectionObserver(es => es.forEach(e => { const v = e.target.querySelector("video"); if (!v) return; if (feedCovered()) { v.pause(); return; } if (e.isIntersecting && S.autoplay_clips !== false) v.play().catch(err => { if (err && err.name === "NotAllowedError") { v.muted = true; v.play().catch(() => {}); } }); else v.pause(); }), {root: box, threshold: 0.7});
+  reelObs = new IntersectionObserver(es => es.forEach(e => { viewWatch(e); const v = e.target.querySelector("video"); if (!v) return; if (feedCovered()) { v.pause(); return; } if (e.isIntersecting && S.autoplay_clips !== false) v.play().catch(err => { if (err && err.name === "NotAllowedError") { v.muted = true; v.play().catch(() => {}); } }); else v.pause(); }), {root: box, threshold: 0.7});
   box.querySelectorAll(".rl").forEach(r => reelObs.observe(r));
 }
 
@@ -3930,7 +4283,7 @@ function drawSaved(box) {
   const L = ids.map(i => S.posts[i]), clips = L.filter(p => p.kind === "clip"), g = el("div", "cgrid");
   L.forEach(p => {
     const t = el("div", "ct"), rm = el("button", "rmv", "✕"); rm.type = "button";
-    if (p.kind === "clip") { const v = el("video"); v.muted = true; v.playsInline = true; v.preload = "metadata"; v.src = (p.url || "") + "#t=0.1"; t.append(v, el("div", "cl", "❤️ " + (flikes[p.id] || []).length)); t.onclick = () => openClip(clips, clips.indexOf(p)); }
+    if (p.kind === "clip") { const v = el("video"); v.muted = true; v.playsInline = true; v.preload = "metadata"; v.src = (p.url || "") + "#t=0.1"; t.append(v, el("div", "cl", "❤️ " + (flikes[p.id] || []).length)); if (viewsOK !== false && fviews[p.id] != null) t.append(el("div", "cv", "👁 " + fviews[p.id])); t.onclick = () => openClip(clips, clips.indexOf(p)); }
     else { if (p.url) { const im = el("img"); im.src = p.url; t.append(im); } else t.append(el("div", "tx", (p.body || "").slice(0, 80))); t.onclick = () => openPost(p.id); }
     rm.onclick = async e => {
       e.stopPropagation(); let q = sb.from("saved_posts").delete().eq("post_id", p.id); if (S.col !== "All") q = q.eq("collection", S.col);
@@ -3958,6 +4311,7 @@ async function pfLoad(uid) {
     await ensureNames((c.data || []).map(x => x.user_id));
   }
   await Promise.all(L.map(async p => { await postUrls(p); }));
+  await loadViews(L.filter(p => p.kind === "clip").map(p => p.id));
   if (pf.uid !== uid) return;
   pf.posts = L.filter(p => p.kind === "post"); pf.clips = L.filter(p => p.kind === "clip"); pf.loaded = true;
   pfPaint(); if (!pf.reps) loadRepTab();
@@ -4015,12 +4369,17 @@ function drawProfile() {
     pa.classList.add("hasst");
     pa.addEventListener("click", e => {
       if (e.target.closest(".camb")) return; e.stopPropagation(); e.preventDefault();
-      openStory(uid, {list: pf.stories.slice(), index: 0, onRemove: g => { pf.stories = (pf.stories || []).filter(x => x.id !== g.id); pfPaint(); }});
+      photoMenu("avatar", e, uid);
     }, true);
   }
   if (mine) {
-    const c1 = el("button", "camb", "📷"), c2 = el("button", "camb", "📷"); c1.type = c2.type = "button";
-    c1.onclick = () => pickPhoto("cover"); c2.onclick = () => pickPhoto("avatar"); cv.append(c1); pa.append(c2);
+    const c1 = el("button", "camb"), c2 = el("button", "camb"); c1.type = c2.type = "button"; c1.innerHTML = c2.innerHTML = icon("camera", 18); c1.title = "Cover photo"; c2.title = "Profile picture";
+    c1.onclick = e => photoMenu("cover", e); c2.onclick = e => photoMenu("avatar", e); cv.append(c1); pa.append(c2);
+  }
+  if (!bl) {
+    if (coverUrl[uid] || mine) cv.style.cursor = "pointer";
+    cv.addEventListener("click", e => { if (e.target.closest(".camb")) return; if (mine) return photoMenu("cover", e); if (!coverUrl[uid]) return; openPhotoHistory(uid, "cover"); });
+    pa.addEventListener("click", e => { if (e.target.closest(".camb") || pa.classList.contains("hasst")) return; if (mine) return photoMenu("avatar", e); if (!photoUrl[uid]) return; openPhotoHistory(uid, "avatar"); });
   }
   let sub = "";
   if (mine) sub = "";
@@ -4094,7 +4453,7 @@ function drawProfile() {
   if (pf.tab === "photos") {
     const L = pf.posts.filter(x => x.url && x.media_type !== "video");
     if (!L.length) box.append(el("div", "hint", mine ? "You haven't added any photos yet." : "No photos yet."));
-    else { const g = el("div", "cgrid"); L.forEach(x => { const t = el("div", "ct"), im = el("img"); im.src = x.url; t.append(im); t.onclick = () => openPost(x.id); g.append(t); }); box.append(g); }
+    else { const g = el("div", "cgrid"); L.forEach((x, k) => { const t = el("div", "ct"), im = el("img"); im.src = x.url; t.append(im); t.onclick = () => openViewer(L.map(y => ({url: y.url, postId: y.id})), k, {plain: true}); g.append(t); }); box.append(g); }
   } else if (pf.tab === "posts") {
     aboutMe(box, mine);
     drawAbout(box, mine, uid);
@@ -4106,13 +4465,12 @@ function drawProfile() {
     const g = el("div", "cgrid");
     pf.clips.forEach((p, i) => {
       const t = el("div", "ct"), v = el("video"); v.muted = true; v.playsInline = true; v.preload = "metadata"; v.src = (p.url || "") + "#t=0.1";
-      t.append(v, el("div", "cl", "❤️ " + (flikes[p.id] || []).length)); t.onclick = () => openClip(pf.clips, i); g.append(t);
+      t.append(v, el("div", "cl", "❤️ " + (flikes[p.id] || []).length)); if (viewsOK !== false && fviews[p.id] != null) t.append(el("div", "cv", "👁 " + fviews[p.id])); t.onclick = () => openClip(pf.clips, i); g.append(t);
     });
     box.append(g);
   }
 }
 
-// ---------- PROFILE TRANSPARENCY: account dates, verification and privacy ----------
 const profileDateLabel = value => {
   if (!value) return "Not available";
   const d = new Date(value);
@@ -4145,17 +4503,20 @@ async function openProfileTransparency(uid) {
     copy.append(el("div", "pt-label", title), el("div", "pt-value" + (extraClass ? " " + extraClass : ""), value));
     r.append(ic, copy); return r;
   };
-  const [meta, verified] = await Promise.all([
-    sb.from("profiles").select("created_at,updated_at").eq("id", uid).maybeSingle(),
-    Promise.resolve(!!verifiedUsers[uid])
-  ]);
+  let meta = await sb.from("profiles").select("created_at,updated_at,is_verified").eq("id", uid).maybeSingle();
+  let verificationAvailable = !meta.error;
+  if (meta.error) {
+    // Older database schemas may not yet include profiles.is_verified.
+    meta = await sb.from("profiles").select("created_at,updated_at").eq("id", uid).maybeSingle();
+  }
   if (!body.isConnected) return;
   const createdAt = uid === me.id ? (me.created_at || (meta.data && meta.data.created_at)) : (meta.data && meta.data.created_at);
   const updatedAt = meta.data && meta.data.updated_at;
-  if (verified) {
-    const vr = row('<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.8 21 5v6.1c0 5.5-3.7 9.2-9 11.1-5.3-1.9-9-5.6-9-11.1V5l9-3.2Z" fill="currentColor"/><path d="m7.4 11.9 3 3 6.3-6.4" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>', nm + " is a verified account", "This account has been verified by the Chatterverse team.", "pt-verified-detail");
-    vr.classList.add("pt-verified"); card.append(vr);
-  }
+  const verified = verificationAvailable ? meta.data?.is_verified === true : verifiedUsers[uid] === true;
+  const vr = row('<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.8 21 5v6.1c0 5.5-3.7 9.2-9 11.1-5.3-1.9-9-5.6-9-11.1V5l9-3.2Z" fill="currentColor"/><path d="m7.4 11.9 3 3 6.3-6.4" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>', "Verified account status", verified ? "Verified — this account has been verified by the Chatterverse team." : "Not verified", "pt-verified-detail");
+  vr.classList.add("pt-verified");
+  if (!verified) vr.classList.add("pt-unverified");
+  card.append(vr);
   card.append(
     row('<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 9h18M8 13h2m4 0h2m-8 4h2"/></svg>', "Joined Chatterverse", profileDateLabel(createdAt)),
     row('<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>', "Profile last updated", profileRelativeLabel(updatedAt))
@@ -4164,6 +4525,8 @@ async function openProfileTransparency(uid) {
   if (category) card.append(row('<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/></svg>', "Category", String(category)));
   body.append(card);
   const aboutFields = [];
+  const bio = ((pf.det || {}).bio || {}).v;
+  if (bio) aboutFields.push({label:"Bio", value:String(bio)});
   if (pf.det || pf.info) {
     EP.forEach(([section, fields]) => fields.forEach(f => {
       if (f[0] === "phone" || f[0] === "email") return;
@@ -4171,12 +4534,16 @@ async function openProfileTransparency(uid) {
       if (value) aboutFields.push({label:f[2], value:f[3] === "date" ? fmtDate(value) : String(value)});
     }));
   }
+  body.append(el("div", "pt-section-title", "About the member"));
+  const about = el("div", "pt-card");
   if (aboutFields.length) {
-    body.append(el("div", "pt-section-title", "About " + (nm.split(/\s+/)[0] || "this member")));
-    const about = el("div", "pt-card");
     aboutFields.slice(0, 12).forEach(x => about.append(row('<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg>', x.label, x.value)));
-    body.append(about);
+  } else {
+    const empty = el("div", "pt-row");
+    empty.append(el("div", "pt-value", "No member information available."));
+    about.append(empty);
   }
+  body.append(about);
 }
 
 // ---------- PROFILE DETAILS: personal details, education, friends, edit form ----------
@@ -4288,7 +4655,7 @@ async function editProfile() {
 }
 function observeReels(box) {
   if (box._obs) box._obs.disconnect();
-  box._obs = new IntersectionObserver(es => es.forEach(e => { const v = e.target.querySelector("video"); if (!v) return; if (e.isIntersecting && S.autoplay_clips !== false) v.play().catch(err => { if (err && err.name === "NotAllowedError") { v.muted = true; v.play().catch(() => {}); } }); else v.pause(); }), {root: box, threshold: 0.7});
+  box._obs = new IntersectionObserver(es => es.forEach(e => { viewWatch(e); const v = e.target.querySelector("video"); if (!v) return; if (e.isIntersecting && S.autoplay_clips !== false) v.play().catch(err => { if (err && err.name === "NotAllowedError") { v.muted = true; v.play().catch(() => {}); } }); else v.pause(); }), {root: box, threshold: 0.7});
   box.querySelectorAll(".rl").forEach(r => box._obs.observe(r));
 }
 // loads likes, comments, reposts and saves for the clips we are about to show (the profile pages don't load them all)
@@ -4394,7 +4761,7 @@ function dtDD() {
   row(MI.gear, "Settings", () => openSettings());
   row(MI.access, "Display & accessibility", () => { stCat = "Display & accessibility"; stItem = null; $("#st").classList.remove("hide"); drawSet(); });
   row(DDI.help, "Help & Feedback", () => { stCat = "Help & Feedback"; stItem = null; $("#st").classList.remove("hide"); drawSet(); });
-  const lo = el("button", "dlo", "Log out"); lo.type = "button"; lo.onclick = async () => { dtClose(); await dropPush(); hardOut(); };
+  const lo = el("button", "dlo", "Log out"); lo.type = "button"; lo.onclick = () => doLogout(dtClose);
   d.append(el("div", "dsp"), lo);
 }
 $("#dtme").onclick = e => { e.stopPropagation(); const d = $("#dtdd"); if (d.classList.contains("hide")) { dtDD(); d.classList.remove("hide"); } else dtClose(); };
@@ -4445,7 +4812,7 @@ function drawMenu() {
   hs.append(el("span", "mt", "Help & Feedback"));
   hs.onclick = () => { closeMenu(); stCat = "Help & Feedback"; stItem = null; $("#st").classList.remove("hide"); drawSet(); };
   w.append(hs);
-  const lo = el("button", "mlog", "Log out"); lo.type = "button"; lo.onclick = async () => { closeMenu(); await dropPush(); hardOut(); };
+  const lo = el("button", "mlog", "Log out"); lo.type = "button"; lo.onclick = () => doLogout(closeMenu);
   w.append(el("div", "msp"), lo); o.append(w); o.scrollTop = y;
 }
 
@@ -4471,7 +4838,7 @@ async function loadBdays() {
 }
 let S = {}, stCat = null, stItem = null;
 const ST = {
-  "Account Basics": ["Name", "Username", "Contact Information", "Request verification", "Password and safety", "Language and Region", "Deactivate or delete", "Account control"],
+  "Account Basics": ["Name", "Username", "Contact Information", "Password and safety", "Language and Region", "Deactivate or delete", "Account control"],
   "Privacy Settings": ["Message delivery", "Who can see your new posts?", "Review your posts and tags", "Who can follow you?", "Who can view your friends?", "Can people find you by your email?", "Can people find you by your phone number?", "Should your profile show up in search engines?", "Who can comment on your public posts?", "Who can see your profile information?"],
   "Security & Sign-in": ["Change password", "Active sessions", "Sign out of devices", "Remember this device", "Two-factor authentication", "Alerts for new sign-ins", "Trusted devices", "Recovery contact"],
   "Notifications": ["Sounds", "Custom sounds", "Comments", "Likes", "Replies to comments", "Tags", "Mentions", "Messages", "Reminders", "New followers", "New friends", "Suggested people", "Birthdays", "Group activity", "Profile activity", "Clips", "Push notifications", "Email notifications", "In-app notifications", "Notification sounds"],
@@ -4578,7 +4945,7 @@ const CATI = {
   "Integrations": ci('<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.8 2.9 2.8 15.1 0 18M12 3c-2.8 2.9-2.8 15.1 0 18"/>')
 };
 const FIL = {"Privacy Policy":"Patakaran sa Privacy","Terms of Service":"Mga Tuntunin ng Serbisyo","Message delivery":"Paghahatid ng mensahe","Message requests":"Mga message request","Settings":"Mga Setting","Account Basics":"Batayan ng Account","Privacy Settings":"Privacy","Security & Sign-in":"Seguridad at Pag-sign in","Notifications":"Mga Notification","Audience & Tags":"Audience at Tag","Blocking":"Pag-block","Stories and Clips":"Stories at Clips","Your Chatterverse Data":"Iyong Data sa Chatterverse","Integrations":"Mga Integration","Display & accessibility":"Display at accessibility","Help & Feedback":"Tulong at Feedback",
-"Name":"Pangalan","Username":"Username","Contact Information":"Impormasyon sa Pakikipag-ugnayan","Request verification":"Humiling ng verification","Password and safety":"Password at kaligtasan","Language and Region":"Wika at Rehiyon","Deactivate or delete":"I-deactivate o burahin","Account control":"Kontrol sa account",
+"Name":"Pangalan","Username":"Username","Contact Information":"Impormasyon sa Pakikipag-ugnayan","Password and safety":"Password at kaligtasan","Language and Region":"Wika at Rehiyon","Deactivate or delete":"I-deactivate o burahin","Account control":"Kontrol sa account",
 "Who can see your new posts?":"Sino ang makakakita ng bago mong posts?","Review your posts and tags":"Suriin ang posts at tags mo","Who can follow you?":"Sino ang maaaring mag-follow sa iyo?","Who can view your friends?":"Sino ang makakakita ng friends mo?","Can people find you by your email?":"Mahahanap ka ba sa email?","Can people find you by your phone number?":"Mahahanap ka ba sa phone number?","Should your profile show up in search engines?":"Lalabas ba ang profile mo sa search engines?","Who can comment on your public posts?":"Sino ang maaaring mag-comment sa public posts mo?","Who can see your profile information?":"Sino ang makakakita ng profile info mo?",
 "Change password":"Palitan ang password","Active sessions":"Mga aktibong session","Sign out of devices":"Mag-sign out sa mga device","Remember this device":"Tandaan ang device na ito","Two-factor authentication":"Two-factor authentication","Alerts for new sign-ins":"Alert sa bagong sign-in","Trusted devices":"Mga pinagkakatiwalaang device","Recovery contact":"Contact para sa recovery",
 "Sounds":"Mga tunog","Custom sounds":"Custom na tunog","Comments":"Mga comment","Likes":"Mga like","Replies to comments":"Sagot sa comments","Tags":"Mga tag","Mentions":"Mga mention","Messages":"Mga mensahe","Reminders":"Mga paalala","New followers":"Bagong followers","New friends":"Bagong friends","Suggested people":"Iminumungkahing tao","Birthdays":"Mga kaarawan","Group activity":"Aktibidad ng group","Profile activity":"Aktibidad ng profile","Clips":"Clips","Push notifications":"Push notifications","Email notifications":"Email notifications","In-app notifications":"In-app notifications","Notification sounds":"Tunog ng notification",
@@ -4604,6 +4971,63 @@ function drawSet() {
   else w.append(setDetail(stItem, row));
   o.append(w);
 }
+async function openChatterverseSupport(container) {
+  const shell=container.closest(".sw2"); if(shell) shell.classList.add("cv-ai-chat-mode");
+  const panel=el("div","cv-ai-chat"), head=el("div","cv-ai-chat-head"), title=el("div");
+  title.append(el("div","cv-ai-chat-name","Chatterverse AI Assistant"),el("div","cv-ai-chat-sub","AI support · Human support available"));
+  const close=el("button","gray","Back"); close.type="button"; close.onclick=()=>drawSet(); head.append(title,close);
+  const transcript=el("div","cv-ai-transcript"), composer=el("div","cv-ai-composer"), input=el("input"), send=el("button","","Send"), status=el("div","cv-ai-status");
+  input.placeholder="Type a message…"; input.maxLength=2000; send.type="button";
+  composer.append(input,send); panel.append(head,transcript,composer,status); container.replaceChildren(panel); input.focus();
+  let conversationId=null,busy=false,waiting=false,humanMode=false,lastSeen=0,supportAgentJoined=false;
+  const setComposer=(enabled)=>{input.disabled=!enabled;send.disabled=!enabled;if(enabled)input.focus();};
+  const bubble=(role,text)=>{const b=el("div","cv-ai-bubble "+role);b.textContent=text;transcript.append(b);transcript.scrollTop=transcript.scrollHeight};
+  const announceSupportJoined=()=>{if(supportAgentJoined)return;supportAgentJoined=true;bubble("system","A support representative replied. You can now send a message.");};
+  const SUPPORT_WORKER_URL="https://chatterverse-media.jonjonsanjose11.workers.dev";
+  const call=async(action,payload={})=>{
+    const {data:sessionData,error:sessionError}=await sb.auth.getSession();
+    const accessToken=sessionData?.session?.access_token;
+    if(sessionError||!accessToken)throw new Error("Your session expired. Please sign in again.");
+    const tooSlow="The AI took too long to answer. Please tap Send to try again.";
+    const ctl=new AbortController(), kill=setTimeout(()=>ctl.abort(),120000);          // never wait forever
+    let response;
+    try{response=await fetch(`${SUPPORT_WORKER_URL}/support`,{method:"POST",signal:ctl.signal,headers:{"Authorization":`Bearer ${accessToken}`,"Content-Type":"application/json"},body:JSON.stringify({action,...payload})});}
+    catch(e){throw new Error(e&&(e.name==="AbortError"||/abort/i.test(e.message||""))?tooSlow:"Couldn't reach Chatterverse. Check your connection and try again.");}
+    finally{clearTimeout(kill);}
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok||data?.error){const m=String(data?.error||"");throw new Error(/abort|timed?\s?out/i.test(m)?tooSlow:(m||`Support request failed (${response.status}).`));}   // the Worker's raw "The operation was aborted" becomes a clear message
+    return data||{};
+  };
+  const asksForHuman=(text)=>/(\b(human|real\s+person|live\s+agent|support\s+agent|talk\s+to\s+(a\s+)?(person|human|agent)|speak\s+to\s+(a\s+)?(person|human|agent)|customer\s+support)\b|human\s+support|support\s+staff|tao\s+na\s+support|kausap\s+na\s+tao|makipag-usap\s+sa\s+tao|human\s+support\s+sana|agent\s+sana)/i.test(text);
+  const handoff=async(message)=>{
+    status.textContent="Connecting you with human support…";
+    const r=await call("request_human",{conversation_id:conversationId,message});
+    conversationId=r.conversation_id;waiting=true;humanMode=true;
+    bubble("bot","I'll connect you with the Chatterverse support team. A support representative will reply in this conversation. You can keep this chat open for updates.");
+    status.textContent="Waiting for a support representative.";setComposer(false);
+  };
+  bubble("bot","Hi! I'm the Chatterverse AI Assistant. Ask me about profiles, posts, messages, privacy, settings, or using the app. If you would like to speak with a person, just tell me here.");
+  const submit=async()=>{
+    const message=input.value.trim();if(!message||busy||waiting)return;
+    busy=true;setComposer(false);bubble("user",message);input.value="";
+    try{
+      if(humanMode){
+        const r=await call("chat",{conversation_id:conversationId,message});
+        waiting=true;status.textContent="Message sent. Waiting for the support representative to reply.";
+      }else if(asksForHuman(message)){await handoff(message);}
+      else{
+        status.textContent="AI is typing…";
+        const r=await call("chat",{conversation_id:conversationId,message});conversationId=r.conversation_id;
+        bubble("bot",r.reply||"I couldn't reply right now. Please try again.");
+        status.textContent=r.ai_configured===false?"AI support is temporarily unavailable. You can request human support.":(r.ai_fallback?"AI is temporarily busy. You can try again or request human support.":"");
+      }
+    }catch(e){status.textContent=e.message||"Couldn't connect. Please try again.";if(!input.value)input.value=message;}   // keep what they typed so they can just tap Send again
+    finally{busy=false;if(!waiting)setComposer(true);}
+  };
+  send.onclick=submit;input.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();submit();}});
+  const timer=setInterval(async()=>{if(!panel.isConnected){clearInterval(timer);return;}if(!conversationId)return;try{const r=await call("get_messages",{conversation_id:conversationId});for(const m of r.messages||[]){const id=Number(m.id)||0;if(id>lastSeen){lastSeen=id;if(m.sender_role==="support"){announceSupportJoined();bubble("bot",m.body);waiting=false;status.textContent="Support replied. You can send a message.";setComposer(true);}}}if(r.status==="closed"){waiting=true;setComposer(false);status.textContent="This support conversation is closed.";}}catch(e){status.textContent=e.message||"Unable to refresh support messages.";}},5000);
+}
+
 function setDetail(it, row) {
   const d = el("div", "stp"), cap = t => d.append(el("div", "cap", t)), msg = el("div", "cap"), inp = (ph, type, v) => { const i = el("input"); i.placeholder = ph; i.type = type || "text"; i.value = v || ""; return i; };
   const btn = (t, fn, cls) => { const b = el("button", cls || "", t); b.onclick = () => fn(b); return b; };
@@ -4616,6 +5040,12 @@ function setDetail(it, row) {
     renderLimited(d);
   } else if (it === "Help Center") {
     d.append(el("div", "help-intro", "Find answers to common questions about using Chatterverse."));
+    const aiCard = el("div", "cv-ai-support-card");
+    aiCard.append(el("div", "cv-ai-support-title", "✦ Chatterverse AI Assistant"));
+    aiCard.append(el("div", "help-intro", "Ask about your account or how to use Chatterverse. If you need a person, just ask in the chat."));
+    const aiLaunch = el("button", "cv-ai-support-launch", "Chat with Chatterverse AI");
+    aiLaunch.type = "button"; aiLaunch.onclick = () => openChatterverseSupport(d);
+    aiCard.append(aiLaunch); d.append(aiCard);
     const search = inp("Search help articles", "search"); search.className = "help-search"; search.setAttribute("aria-label", "Search help articles");
     const faqBox = el("div", "help-faq-list");
     const faqs = [
@@ -4821,17 +5251,6 @@ function setDetail(it, row) {
       status.textContent = notes.length ? "Some activity types could not be loaded: " + notes.join(", ") + "." : "Recent activity";
     })();
   } else if (INFO[it]) { cap(INFO[it]);
-  } else if (it === "Request verification") {
-    cap("Submit a request for a verified badge. The Chatterverse team will review your account. You can have one pending request at a time.");
-    const reason = el("textarea"); reason.placeholder = "Explain why your account should be verified (10–500 characters)."; reason.maxLength = 500; reason.style.cssText = "width:100%;min-height:110px;padding:12px;border-radius:10px";
-    d.append(reason, msg, btn("Submit verification request", async b => {
-      const value = reason.value.trim(); if (value.length < 10) return msg.textContent = "Please enter at least 10 characters.";
-      b.disabled = true; msg.textContent = "Submitting request…";
-      const {data, error} = await sb.rpc("submit_my_verification_request", {p_reason: value});
-      b.disabled = false;
-      if (error) msg.textContent = /already have a pending/i.test(error.message) ? "You already have a pending verification request." : error.message;
-      else { reason.value = ""; msg.textContent = "Your verification request was submitted successfully."; toast("Verification request submitted"); }
-    }));
   } else if (it === "Contact Information") {
     const e = inp("Email", "email", me.email || ""), c = inp("Mobile number (09…)", "tel", me.phone ? "+" + me.phone.replace(/^\+/, "") : ""), code = inp("6-digit code", "text"); let ty = null, tg = null;
     cap("Changing your email or number sends a confirmation code."); code.className = "hide";
@@ -4985,7 +5404,7 @@ async function deleteAccount() {
   try {
     // 1) remove stored images (files in Storage are NOT removed by SQL deletes)
     const paths = new Set();
-    const {data: mine} = await sb.storage.from("chat-images").list(me.id, {limit: 1000});
+    const {data: mine} = await media.list(me.id, {limit: 1000});
     (mine || []).forEach(f => f.name && paths.add(me.id + "/" + f.name));
     const dmIds = rooms.filter(r => r.is_dm).map(r => r.id);
     if (dmIds.length) {
@@ -4993,7 +5412,7 @@ async function deleteAccount() {
       (im || []).forEach(x => x.image_path && paths.add(x.image_path));
     }
     const list = [...paths];
-    for (let i = 0; i < list.length; i += 100) await sb.storage.from("chat-images").remove(list.slice(i, i + 100));
+    for (let i = 0; i < list.length; i += 100) await media.remove(list.slice(i, i + 100));
     // 2) delete rows + auth user (server-side function, see delete_account.sql)
     const {error} = await sb.rpc("delete_my_account");
     if (error) throw error;
@@ -5042,10 +5461,50 @@ const urls = {}, uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now
 // Signed links are kept for 7 days and remembered across reloads. A link that stays the same lets the browser reuse the
 // photo/video it already downloaded, instead of downloading it again after every refresh (that was using up Supabase egress).
 const URL_TTL = 7 * 864e5, URL_KEY = "imgurl:";
+// ---- Media storage: new uploads go to Cloudflare R2 (through the chatterverse-media Worker). Old files stay in Supabase until migrated. ----
+const MEDIA_API = "https://chatterverse-media.jonjonsanjose11.workers.dev", R2_PUB = "https://pub-0f7697fe43874d44a9d4852d343efdaa.r2.dev";
+const R2_ALL = true;  // set to true AFTER running migrate-to-r2.mjs, so old files are also read from R2
+const isR2 = p => R2_ALL || /(^|\/)r_[^/]*$/.test(p || "");
+const rp = p => p.replace(/([^/]+)$/, "r_$1");
+const r2url = p => R2_PUB + "/" + String(p).split("/").map(encodeURIComponent).join("/");
+async function mtoken() { try { const {data} = await sb.auth.getSession(); return data.session ? data.session.access_token : null; } catch (e) { return null; } }
+async function mcall(path, opt) { const t = await mtoken(); if (!t) throw new Error("Not signed in"); return fetch(MEDIA_API + path, {...opt, headers: {...((opt && opt.headers) || {}), Authorization: "Bearer " + t}}); }
+const media = {
+  async upload(path, blob, o) {
+    if (!isR2(path)) return sb.storage.from("chat-images").upload(path, blob, o);
+    try {
+      const r = await mcall("/o/" + path.split("/").map(encodeURIComponent).join("/"), {method: "PUT", body: blob, headers: {"Content-Type": (o && o.contentType) || blob.type || "application/octet-stream"}});
+      if (!r.ok) { let m = ""; try { m = (await r.json()).error || ""; } catch (e) {} return {error: {message: "Upload failed (" + r.status + ") " + m}}; }
+      return {data: {path}};
+    } catch (e) { return {error: e}; }
+  },
+  async remove(paths) {
+    const list = (paths || []).filter(Boolean); if (!list.length) return {data: [], error: null};
+    const jobs = [];
+    if (!R2_ALL) jobs.push(sb.storage.from("chat-images").remove(list).catch(() => null));
+    jobs.push(mcall("/rm", {method: "POST", body: JSON.stringify({keys: list}), headers: {"Content-Type": "application/json"}}).catch(() => null));
+    await Promise.all(jobs); return {data: [], error: null};
+  },
+  async list(prefix, o) {
+    const out = new Map();
+    const [a, b] = await Promise.all([
+      R2_ALL ? null : sb.storage.from("chat-images").list(prefix, o).catch(() => null),
+      mcall("/list?prefix=" + encodeURIComponent(prefix + "/")).then(r => r.ok ? r.json() : null).catch(() => null)
+    ]);
+    ((a && a.data) || []).forEach(f => f.name && out.set(f.name, {name: f.name}));
+    ((b && b.names) || []).forEach(n => out.set(n, {name: n}));
+    return {data: [...out.values()], error: null};
+  },
+  async createSignedUrl(path, ttl, o) {
+    if (!isR2(path)) return sb.storage.from("chat-images").createSignedUrl(path, ttl, o);
+    return {data: {signedUrl: r2url(path)}, error: null};
+  }
+};
 async function imgUrl(path) {
+  if (isR2(path)) return r2url(path);
   const c = urls[path]; if (c && c.exp > Date.now()) return c.url;
   try { const j = JSON.parse(localStorage.getItem(URL_KEY + path) || "null"); if (j && j.exp > Date.now() + 864e5) { urls[path] = j; return j.url; } } catch (e) {}
-  const {data, error} = await sb.storage.from("chat-images").createSignedUrl(path, URL_TTL / 1000);
+  const {data, error} = await media.createSignedUrl(path, URL_TTL / 1000);
   if (error || !data) return null;
   const rec = {url: data.signedUrl, exp: Date.now() + URL_TTL - 36e5}; urls[path] = rec;
   try { localStorage.setItem(URL_KEY + path, JSON.stringify(rec)); } catch (e) { try { Object.keys(localStorage).filter(k => k.startsWith(URL_KEY)).forEach(k => localStorage.removeItem(k)); } catch (e2) {} }
@@ -5289,7 +5748,7 @@ async function unsend(m) {
   if (!(await appConfirm("Unsend this message?", "It will disappear for everyone.", "Unsend"))) return;
   const {data, error} = await sb.from("messages").update({deleted_at: new Date().toISOString(), body: "", image_path: null}).eq("id", m.id).select().single();
   if (error) return alert("Couldn't unsend: " + error.message);
-  if (m.image_path) sb.storage.from("chat-images").remove([m.image_path]);
+  if (m.image_path) media.remove([m.image_path]);
   if (editing && editing.m.id === m.id) stopEdit();
   afterChange(data);
 }
@@ -5368,14 +5827,17 @@ $("#f").onsubmit = async e => {
   }
   busy = true; $("#send").disabled = true;
   try {
-    const vid = pend.file.type.startsWith("video/"), ext = vid ? (/webm/.test(pend.file.type) ? "webm" : "mp4") : "jpg";
+    const vid = pend.file.type.startsWith("video/");
     if (vid) $("#send").textContent = "…";
-    const blob = vid ? pend.file : await shrink(pend.file), path = me.id + "/" + uid() + "." + ext;
-    const up = await sb.storage.from("chat-images").upload(path, blob, {cacheControl: "31536000", contentType: vid ? (ext === "webm" ? "video/webm" : "video/mp4") : "image/jpeg"});
+    let blob, ct = "image/jpeg", ext = "jpg";
+    if (vid) { const r = await compressVideo(pend.file, vidStatus); blob = r.blob; ct = r.type; ext = r.ext; } else blob = await shrink(pend.file);
+    if (blob.size > VID_MAX_BYTES) throw new Error("Video is too big (max 90 MB after compression).");
+    const path = rp(me.id + "/" + uid() + "." + ext);
+    const up = await media.upload(path, blob, {cacheControl: "31536000", contentType: ct});
     if (up.error) throw up.error;
     const ins2 = {room_id: rid, body, image_path: path}; if (replyTo) ins2.reply_to = replyTo.id;
     const {data: sent, error} = await sb.from("messages").insert(ins2).select().single(); sfx(error ? "err" : "sent"); if (!error && sent) { showSent(sent, rid); setReply(null); }
-    if (error) { sb.storage.from("chat-images").remove([path]); throw error; }
+    if (error) { media.remove([path]); throw error; }
     i.value = ""; setPend(null);
   } catch (err) { alert("Couldn't send: " + (err.message || err)); }
   busy = false; $("#send").disabled = false; $("#send").innerHTML = SENDI;
@@ -5537,18 +5999,88 @@ function closeViewer() {
   const o = document.getElementById("mv"); if (o) { o.querySelectorAll("video").forEach(v => v.pause()); o.remove(); }
   if (mvKey) { document.removeEventListener("keydown", mvKey); mvKey = null; }
 }
-function openViewer(items, start) {
-  closeViewer(); if (!items || !items.length) return;
+// ---------- PHOTO GESTURES: pinch / wheel / double-tap zoom, drag to pan, swipe down to close, swipe sideways to go next ----------
+function mvGestures(st, getImg, nav, close, opts) {
+  const o = opts || {};
+  let s = 1, tx = 0, ty = 0, dy = 0, mode = "", dir = "", moved = 0, lastTap = 0, d0 = 1, s0 = 1, m0 = null, sp = null;
+  const P = new Map(), ov = () => st.closest("#mv");
+  const apply = anim => { const x = getImg(); if (!x) return; x.style.transition = anim ? "transform .22s ease" : "none"; x.style.transform = "translate(" + tx + "px," + (ty + dy) + "px) scale(" + s + ")"; };
+  const clamp = () => { const x = getImg(); if (!x) return; if (s <= 1.001) { s = 1; if (!o.pan1) { tx = ty = 0; return; } }
+    const mx = Math.max(0, (x.clientWidth * s - st.clientWidth) / 2), my = Math.max(0, (x.clientHeight * s - st.clientHeight) / 2); tx = Math.min(mx, Math.max(-mx, tx)); ty = Math.min(my, Math.max(-my, ty)); };
+  const zoomAt = (fx, fy, ns, anim) => { ns = Math.min(5, Math.max(1, ns)); tx = fx - (fx - tx) * (ns / s); ty = fy - (fy - ty) * (ns / s); s = ns; clamp(); apply(anim); };
+  const rel = (cx, cy) => { const r = st.getBoundingClientRect(); return [cx - r.left - r.width / 2, cy - r.top - r.height / 2]; };
+  const fade = a => { const o = ov(); if (o) o.style.background = "rgba(0,0,0," + a + ")"; };
+  const dist = () => { const a = [...P.values()]; return Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) || 1; };
+  const mid = () => { const a = [...P.values()]; return [(a[0].x + a[1].x) / 2, (a[0].y + a[1].y) / 2]; };
+  const tap = e => { const t = Date.now(); if (t - lastTap < 320 && getImg()) { const [fx, fy] = rel(e.clientX, e.clientY); if (s > 1) { s = 1; tx = ty = 0; apply(true); } else zoomAt(fx, fy, 2.5, true); lastTap = 0; } else lastTap = t; };
+  st.style.touchAction = "none";
+  st.addEventListener("pointerdown", e => {
+    if (e.target.closest("button, input, .vc") || (e.pointerType === "mouse" && e.button !== 0)) return;
+    try { st.setPointerCapture(e.pointerId); } catch (_) {}
+    P.set(e.pointerId, {x: e.clientX, y: e.clientY});
+    if (P.size === 2) { mode = "pinch"; d0 = dist(); s0 = s; m0 = mid(); dy = 0; fade(1); }
+    else if (P.size === 1) { mode = (s > 1 || o.pan1) ? "pan" : "swipe"; dir = ""; moved = 0; sp = {x: e.clientX, y: e.clientY}; }
+  });
+  st.addEventListener("pointermove", e => {
+    const p = P.get(e.pointerId); if (!p) return;
+    const ddx = e.clientX - p.x, ddy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
+    if (mode === "pinch" && P.size === 2) { const m = mid(), f = rel(m[0], m[1]); tx += m[0] - m0[0]; ty += m[1] - m0[1]; m0 = m; zoomAt(f[0], f[1], s0 * dist() / d0); }
+    else if (mode === "pan") { moved += Math.abs(ddx) + Math.abs(ddy); tx += ddx; ty += ddy; clamp(); apply(false); }
+    else if (mode === "swipe" && sp) {
+      const ax = e.clientX - sp.x, ay = e.clientY - sp.y; moved = Math.max(moved, Math.abs(ax) + Math.abs(ay));
+      if (!dir && (Math.abs(ax) > 8 || Math.abs(ay) > 8)) dir = Math.abs(ay) > Math.abs(ax) ? "v" : "h";
+      if (dir === "v" && getImg()) { dy = ay; apply(false); fade(Math.max(.3, 1 - Math.abs(dy) / 500)); }
+    }
+  });
+  const end = e => {
+    if (!P.has(e.pointerId)) return; const was = mode; P.delete(e.pointerId);
+    if (was === "pinch") { if (P.size === 1) { mode = (s > 1 || o.pan1) ? "pan" : ""; dir = ""; moved = 99; } if (s < 1.05) { s = 1; if (!o.pan1) tx = ty = 0; clamp(); apply(true); } return; }
+    if (was === "pan") { mode = ""; if (moved < 6) tap(e); return; }
+    if (was === "swipe" && sp) {
+      const ax = e.clientX - sp.x, ay = e.clientY - sp.y; mode = "";
+      if (dir === "v" && Math.abs(ay) > 110) return close();
+      dy = 0; apply(true); fade(1);
+      if (dir === "h" && Math.abs(ax) > 60) return nav(ax < 0 ? 1 : -1);
+      if (moved < 8) tap(e);
+    }
+  };
+  st.addEventListener("pointerup", end); st.addEventListener("pointercancel", end);
+  st.addEventListener("wheel", e => { if (!getImg()) return; e.preventDefault(); const f = rel(e.clientX, e.clientY); zoomAt(f[0], f[1], s * (e.deltaY < 0 ? 1.18 : 1 / 1.18)); }, {passive: false});
+  return {reset() { s = 1; tx = ty = dy = 0; mode = ""; P.clear(); apply(false); fade(1); }, get() { return {s, tx, ty}; }, zoomTo(ns) { zoomAt(0, 0, ns, false); }};
+}
+// profile picture / cover photo viewer: o = {url, title, kind, own}
+function openPhoto(o) {
+  closeViewer(); if (!o || !o.url) return;
+  const ov = el("div"); ov.id = "mv";
+  const top = el("div", "mt"), cx = mvBtn("x", "Close"), ct = el("div", "sp", o.title || ""), dl = mvBtn("dl", "Download"), st = el("div", "st"), im = el("img");
+  im.alt = o.title || "Photo"; im.draggable = false; st.append(spinEl());
+  im.onload = () => { st.replaceChildren(im); }; im.onerror = () => { st.replaceChildren(el("div", "hint", "Couldn't open this photo.")); }; im.src = o.url;
+  mvGestures(st, () => st.querySelector("img"), () => {}, closeViewer);
+  st.addEventListener("click", e => { if (e.target === st) closeViewer(); });
+  cx.onclick = closeViewer;
+  dl.onclick = async () => {
+    try { const b = await (await fetch(o.url)).blob(), a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "chatter-" + (o.kind || "photo") + ".jpg"; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
+    catch (e) { window.open(o.url, "_blank", "noopener"); }
+  };
+  top.append(cx, ct, dl); ov.append(top, st);
+  if (o.own) { const mb = el("div", "mb c"), ch = el("button"); ch.className = "chg"; ch.textContent = "Change " + (o.kind === "cover" ? "cover photo" : "profile picture"); ch.onclick = () => { closeViewer(); pickPhoto(o.kind); }; mb.append(ch); ov.append(mb); }
+  mvKey = e => { if (e.key === "Escape") closeViewer(); }; document.addEventListener("keydown", mvKey);
+  document.body.append(ov);
+}
+function openViewer(items, start, opts) {
+  closeViewer(); if (!items || !items.length) return; opts = opts || {}; const plain = !items[0].m;
   let i = Math.min(Math.max(0, start || 0), items.length - 1), tok = 0, sx = 0;
   const ov = el("div"); ov.id = "mv";
   const top = el("div", "mt"), cx = mvBtn("x", "Close"), ct = el("div", "sp"), dl = mvBtn("dl", "Download"), mo = mvBtn("more", "More");
   const st = el("div", "st"), mb = el("div", "mb"), inp = el("input"), sd = mvBtn("send", "Send"), menu = el("div", "mm hide");
   const pv = mvBtn("prev"), nx = mvBtn("next"); pv.className = "nv l"; nx.className = "nv r";
   const go = d => { const n = i + d; if (n < 0 || n >= items.length) return; i = n; show(); };
+  const gx = mvGestures(st, () => st.querySelector("img"), d => go(d), closeViewer);
   function show() {
-    const it = items[i], my = ++tok;
+    const it = items[i], my = ++tok; gx.reset();
     st.replaceChildren(spinEl()); ct.textContent = items.length > 1 ? (i + 1) + " / " + items.length : ""; menu.classList.add("hide");
-    imgUrl(it.path).then(u => {
+    if (typeof vb !== "undefined") vb.style.visibility = (it.postId || opts.postId) ? "visible" : "hidden";
+    (it.url ? Promise.resolve(it.url) : imgUrl(it.path)).then(u => {
       if (my !== tok) return; st.replaceChildren();
       if (!u) { st.append(el("div", "hint", "Couldn't open this file.")); return; }
       if (it.vid) {
@@ -5561,23 +6093,31 @@ function openViewer(items, start) {
         pp.onclick = e => { e.stopPropagation(); if (v.paused) v.play(); else v.pause(); }; v.onclick = pp.onclick;
         rg.oninput = () => { if (v.duration) v.currentTime = (rg.value / 1000) * v.duration; };
         st.append(v, vc); ic(); v.play().catch(() => {});
-      } else { const im = el("img"); im.src = u; im.alt = "Photo"; st.append(im); }
+      } else { const im = el("img"); im.src = u; im.alt = "Photo"; im.draggable = false; st.append(im); if (it.cap) st.append(el("div", "mcap", it.cap)); }
       if (items.length > 1) { if (i > 0) st.append(pv); if (i < items.length - 1) st.append(nx); }
+      [i - 1, i + 1].forEach(k => { const x = items[k]; if (x && !x.vid) (x.url ? Promise.resolve(x.url) : imgUrl(x.path)).then(v => { if (v) { const t = new Image(); t.src = v; } }); });
     });
   }
   pv.onclick = e => { e.stopPropagation(); go(-1); }; nx.onclick = e => { e.stopPropagation(); go(1); };
   cx.onclick = closeViewer;
   dl.onclick = async () => {
-    const it = items[i], name = "chatter-" + it.m.id + "." + (it.path.split(".").pop() || "jpg");
-    const {data, error} = await sb.storage.from("chat-images").createSignedUrl(it.path, 120, {download: name});
+    const it = items[i];
+    if (!it.m) { const u = it.url || await imgUrl(it.path); try { const bl = await (await fetch(u)).blob(), a = document.createElement("a"); a.href = URL.createObjectURL(bl); a.download = "chatter-photo.jpg"; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); } catch (e) { window.open(u, "_blank", "noopener"); } return; }
+    const name = "chatter-" + it.m.id + "." + (it.path.split(".").pop() || "jpg");
+    if (isR2(it.path)) {
+      try { const r = await fetch(r2url(it.path)); if (!r.ok) throw 0; const u = URL.createObjectURL(await r.blob()); const a = document.createElement("a"); a.href = u; a.download = name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 6e4); }
+      catch (e) { window.open(r2url(it.path), "_blank", "noopener"); }
+      return;
+    }
+    const {data, error} = await media.createSignedUrl(it.path, 120, {download: name});
     if (error || !data) return toast("Couldn't download.");
     const a = document.createElement("a"); a.href = data.signedUrl; a.download = name; document.body.append(a); a.click(); a.remove();
   };
   mo.onclick = e => {
     e.stopPropagation(); const it = items[i]; menu.replaceChildren();
     const add = (t, fn, red) => { const b = el("button", red ? "red" : "", t); b.type = "button"; b.onclick = ev => { ev.stopPropagation(); menu.classList.add("hide"); fn(); }; menu.append(b); };
-    add("Open in new tab", async () => { const u = await imgUrl(it.path); if (u) window.open(u, "_blank", "noopener"); });
-    if (it.m.user_id === me.id) add("Take back", () => { closeViewer(); unsend(it.m); }, true);
+    add("Open in new tab", async () => { const u = it.url || await imgUrl(it.path); if (u) window.open(u, "_blank", "noopener"); });
+    if (it.m && it.m.user_id === me.id) add("Take back", () => { closeViewer(); unsend(it.m); }, true);
     menu.classList.toggle("hide");
   };
   inp.placeholder = "Message"; inp.maxLength = 1000;
@@ -5589,12 +6129,14 @@ function openViewer(items, start) {
     if (sent) showSent(sent, m.room_id); toast("Sent");
   };
   inp.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); sd.onclick(); } };
-  st.addEventListener("touchstart", e => { sx = e.touches[0].clientX; }, {passive: true});
-  st.addEventListener("touchend", e => { const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 60) go(dx < 0 ? 1 : -1); }, {passive: true});
   ov.onclick = () => menu.classList.add("hide");
   mvKey = e => { if (e.key === "Escape") closeViewer(); else if (e.target !== inp && e.key === "ArrowLeft") go(-1); else if (e.target !== inp && e.key === "ArrowRight") go(1); };
   document.addEventListener("keydown", mvKey);
-  top.append(cx, ct, dl, mo); mb.append(inp, sd); ov.append(top, st, mb, menu); document.body.append(ov); show();
+  top.append(cx, ct, dl, mo); ov.append(top, st);
+  let vb;
+  if (!plain) { mb.append(inp, sd); ov.append(mb); }
+  else { mb.className = "mb c"; vb = el("button"); vb.className = "chg"; vb.textContent = "View post"; vb.onclick = () => { const id = items[i].postId || opts.postId; closeViewer(); if (id) openPost(id); }; mb.append(vb); ov.append(mb); }
+  ov.append(menu); document.body.append(ov); show();
 }
 // ==MV-END==
 async function drawMedia(p, r) {
@@ -5619,7 +6161,7 @@ async function deleteChat(rid) {
   try {
     const {data: im} = await sb.from("messages").select("image_path").eq("room_id", r.id).not("image_path", "is", null);
     const list = (im || []).map(x => x.image_path).filter(Boolean);
-    for (let i = 0; i < list.length; i += 100) await sb.storage.from("chat-images").remove(list.slice(i, i + 100));
+    for (let i = 0; i < list.length; i += 100) await media.remove(list.slice(i, i + 100));
     const {error} = await sb.rpc("delete_chat", {rid: r.id}); if (error) throw error;
     delete reads[r.id]; if (cur === r.id) resetChatView(); await loadChats();
   } catch (err) { alert("Couldn't delete chat: " + (err.message || err)); }
@@ -5977,21 +6519,95 @@ async function loadPhotos(ids) {
   }));
   if (ch && me) { render(); updateHead(); pfPaint(); }
 }
-function pickPhoto(kind) { const i = document.createElement("input"); i.type = "file"; i.accept = "image/*"; i.onchange = () => { if (i.files[0]) uploadPhoto(kind, i.files[0]); }; i.click(); }
+// ---------- ADJUST PHOTO: drag to reposition, pinch / scroll / slider to zoom, then save the cropped result ----------
+function photoEditor(kind, file) {
+  const url = URL.createObjectURL(file), cover = kind === "cover", ratio = cover ? 2 : 1;
+  const ov = el("div"); ov.id = "pe";
+  const top = el("div", "pet"), cancel = el("button", "", "Cancel"), ttl = el("div", "pett", cover ? "Adjust cover photo" : "Adjust profile picture"), save = el("button", "pes", "Save");
+  const stage = el("div", "pest"), frame = el("div", "pef " + (cover ? "cov" : "avt")), img = el("img"), sl = el("input"), hint = el("div", "peh", "Drag to reposition. Pinch, scroll or use the slider to zoom.");
+  img.draggable = false; img.alt = ""; frame.append(img); sl.type = "range"; sl.min = 100; sl.max = 400; sl.value = 100; sl.className = "pesl";
+  let gx = null;
+  const key = e => { if (e.key === "Escape") done(); };
+  const done = () => { URL.revokeObjectURL(url); ov.remove(); document.removeEventListener("keydown", key); };
+  img.onload = () => {
+    const fw = frame.clientWidth, fh = frame.clientHeight, ia = img.naturalWidth / img.naturalHeight; let w, h;
+    if (ia > fw / fh) { h = fh; w = h * ia; } else { w = fw; h = w / ia; }
+    img.style.cssText = "position:absolute;left:50%;top:50%;width:" + w + "px;height:" + h + "px;margin:" + (-h / 2) + "px 0 0 " + (-w / 2) + "px;max-width:none;max-height:none";
+    gx = mvGestures(frame, () => img, () => {}, () => {}, {pan1: true}); sl.oninput = () => gx.zoomTo(sl.value / 100);
+  };
+  img.onerror = () => { done(); uploadPhoto(kind, file); };      // this browser can't preview it: upload it as before
+  save.onclick = async () => {
+    if (!gx) return; save.disabled = true; save.textContent = "Saving…";
+    try {
+      const g = gx.get(), fw = frame.clientWidth, fh = frame.clientHeight, iw = parseFloat(img.style.width), ih = parseFloat(img.style.height), k = img.naturalWidth / iw;
+      const sw = (fw / g.s) * k, sh = (fh / g.s) * k, sx = ((-fw / 2 - g.tx) / g.s + iw / 2) * k, sy = ((-fh / 2 - g.ty) / g.s + ih / 2) * k;
+      const outW = Math.min(cover ? 1920 : 1080, Math.round(sw)), outH = Math.round(outW / ratio);
+      const bmp = await createImageBitmap(file), c = document.createElement("canvas"); c.width = outW; c.height = outH;
+      c.getContext("2d").drawImage(bmp, sx, sy, sw, sh, 0, 0, outW, outH);
+      const blob = await new Promise(r => c.toBlob(r, "image/jpeg", .95));
+      done(); await uploadPhoto(kind, new File([blob], kind + ".jpg", {type: "image/jpeg"}));
+    } catch (e) { save.disabled = false; save.textContent = "Save"; toast("Couldn't crop this photo."); }
+  };
+  cancel.onclick = done; document.addEventListener("keydown", key);
+  top.append(cancel, ttl, save); stage.append(frame, sl, hint); ov.append(top, stage); document.body.append(ov); img.src = url;
+}
+
+// ---------- PROFILE / COVER PHOTO: tap menu + photo history viewer ----------
+Object.assign(IC_S, {image: '<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="9" r="1.6"/><path d="M21 16l-5-5-8 8"/>', camera: '<path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.5"/>', "user-circle": '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.2 18.5a6.5 6.5 0 0 1 11.6 0"/>'});
+function showMenu(title, items, ev) {
+  if (DT()) {
+    const x = ev ? ev.clientX : 220, y = ev ? ev.clientY : 220;
+    // built after the current click has finished: the app closes #pop on every click on the document, which would remove it at once
+    setTimeout(() => {
+      closePop(); const pop = el("div", "pop cpop"); pop.id = "pop";
+      items.forEach(it => { const d = el("div", "cpi"); d.innerHTML = '<span class="cmi">' + it.icon + "</span>"; d.append(el("span", "cml", it.label)); d.onclick = e => { e.stopPropagation(); closePop(); it.fn(); }; pop.append(d); });
+      pop.style.width = "270px"; pop.style.visibility = "hidden"; document.body.append(pop);
+      const ph = pop.offsetHeight;
+      pop.style.left = Math.max(8, Math.min(x, innerWidth - 278)) + "px"; pop.style.top = Math.max(8, Math.min(y, innerHeight - ph - 8)) + "px"; pop.style.visibility = "";
+      const off = e => { if (!e.target.closest("#pop")) bye(); }, esc = e => { if (e.key === "Escape") bye(); };
+      function bye() { closePop(); document.removeEventListener("mousedown", off, true); document.removeEventListener("keydown", esc, true); }
+      document.addEventListener("mousedown", off, true); document.addEventListener("keydown", esc, true);
+    }, 0);
+    return;
+  }
+  const {body} = sheet(title);
+  items.forEach(it => { const b = el("button", "cmrow"); b.type = "button"; b.innerHTML = '<span class="cmi">' + it.icon + "</span>"; b.append(el("span", "cml", it.label)); b.onclick = () => { closeSheet(); it.fn(); }; body.append(b); });
+}
+async function photoHistory(uid, kind) {
+  const body = kind === "cover" ? "updated their cover photo." : "updated their profile picture.";
+  const {data, error} = await sb.from("posts").select("id,media_path,created_at").eq("user_id", uid).eq("body", body).eq("media_type", "image").not("media_path", "is", null).order("created_at", {ascending: false}).limit(30);
+  if (error || !data) return [];
+  return data.map(r => ({path: r.media_path, postId: r.id, cap: new Date(r.created_at).toLocaleDateString(undefined, {year: "numeric", month: "short", day: "numeric"})}));
+}
+async function openPhotoHistory(uid, kind) {
+  const cur = kind === "cover" ? coverUrl[uid] : photoUrl[uid]; if (!cur) return;
+  let items = []; try { items = await photoHistory(uid, kind); } catch (e) {}
+  if (!items.length) return openPhoto({url: cur, title: (names[uid] || "") + (kind === "cover" ? "’s cover photo" : "’s profile picture"), kind, own: uid === me.id});
+  openViewer(items, 0);
+}
+function photoMenu(kind, ev, uid) {
+  uid = uid || me.id; const mine = uid === me.id, items = [], has = !!(kind === "cover" ? coverUrl[uid] : photoUrl[uid]);
+  if (kind === "avatar" && pf && pf.uid === uid && pf.stories && pf.stories.length) items.push({icon: icon("user-circle", 20), label: "View story", fn: () => openStory(uid, {list: pf.stories.slice(), index: 0, onRemove: g => { pf.stories = (pf.stories || []).filter(x => x.id !== g.id); pfPaint(); }})});
+  if (has) items.push({icon: icon("image", 20), label: kind === "cover" ? "See cover photo" : "See profile picture", fn: () => openPhotoHistory(uid, kind)});
+  if (mine) items.push({icon: icon("upload", 20), label: kind === "cover" ? "Upload cover photo" : "Choose profile picture", fn: () => pickPhoto(kind)});
+  if (!items.length) return;
+  showMenu(kind === "cover" ? "Cover photo" : "Profile picture", items, ev);
+}
+function pickPhoto(kind) { const i = document.createElement("input"); i.type = "file"; i.accept = "image/*"; i.onchange = () => { if (i.files[0]) photoEditor(kind, i.files[0]); }; i.click(); }
 async function uploadPhoto(kind, file) {
   try {
-    const bmp = await createImageBitmap(file), k = Math.min(1, (kind === "cover" ? 1200 : 600) / Math.max(bmp.width, bmp.height));
+    const bmp = await createImageBitmap(file), k = Math.min(1, (kind === "cover" ? 1920 : 1080) / Math.max(bmp.width, bmp.height));
     const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k); c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
-    const blob = await new Promise(r => c.toBlob(r, "image/jpeg", .85)), path = me.id + "/" + kind + "-" + Date.now() + ".jpg";
-    const up = await sb.storage.from("chat-images").upload(path, blob, {cacheControl: "31536000", contentType: "image/jpeg"}); if (up.error) throw up.error;
+    const blob = await new Promise(r => c.toBlob(r, "image/jpeg", .9)), path = rp(me.id + "/" + kind + "-" + Date.now() + ".jpg");
+    const up = await media.upload(path, blob, {cacheControl: "31536000", contentType: "image/jpeg"}); if (up.error) throw up.error;
     const {error} = await sb.rpc("set_profile_photo", {kind, path}); if (error) throw error;
     delete photoDone[me.id]; await loadPhotos([me.id]); render();
     // also share it on the newsfeed (own copy of the file, so deleting the post or the old photo never breaks either)
     try {
-      const p2 = me.id + "/post-" + Date.now() + ".jpg", up2 = await sb.storage.from("chat-images").upload(p2, blob, {cacheControl: "31536000", contentType: "image/jpeg"});
+      const p2 = rp(me.id + "/post-" + Date.now() + ".jpg"), up2 = await media.upload(p2, blob, {cacheControl: "31536000", contentType: "image/jpeg"});
       if (!up2.error) {
         const r = await sb.from("posts").insert({body: kind === "cover" ? "updated their cover photo." : "updated their profile picture.", media_path: p2, media_type: "image", kind: "post"});
-        if (r.error) sb.storage.from("chat-images").remove([p2]); else if (feedOn() && fmode === "post") loadFeed();
+        if (r.error) media.remove([p2]); else if (feedOn() && fmode === "post") loadFeed();
       }
     } catch (e) {}
   } catch (e) { alert("Couldn't upload photo: " + (e.message || e)); }
