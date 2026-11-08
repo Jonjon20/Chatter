@@ -1500,6 +1500,7 @@ requestAnimationFrame(k)})()</script>
 <div id="auth" class="hide">
  <form id="af">
   <h1>💬 Chatterverse</h1>
+  <div id="savedAcc" class="hide" style="display:flex;flex-direction:column;gap:6px"></div>
   <input id="em" type="text" placeholder="Email" required autocomplete="username">
   <input id="pw" type="password" placeholder="Password" required minlength="6" autocomplete="current-password">
   <button id="ab">Log in</button>
@@ -1694,7 +1695,7 @@ function bootOff() { const b = document.getElementById("boot"); if (!b) return; 
 function showAuth() {
   bootOff(); W.reset = false;
   $("#app").classList.add("hide"); $("#auth").classList.remove("hide");
-  $("#af").classList.remove("hide"); $("#wiz").classList.add("hide");
+  $("#af").classList.remove("hide"); $("#wiz").classList.add("hide"); renderSaved();
 }
 // ---------- Account suspended screen ----------
 // Shown when a ban lands while the person is using the app (and when login says banned). Nothing else is usable:
@@ -1967,7 +1968,68 @@ async function hardOut() {
   try { sbKeys().forEach(k => localStorage.removeItem(k)); sessionStorage.clear(); } catch (e) {}
   if (me) loggedOut();
 }
-async function doLogout(close) { try { close && close(); } catch (e) {} try { await Promise.race([dropPush(), sleep(1500)]); } catch (e) {} await hardOut(); }
+var SAVED_KEY = "cv-saved-accounts";
+function getSaved() { try { return JSON.parse(localStorage.getItem(SAVED_KEY) || "[]"); } catch (e) { return []; } }
+function putSaved(l) { try { localStorage.setItem(SAVED_KEY, JSON.stringify(l)); } catch (e) {} }
+function forgetSaved(id) { if (id) putSaved(getSaved().filter(x => x.id !== id)); }
+function updSaved(se) { try { if (!se || !se.user) return; const l = getSaved(), i = l.findIndex(x => x.id === se.user.id); if (i >= 0) { l[i].a = se.access_token; l[i].r = se.refresh_token; putSaved(l); } } catch (e) {} }
+function askSaveAccount() {
+  return new Promise(res => {
+    const bg = el("div"), box = el("div"), done = v => { bg.remove(); res(v); };
+    bg.style.cssText = "position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px";
+    box.style.cssText = "width:100%;max-width:340px;background:var(--bg);color:var(--tx);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px";
+    const h = el("b", "", "Save this account on this device?"), p = el("div", "", "Next time you can continue with one tap, without a password or 2FA code.");
+    p.style.cssText = "color:var(--mut);font-size:13px";
+    const a = el("button", "", "Save and log out"), b = el("button", "gray", "Don't save, log out"), c = el("button", "ghost", "Cancel");
+    [a, b, c].forEach(x => x.type = "button");
+    a.onclick = () => done("save"); b.onclick = () => done("no"); c.onclick = () => done("cancel");
+    box.append(h, p, a, b, c); bg.append(box); document.body.append(bg);
+  });
+}
+// leave the account WITHOUT ending its session on the server, so "Continue as ..." works later
+async function saveAndLeave() {
+  let se = null; try { se = (await sb.auth.getSession()).data.session; } catch (e) {}
+  if (!se || !se.refresh_token || !se.user) return false;
+  const l = getSaved().filter(x => x.id !== se.user.id);
+  l.unshift({id: se.user.id, email: se.user.email || lastEmail || "", a: se.access_token, r: se.refresh_token}); putSaved(l);
+  outNow = true; dropBk();
+  try { sb.auth.stopAutoRefresh(); } catch (e) {}
+  try { Object.keys(localStorage).filter(k => k.startsWith("imgurl:")).forEach(k => localStorage.removeItem(k)); sbKeys().forEach(k => localStorage.removeItem(k)); sessionStorage.clear(); } catch (e) {}
+  location.reload(); return true;
+}
+function renderSaved() {
+  const box = $("#savedAcc"); if (!box) return; const l = getSaved();
+  box.replaceChildren(); box.classList.toggle("hide", !l.length); if (!l.length) return;
+  const mk = t => { const d = el("div", "", t); d.style.cssText = "color:var(--mut);font-size:13px;text-align:center"; return d; };
+  box.append(mk("Saved accounts"));
+  l.forEach(x => {
+    const row = el("div"), go = el("button", "gray", "Continue as " + (x.email || "saved account")), rm = el("button", "gray sm", "✕");
+    row.style.cssText = "display:flex;gap:6px"; go.style.cssText = "flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap";
+    go.type = rm.type = "button"; rm.title = "Remove this saved account";
+    go.onclick = () => resumeSaved(x.id); rm.onclick = () => removeSaved(x.id); row.append(go, rm); box.append(row);
+  });
+  box.append(mk("or log in with another account"));
+}
+async function resumeSaved(id) {
+  const x = getSaved().find(v => v.id === id); if (!x) return; const msg = $("#amsg"); msg.textContent = "Logging in…";
+  let error = null; try { ({error} = await sb.auth.setSession({access_token: x.a, refresh_token: x.r})); } catch (e) { error = e; }
+  if (!error) return; // onAuthStateChange takes over and opens the app
+  if (isRetryable(error)) { msg.textContent = "Couldn't connect. Try again in a moment."; return; }
+  forgetSaved(id); renderSaved(); msg.textContent = "That saved login expired. Please log in with your password.";
+}
+async function removeSaved(id) {
+  if (!confirm("Remove this saved account from this device? It will be logged out for good.")) return;
+  const x = getSaved().find(v => v.id === id); forgetSaved(id); renderSaved();
+  try { if (x) { const t = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {auth: {persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, storageKey: "cv-rm"}}); await t.auth.setSession({access_token: x.a, refresh_token: x.r}); await t.auth.signOut({scope: "local"}); } } catch (e) {}
+}
+async function doLogout(close) {
+  try { close && close(); } catch (e) {}
+  const choice = await askSaveAccount(); if (choice === "cancel") return;
+  try { await Promise.race([dropPush(), sleep(1500)]); } catch (e) {}
+  if (choice === "save" && await saveAndLeave()) return;
+  try { const se = (await sb.auth.getSession()).data.session; if (se && se.user) forgetSaved(se.user.id); } catch (e) {}
+  await hardOut();
+}
 // ---- banned while already logged in: the server stops refreshing the session, so we notice and show the suspended screen with the appeal form
 const isBanErr = er => !!er && /banned|ban_duration|user_banned/i.test(String(er.message || "") + " " + String(er.code || ""));
 var lastEmail = "", banBusy = false;
@@ -2016,7 +2078,7 @@ async function recover(n) {
   loggedOut();
 }
 sb.auth.onAuthStateChange((ev, session) => {
-  if (session) { outNow = false; saveBk(session); if (session.user && session.user.email) lastEmail = session.user.email; if (susp) return; if (!me && !W.reset) start(session.user); return; }
+  if (session) { outNow = false; saveBk(session); updSaved(session); if (session.user && session.user.email) lastEmail = session.user.email; if (susp) return; if (!me && !W.reset) start(session.user); return; }
   if (susp) return;
   if (ev !== "SIGNED_OUT" && ev !== "INITIAL_SESSION") return;
   if (outNow) { loggedOut(); return; }
