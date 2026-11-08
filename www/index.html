@@ -1673,7 +1673,48 @@ $("#af").onsubmit = async e => {
       try { ({error} = await sb.auth.signInWithPassword({email: id, password: pw})); } catch (er) { error = er || new Error("Couldn't log in."); }
       if (!error) { ok = true; break; }
       if (cancelled) { msg.textContent = "Login cancelled."; break; }
-      if (!isRetryable(error)) { msg.textContent = error.message; break; }
+      if (!isRetryable(error)) {
+        const em = String(error.message || "");
+        if (/banned|ban_duration|user is banned/i.test(em)) {
+          msg.textContent = "";
+          const appeal = el("div", "appeal-login-panel");
+          appeal.style.cssText = "margin-top:14px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--panel,rgba(127,127,127,.08));display:grid;gap:10px";
+          const title = el("strong", "", "Account suspended");
+          const desc = el("div", "", "If you believe this decision was a mistake, you can submit an appeal for review.");
+          const reason = el("textarea");
+          reason.placeholder = "Explain why you believe your account should be reviewed…";
+          reason.maxLength = 3000; reason.required = true;
+          reason.style.cssText = "width:100%;min-height:100px;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--card,transparent);color:inherit;font:inherit";
+          const appealStatus = el("div", "help-status");
+          const submitAppeal = el("button", "primary", "Appeal Decision");
+          submitAppeal.type = "button";
+          submitAppeal.onclick = async () => {
+            const explanation = reason.value.trim();
+            if (explanation.length < 20) { appealStatus.textContent = "Please provide at least 20 characters."; return; }
+            submitAppeal.disabled = true; submitAppeal.textContent = "Submitting…";
+            try {
+              const { data: sessionData } = await sb.auth.getSession();
+              const resp = await fetch(`https://ykyphsopgnhfdnvytswp.supabase.co/functions/v1/account-appeals`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
+                body: JSON.stringify({ email: id, explanation })
+              });
+              const payload = await resp.json().catch(() => ({}));
+              if (!resp.ok) throw new Error(payload.error || "We couldn't submit your appeal.");
+              reason.value = "";
+              appealStatus.textContent = "Your appeal has been submitted. Our team will review it.";
+              submitAppeal.textContent = "Appeal submitted";
+            } catch (appealError) {
+              appealStatus.textContent = appealError.message || "Unable to submit appeal.";
+              submitAppeal.disabled = false; submitAppeal.textContent = "Appeal Decision";
+            }
+          };
+          appeal.append(title, desc, reason, submitAppeal, appealStatus);
+          msg.after(appeal);
+          break;
+        }
+        msg.textContent = error.message; break;
+      }
       msg.textContent = "Logging in…";
       if (navigator.onLine === false) await Promise.race([new Promise(r => addEventListener("online", r, {once: true})), sleep(4000)]);
       else await sleep(wait + Math.random() * 600);
