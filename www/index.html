@@ -218,6 +218,20 @@ button.ghost{background:none;color:var(--me)}button.gray{background:var(--bg2);c
   background:var(--bg);
 }
 .cv-ad-clip .cv-ad-head{padding:2px 2px 8px}
+ .cv-ad-inline{margin:10px 12px 16px;border:1px solid var(--line);border-radius:18px;padding:12px;background:var(--cd,var(--bg))}
+.cv-ad-inline .cv-ad-frame{min-height:90px;padding:8px;}
+.cv-ad-inline iframe{display:block;border:0;max-width:100%;margin:0 auto;background:#fff;border-radius:4px}
+.cv-ad-inline .cv-ad-head{padding:0 2px 0}
+.cv-ad-settings{margin:12px 0 18px}
+.cv-ad-profile{margin:14px 14px 18px}
+.cv-ad-messages{margin:8px 16px 10px;padding:6px 8px;border-radius:12px;max-width:360px}
+.cv-ad-messages .cv-ad-head{margin:0 0 4px;gap:6px;font-size:10px}
+.cv-ad-messages .cv-ad-head .cv-ad-mark{width:20px;height:20px;font-size:11px}
+.cv-ad-messages .cv-ad-head .cv-ad-label{font-size:12px}
+.cv-ad-messages .cv-ad-head .cv-ad-sub{font-size:10px}
+.cv-ad-messages .cv-ad-frame{min-height:50px;height:50px;padding:0;border-radius:8px}
+.cv-ad-messages .cv-banner-placement{display:block;width:320px!important;height:50px!important;max-width:100%;margin:0 auto}
+
 .cv-ad-clip .cv-ad-frame{
   width:100%;
   min-height:90px;
@@ -2482,6 +2496,8 @@ function render() {
 
   if (tab === "chats") {
     activeRow(box);
+    // Sponsored banner appears in the Messages list only, never inside a conversation.
+    box.append(chatterverseBannerAd("messages"));
     const rs = rooms.filter(r => (filter !== "global" || (!r.is_dm && !r.is_group)) && (filter !== "groups" || r.is_group) && (filter !== "unread" || hasUnread(r)) && !isArch(r) && !roomLimited(r) && msgBucket(r) === "chat" && title(r).toLowerCase().includes(query))
       .sort((a, b) => pin(b) - pin(a) || pinTs(b) - pinTs(a) || stamp(b) - stamp(a));
     if (!rs.length) box.append(el("div", "hint", filter === "unread" ? "No unread chats." : "No chats yet. Go to People to add a friend."));
@@ -2800,6 +2816,31 @@ function chatterverseClipBannerAd() {
   frame.append(iframe);
   card.append(head, frame);
   return card;
+}
+
+function chatterverseBannerAd(place) {
+  // Responsive Adsterra banner for non-chat surfaces. Each unit is isolated
+  // in its own iframe so atOptions never conflicts with another placement.
+  const card = el("section", "cv-ad-card cv-ad-inline cv-ad-" + place);
+  card.setAttribute("aria-label", "Sponsored advertisement");
+  const head = el("div", "cv-ad-head");
+  head.append(el("span", "cv-ad-mark", "Ad"), el("span", "cv-ad-label", "Sponsored"), el("span", "cv-ad-sub", "Advertisement"));
+  const frame = el("div", "cv-ad-frame"), iframe = document.createElement("iframe");
+  iframe.className = "cv-banner-placement"; iframe.title = "Sponsored advertisement";
+  iframe.loading = "lazy"; iframe.referrerPolicy = "strict-origin-when-cross-origin"; iframe.scrolling = "no";
+  const available = Math.max(0, Math.min(window.innerWidth || 0, document.documentElement.clientWidth || window.innerWidth || 0));
+  let width, height, key;
+  // Messages sits inside the narrow conversation list: keep its ad the same compact
+  // footprint as one chat row instead of using the larger desktop feed banner.
+  if (place === "messages") { width = 320; height = 50; key = "e76fbec39216ef08802fb541a30790af"; }
+  else if (available >= 900) { width = 728; height = 90; key = "b556c3664ae998089925a7ac2ea06445"; }
+  else if (available >= 520) { width = 468; height = 60; key = "d0f512a4f99ad4fc71b1de6c7270a8dd"; }
+  else { width = 320; height = 50; key = "e76fbec39216ef08802fb541a30790af"; }
+  iframe.width = String(width); iframe.height = String(height);
+  iframe.style.width = "min(" + width + "px, 100%)"; iframe.style.height = height + "px";
+  const options = "atOptions = { 'key' : '" + key + "', 'format' : 'iframe', 'height' : " + height + ", 'width' : " + width + ", 'params' : {} };";
+  iframe.srcdoc = '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#fff}body{display:flex;align-items:center;justify-content:center}</style></head><body><scr' + 'ipt>' + options + '</scr' + 'ipt><scr' + 'ipt src="https://bicea.org/22/' + key + '"></scr' + 'ipt></body></html>';
+  frame.append(iframe); card.append(head, frame); return card;
 }
 
 function feedRender() {
@@ -4411,6 +4452,8 @@ function drawProfile() {
   }
   box.append(act);
   if (bl) return box.append(el("div", "hint", "You blocked this person."));
+  // Sponsored banner in the profile page, separate from profile content and posts.
+  box.append(chatterverseBannerAd("profile"));
   // Posts | Clips
   const tb = el("div", "ptabs");
   [["posts", "Posts"], ["photos", "Photos"], ["clips", "Clips"], ["reposts", "Reposts"]].forEach(([k, t]) => { const b = el("button", pf.tab === k ? "on" : "", t); b.type = "button"; b.onclick = () => { pf.tab = k; if (k === "saved" && !pf.saved) loadSaved(); if (k === "reposts" && !pf.reps) loadRepTab(); pfPaint(); }; tb.append(b); });
@@ -4856,6 +4899,8 @@ function drawSet() {
   if (!stCat) w.classList.add("sgrid");
   bk.type = "button"; bk.onclick = () => { if (stItem) stItem = null; else if (stCat && !MENU_ONLY.has(stCat)) stCat = null; else return closeSet(); drawSet(); };
   top.append(bk); if (stItem !== "Name") top.append(el("b", null, tl(stItem || stCat || "Settings"))); w.append(top);
+  // Sponsored banner on the Settings screen, outside individual settings controls.
+  w.append(chatterverseBannerAd("settings"));
   const row = (t, fn, tick) => { const r = el("div", "mrow"), x = el("span", tick ? "ok" : "", tick ? "✓" : "›"); r.append(el("span", "mt", t), x); r.onclick = fn; return r; };
   if (!stCat) Object.keys(ST).filter(c => !MENU_ONLY.has(c)).forEach(c => { const r = row(tl(c), () => { stCat = c; drawSet(); }); r.insertAdjacentHTML("afterbegin", CATI[c] || MI.gear); w.append(r); });
   else if (!stItem) ST[stCat].forEach(it => w.append(row(tl(it), () => { stItem = it; drawSet(); })));
