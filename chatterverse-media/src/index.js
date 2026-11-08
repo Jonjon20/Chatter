@@ -113,17 +113,23 @@ async function supportApi(req, env, auth, body) {
     const systemPrompt = "You are Chatterverse's friendly support assistant. Answer in the user's language (Tagalog, English, or Taglish). Help with using the social app, profile, messages, posts, stories, clips, privacy, and settings. Be concise. Never claim you performed account actions or accessed private data. Never ask for passwords, OTPs, recovery codes, or payment details. For account-specific matters, offer human support. Do not invent features or policies.";
     const model = env.GEMINI_MODEL || "gemini-2.5-flash";
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 60000);
+    // Allow Gemini enough time; the browser-side request timeout is set slightly longer.
+    const timer = setTimeout(() => controller.abort(), 110000);
     let response, result;
     try {
       response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, { method: "POST", headers: { "x-goog-api-key": key, "Content-Type": "application/json" }, body: JSON.stringify({ systemInstruction: { parts: [{ text: systemPrompt }] }, contents, generationConfig: { maxOutputTokens: 500, temperature: 0.4 } }), signal: controller.signal });
       result = await response.json().catch(() => ({}));
+    } catch (e) {
+      console.error("Gemini request failed", errText(e));
+      const fallback = "Gemini did not respond in time. Please try again in a moment or request human support.";
+      await add(c.id, null, "assistant", fallback);
+      return json({ conversation_id: c.id, reply: fallback, ai_unavailable: true, reason: e?.name === "AbortError" ? "gemini_timeout" : "gemini_network_error" }, 200);
     } finally { clearTimeout(timer); }
     if (!response?.ok) {
       console.error("Gemini API error", response?.status, result);
-      const fallback = "AI is temporarily unavailable. Please try again or request human support.";
+      const fallback = "AI service returned an error. Please try again or request human support.";
       await add(c.id, null, "assistant", fallback);
-      return json({ conversation_id: c.id, reply: fallback, ai_unavailable: true }, 200);
+      return json({ conversation_id: c.id, reply: fallback, ai_unavailable: true, reason: `gemini_http_${response.status}` }, 200);
     }
     const reply = str((result.candidates || []).flatMap(c => c.content?.parts || []).map(p => p.text || "").join("\n")) || "I couldn't generate a reply. Please try again.";
     await add(c.id, null, "assistant", reply);
