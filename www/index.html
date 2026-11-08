@@ -2522,6 +2522,7 @@ function render() {
       const bar = el("div", "chips pchips");
       [["active", "● " + act.length + " active"], ["requests", "Followers" + (req.length + fs.length ? " (" + (req.length + fs.length) + ")" : "")], ["all", "Friends"]].forEach(([k, t]) => { const b = el("button", "chip" + (pfilter === k ? " on" : ""), t); b.onclick = () => { pfilter = k; render(); }; bar.append(b); });
       box.append(bar);
+      box.append(chatterverseBannerAd("people"));
       if (pfilter === "requests") { if (!req.length && !fs.length) box.append(el("div", "hint", "No followers yet.")); req.forEach(f => userRow(box, f.requester)); fs.forEach(u => friendRow(box, u)); }
       else { const L = pfilter === "active" ? act : fs; if (!L.length) box.append(el("div", "hint", pfilter === "active" ? "No friends are active right now." : "No friends yet. Search a username above to add one.")); L.forEach(uid => friendRow(box, uid)); pymkSection(box); }
     }
@@ -2531,6 +2532,7 @@ function render() {
       .filter(f => f.status === "pending" ? S.n_fr !== false : S.n_friend_accept !== false)
       .map(f => ({f, t: Date.parse(f.updated_at || f.created_at || "") || 0})), ...act.map(a => ({a, t: a.t}))].sort((x, y) => y.t - x.t);
     if (actErr) box.append(el("div", "hint", "Couldn't load likes/comments: " + actErr + ". Run upgrade8.sql and upgrade9.sql in Supabase."));
+    box.append(chatterverseBannerAd("notifs"));
     const bl = S.n_bday === false ? [] : bdays;
     bl.forEach(b => { const d = el("div", "item nf"), mid = el("div", "mid"); d.dataset.k = "bday"; mid.append(el("div", "t1", "🎂 " + b.username + "'s birthday is today"), el("div", "t2", "Tap to wish them a happy birthday.")); d.append(avatar(b.id, (b.username || "?")[0].toUpperCase()), mid); d.onclick = () => openDM(b.id); box.append(d); });
     const tg = S.n_tags === false ? [] : tagged, rem = S.n_rem === false ? 0 : rooms.filter(hasUnread).length;
@@ -2832,7 +2834,7 @@ function chatterverseBannerAd(place) {
   let width, height, key;
   // Messages sits inside the narrow conversation list: keep its ad the same compact
   // footprint as one chat row instead of using the larger desktop feed banner.
-  if (place === "messages") { width = 320; height = 50; key = "e76fbec39216ef08802fb541a30790af"; }
+  if (["messages", "settings", "menu", "people", "notifs"].includes(place)) { width = 320; height = 50; key = "e76fbec39216ef08802fb541a30790af"; }
   else if (available >= 900) { width = 728; height = 90; key = "b556c3664ae998089925a7ac2ea06445"; }
   else if (available >= 520) { width = 468; height = 60; key = "d0f512a4f99ad4fc71b1de6c7270a8dd"; }
   else { width = 320; height = 50; key = "e76fbec39216ef08802fb541a30790af"; }
@@ -4732,6 +4734,8 @@ function drawMenu() {
   chv.innerHTML = MI.right; card.append(avatar(me.id, (names[me.id] || "?")[0].toUpperCase()), el("div", "nmv", names[me.id] || "Me"), chv);
   card.onclick = () => { closeMenu(); setTab("menu"); };
   w.append(top, card);
+  // Compact sponsored banner in the phone menu, below the account card.
+  w.append(chatterverseBannerAd("menu"));
   // Appearance and Privacy & settings were removed from the menu as requested.
   // Keep the dedicated Settings entry as the single route to account settings.
   const sv0 = el("div", "mrow"); sv0.innerHTML = bmIcon(false); sv0.append(el("span", "mt", "Saved")); sv0.onclick = () => { closeMenu(); openSaved(); }; w.append(sv0);
@@ -4899,7 +4903,7 @@ function drawSet() {
   if (!stCat) w.classList.add("sgrid");
   bk.type = "button"; bk.onclick = () => { if (stItem) stItem = null; else if (stCat && !MENU_ONLY.has(stCat)) stCat = null; else return closeSet(); drawSet(); };
   top.append(bk); if (stItem !== "Name") top.append(el("b", null, tl(stItem || stCat || "Settings"))); w.append(top);
-  // Sponsored banner on the Settings screen, outside individual settings controls.
+  // Compact sponsored banner, matching the size of a single message row.
   w.append(chatterverseBannerAd("settings"));
   const row = (t, fn, tick) => { const r = el("div", "mrow"), x = el("span", tick ? "ok" : "", tick ? "✓" : "›"); r.append(el("span", "mt", t), x); r.onclick = fn; return r; };
   if (!stCat) Object.keys(ST).filter(c => !MENU_ONLY.has(c)).forEach(c => { const r = row(tl(c), () => { stCat = c; drawSet(); }); r.insertAdjacentHTML("afterbegin", CATI[c] || MI.gear); w.append(r); });
