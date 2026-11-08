@@ -4774,35 +4774,53 @@ async function openChatterverseSupport(container) {
   const transcript=el("div","cv-ai-transcript"), composer=el("div","cv-ai-composer"), input=el("input"), send=el("button","","Send"), status=el("div","cv-ai-status");
   input.placeholder="Type a message…"; input.maxLength=2000; send.type="button";
   composer.append(input,send); panel.append(head,transcript,composer,status); container.replaceChildren(panel); input.focus();
-  let conversationId=null,busy=false,waiting=false,lastSeen=0,supportAgentJoined=false;
+  let conversationId=null,busy=false,waiting=false,humanMode=false,lastSeen=0,supportAgentJoined=false;
+  const setComposer=(enabled)=>{input.disabled=!enabled;send.disabled=!enabled;if(enabled)input.focus();};
   const bubble=(role,text)=>{const b=el("div","cv-ai-bubble "+role);b.textContent=text;transcript.append(b);transcript.scrollTop=transcript.scrollHeight};
-  const announceSupportJoined=(firstName)=>{if(supportAgentJoined)return;supportAgentJoined=true;const name=String(firstName||"").trim().split(/\s+/)[0];bubble("system",name?`${name} joined the conversation`:"A support representative joined the conversation");status.textContent="Connected to human support.";};
-  const call=async(action,payload={})=>{const {data,error}=await sb.functions.invoke("chatterverse-ai-support",{body:{action,...payload}});if(error)throw new Error(error.message||"Support request failed.");if(data?.error)throw new Error(data.error);return data||{};};
+  const announceSupportJoined=()=>{if(supportAgentJoined)return;supportAgentJoined=true;bubble("system","A support representative replied. You can now send a message.");};
+  const SUPPORT_WORKER_URL="https://chatterverse-media.jonjonsanjose11.workers.dev";
+  const call=async(action,payload={})=>{
+    const {data:sessionData,error:sessionError}=await sb.auth.getSession();
+    const accessToken=sessionData?.session?.access_token;
+    if(sessionError||!accessToken)throw new Error("Your session expired. Please sign in again.");
+    const tooSlow="The AI took too long to answer. Please tap Send to try again.";
+    const ctl=new AbortController(), kill=setTimeout(()=>ctl.abort(),120000);          // never wait forever
+    let response;
+    try{response=await fetch(`${SUPPORT_WORKER_URL}/support`,{method:"POST",signal:ctl.signal,headers:{"Authorization":`Bearer ${accessToken}`,"Content-Type":"application/json"},body:JSON.stringify({action,...payload})});}
+    catch(e){throw new Error(e&&(e.name==="AbortError"||/abort/i.test(e.message||""))?tooSlow:"Couldn't reach Chatterverse. Check your connection and try again.");}
+    finally{clearTimeout(kill);}
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok||data?.error){const m=String(data?.error||"");throw new Error(/abort|timed?\s?out/i.test(m)?tooSlow:(m||`Support request failed (${response.status}).`));}   // the Worker's raw "The operation was aborted" becomes a clear message
+    return data||{};
+  };
   const asksForHuman=(text)=>/(\b(human|real\s+person|live\s+agent|support\s+agent|talk\s+to\s+(a\s+)?(person|human|agent)|speak\s+to\s+(a\s+)?(person|human|agent)|customer\s+support)\b|human\s+support|support\s+staff|tao\s+na\s+support|kausap\s+na\s+tao|makipag-usap\s+sa\s+tao|human\s+support\s+sana|agent\s+sana)/i.test(text);
   const handoff=async(message)=>{
     status.textContent="Connecting you with human support…";
     const r=await call("request_human",{conversation_id:conversationId,message});
-    conversationId=r.conversation_id;waiting=true;
+    conversationId=r.conversation_id;waiting=true;humanMode=true;
     bubble("bot","I'll connect you with the Chatterverse support team. A support representative will reply in this conversation. You can keep this chat open for updates.");
-    status.textContent="Waiting for a support representative.";
+    status.textContent="Waiting for a support representative.";setComposer(false);
   };
   bubble("bot","Hi! I'm the Chatterverse AI Assistant. Ask me about profiles, posts, messages, privacy, settings, or using the app. If you would like to speak with a person, just tell me here.");
   const submit=async()=>{
     const message=input.value.trim();if(!message||busy||waiting)return;
-    busy=true;send.disabled=input.disabled=true;bubble("user",message);input.value="";
+    busy=true;setComposer(false);bubble("user",message);input.value="";
     try{
-      if(asksForHuman(message)){await handoff(message);}
+      if(humanMode){
+        const r=await call("chat",{conversation_id:conversationId,message});
+        waiting=true;status.textContent="Message sent. Waiting for the support representative to reply.";
+      }else if(asksForHuman(message)){await handoff(message);}
       else{
         status.textContent="AI is typing…";
         const r=await call("chat",{conversation_id:conversationId,message});conversationId=r.conversation_id;
         bubble("bot",r.reply||"I couldn't reply right now. Please try again.");
-        status.textContent=r.ai_configured===false?"AI support is not configured yet.":"";
+        status.textContent=r.ai_configured===false?"AI support is temporarily unavailable. You can request human support.":(r.ai_fallback?"AI is temporarily busy. You can try again or request human support.":"");
       }
-    }catch(e){status.textContent=e.message||"Couldn't connect. Please try again.";}
-    finally{busy=false;send.disabled=input.disabled=waiting;if(!waiting)input.focus();}
+    }catch(e){status.textContent=e.message||"Couldn't connect. Please try again.";if(!input.value)input.value=message;}   // keep what they typed so they can just tap Send again
+    finally{busy=false;if(!waiting)setComposer(true);}
   };
   send.onclick=submit;input.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();submit();}});
-  const timer=setInterval(async()=>{if(!panel.isConnected){clearInterval(timer);return;}if(!conversationId)return;try{const r=await call("get_messages",{conversation_id:conversationId});for(const m of r.messages||[]){const id=Number(m.id)||0;if(id>lastSeen){lastSeen=id;if(m.sender_role==="support"){announceSupportJoined(m.sender_first_name);bubble("bot",m.body);}}}if(r.status==="closed")status.textContent="This support conversation is closed.";}catch(_){ }},10000);
+  const timer=setInterval(async()=>{if(!panel.isConnected){clearInterval(timer);return;}if(!conversationId)return;try{const r=await call("get_messages",{conversation_id:conversationId});for(const m of r.messages||[]){const id=Number(m.id)||0;if(id>lastSeen){lastSeen=id;if(m.sender_role==="support"){announceSupportJoined();bubble("bot",m.body);waiting=false;status.textContent="Support replied. You can send a message.";setComposer(true);}}}if(r.status==="closed"){waiting=true;setComposer(false);status.textContent="This support conversation is closed.";}}catch(e){status.textContent=e.message||"Unable to refresh support messages.";}},5000);
 }
 
 function setDetail(it, row) {
