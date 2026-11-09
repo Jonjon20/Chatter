@@ -1679,10 +1679,10 @@ requestAnimationFrame(k)})()</script>
     fn: 'liveness',
     maxAttempts: 3,        // retries before a hard "Failed"
     challengeTimeoutMs: 10000,
-    alignHoldMs: 700,
-    neutralHoldMs: 300,
-    hitFrames: 3,          // consecutive frames above threshold
-    faceLostMs: 2500,
+    alignHoldMs: 500,
+    neutralHoldMs: 200,
+    hitFrames: 2,          // consecutive frames above threshold
+    faceLostMs: 3500,
     multiFaceFrames: 3,
   };
 
@@ -1690,11 +1690,11 @@ requestAnimationFrame(k)})()</script>
   // b(name) = blendshape score 0..1, r = nose position ratio between the cheek
   // landmarks (0.5 = facing camera; > 0.5 = user turning to THEIR left).
   const CH = {
-    look_left:  { label: 'Look left',          icon: '←', th: 0.45, score: (b) => (b('eyeLookOutLeft') + b('eyeLookInRight')) / 2 },
-    look_right: { label: 'Look right',         icon: '→', th: 0.45, score: (b) => (b('eyeLookOutRight') + b('eyeLookInLeft')) / 2 },
-    look_up:    { label: 'Look up',            icon: '↑', th: 0.4,  score: (b) => (b('eyeLookUpLeft') + b('eyeLookUpRight')) / 2 },
-    look_down:  { label: 'Look down',          icon: '↓', th: 0.45, score: (b) => Math.max(0, (b('eyeLookDownLeft') + b('eyeLookDownRight')) / 2 - 0.6 * Math.min(b('eyeBlinkLeft'), b('eyeBlinkRight'))) },
-    blink:      { label: 'Blink both eyes',    icon: '◉', th: 0.55, score: (b) => Math.min(b('eyeBlinkLeft'), b('eyeBlinkRight')) },
+    look_left:  { label: 'Look left',          icon: '←', hint: 'Eyes only', th: 0.35, score: (b) => (b('eyeLookOutLeft') + b('eyeLookInRight')) / 2 },
+    look_right: { label: 'Look right',         icon: '→', hint: 'Eyes only', th: 0.35, score: (b) => (b('eyeLookOutRight') + b('eyeLookInLeft')) / 2 },
+    look_up:    { label: 'Look up',            icon: '↑', hint: 'Eyes only', th: 0.30,  score: (b) => (b('eyeLookUpLeft') + b('eyeLookUpRight')) / 2 },
+    look_down:  { label: 'Look down',          icon: '↓', hint: 'Eyes only', th: 0.35, score: (b) => Math.max(0, (b('eyeLookDownLeft') + b('eyeLookDownRight')) / 2 - 0.6 * Math.min(b('eyeBlinkLeft'), b('eyeBlinkRight'))) },
+    blink:      { label: 'Blink both eyes',    icon: '◉', th: 0.45, score: (b) => Math.min(b('eyeBlinkLeft'), b('eyeBlinkRight')) },
     smile:      { label: 'Smile',              icon: '☺', th: 0.5,  score: (b) => (b('mouthSmileLeft') + b('mouthSmileRight')) / 2 },
     open_mouth: { label: 'Open your mouth',    icon: '○', th: 0.5,  score: (b) => b('jawOpen') },
     turn_left:  { label: 'Turn your head left',  icon: '↶', th: 1, score: (b, r) => Math.max(0, (r - 0.5) / 0.15) },
@@ -1917,7 +1917,7 @@ requestAnimationFrame(k)})()</script>
         armed = false; neutralFor = 0; baseSum = 0; baseN = 0; peak = 0; hits = 0; chFrames = 0;
         chStart = performance.now();
         dots.forEach((d, i) => { d.className = i < idx ? 'done' : i === idx ? 'on' : ''; });
-        swapIns(c.icon, c.label, 'Step ' + (idx + 1) + ' of ' + chal.length);
+        swapIns(c.icon, c.label, (c.hint ? c.hint + ' · ' : '') + 'Step ' + (idx + 1) + ' of ' + chal.length);
         phase = 'challenge';
       }
 
@@ -1948,16 +1948,16 @@ requestAnimationFrame(k)})()</script>
         showResult('failed', reason);
       }
 
-      function geometry(f) {
+      function geometry(f, relaxed) {
         const sw = stage.clientWidth, sh = stage.clientHeight, vw = video.videoWidth, vh = video.videoHeight;
         const sc = Math.max(sw / vw, sh / vh);
         const map = (p) => ({ x: (p.x * vw * sc - (vw * sc - sw) / 2) / sw, y: (p.y * vh * sc - (vh * sc - sh) / 2) / sh });
         const top = map(f[10]), chin = map(f[152]);
         const cxm = (top.x + chin.x) / 2, cym = (top.y + chin.y) / 2, h = chin.y - top.y;
         let msg = null;
-        if (h < 0.38) msg = 'Move closer';
-        else if (h > 0.66) msg = 'Move back a little';
-        else if (Math.abs(cxm - 0.5) > 0.09 || Math.abs(cym - 0.475) > 0.07) msg = 'Center your face in the oval';
+        if (h < (relaxed ? 0.30 : 0.38)) msg = 'Move closer';
+        else if (h > (relaxed ? 0.80 : 0.66)) msg = 'Move back a little';
+        else if (Math.abs(cxm - 0.5) > (relaxed ? 0.2 : 0.09) || Math.abs(cym - 0.475) > (relaxed ? 0.17 : 0.07)) msg = 'Center your face in the oval';
         return msg;
       }
 
@@ -1998,7 +1998,7 @@ requestAnimationFrame(k)})()</script>
         }
         lostSince = 0;
         const f = faces[0];
-        const posMsg = geometry(f);
+        const posMsg = geometry(f, phase !== 'align');
 
         if (phase === 'align') {
           if (posMsg || dark) { alignedSince = 0; setGuide(dark ? 'Too dark. Find better lighting' : posMsg, true); return; }
@@ -2023,7 +2023,7 @@ requestAnimationFrame(k)})()</script>
 
         if (!armed) {
           // The user must be neutral first: a held pose or a photo can never "complete" a challenge.
-          if (s < c.th * 0.5) { neutralFor += dt; baseSum += s; baseN++; } else neutralFor = 0;
+          if (s < c.th * 0.8) { neutralFor += dt; baseSum += s; baseN++; } else neutralFor = 0;
           if (neutralFor >= CFG.neutralHoldMs) armed = true;
         } else {
           peak = Math.max(peak, s);
@@ -2041,7 +2041,7 @@ requestAnimationFrame(k)})()</script>
               if (idx >= chal.length) { phase = 'submit'; submit(); return; }
               lastT = performance.now();
               startChallenge();
-            }, 750);
+            }, 450);
             return;
           }
         }
@@ -2064,7 +2064,8 @@ requestAnimationFrame(k)})()</script>
     return !!data && data.status === 'verified';
   }
 
-  global.Liveness = { open, isVerified };
+  function preload() { try { loadModel().catch(() => {}); } catch (e) {} }
+  global.Liveness = { open, isVerified, preload };
 })(window);
 
 </script>
@@ -3501,9 +3502,10 @@ async function faceGate(box, onOk) {
   if (tok !== faceGateTok) return;
   wait.remove();
   if (ok) return onOk();
+  try { Liveness.preload && Liveness.preload(); } catch (e) {}
   const card = el("div"), m = el("div", "cap"), go = el("button", "", "Start face verification"); go.type = "button";
   card.style.cssText = "padding:14px;border-radius:12px;background:var(--bg2);display:flex;flex-direction:column;gap:8px";
-  card.append(el("b", "", "Face verification required"), el("div", "cap", "Before you can request a badge, we need to confirm that you are a real person. You will do a few quick face movements on camera. The video stays on your device and is not saved."), m, go);
+  card.append(el("b", "", "Face verification required"), el("div", "cap", "Before you can request a badge, we need to confirm that you are a real person. You will do a few quick face movements on camera. The video stays on your device and is not saved. Tip: lean your phone against something so you do not have to hold it, and sit in good light."), m, go);
   go.onclick = async () => {
     go.disabled = true; m.textContent = "";
     let r; try { r = await Liveness.open({supabase: sb}); } catch (e) { r = {status: "retry"}; }
