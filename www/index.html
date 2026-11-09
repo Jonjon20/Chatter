@@ -1849,7 +1849,9 @@ requestAnimationFrame(k)})()</script>
       document.removeEventListener('keydown', onKey);
       active = false;
     }
-    function close(result) { cleanup(); resolveFn(result); }
+    const extra = {};
+    function grabSelfie() { try { const c = document.createElement('canvas'); c.width = video.videoWidth; c.height = video.videoHeight; c.getContext('2d').drawImage(video, 0, 0); c.toBlob((b) => { extra.selfie = b; }, 'image/jpeg', 0.92); } catch (e) {} }
+    function close(result) { cleanup(); resolveFn(Object.assign(result, extra)); }
     const onKey = (e) => { if (e.key === 'Escape') close({ status: 'retry', reason: 'cancelled' }); };
     document.addEventListener('keydown', onKey);
     $('.lv-x').onclick = () => close({ status: 'retry', reason: 'cancelled' });
@@ -1947,7 +1949,7 @@ requestAnimationFrame(k)})()</script>
           body: { action: 'submit', session_id: sess.session_id, results, meta, client_status: 'verified' },
         });
         if (error || !data || !data.status) { let st = 0; try { st = (error && error.context && error.context.status) || 0; } catch (e) {} return showResult('retry', st === 429 ? 'rate_limited' : 'server'), void setCamMsg('Could not finish the check.' + (st ? ' (error ' + st + ')' : '')); }
-        let { status, reason } = data;
+        let { status, reason } = data; extra.sessionId = data.session_id || null;
         if (status === 'retry' && attempt >= CFG.maxAttempts) { status = 'failed'; reason = 'too_many_retries'; }
         showResult(status, reason);
       }
@@ -2022,7 +2024,7 @@ requestAnimationFrame(k)})()</script>
           if (posMsg || dark) { alignedSince = 0; setGuide(dark ? 'Too dark. Find better lighting' : posMsg, true); return; }
           setGuide('Hold still', false);
           alignedSince = alignedSince || now;
-          if (now - alignedSince >= CFG.alignHoldMs) { setGuide(''); startChallenge(); }
+          if (now - alignedSince >= CFG.alignHoldMs) { setGuide(''); if (opts.captureSelfie) grabSelfie(); startChallenge(); }
           return;
         }
 
@@ -2084,6 +2086,654 @@ requestAnimationFrame(k)})()</script>
 
   function preload() { try { loadModel().catch(() => {}); } catch (e) {} }
   global.Liveness = { open, isVerified, preload };
+})(window);
+
+</script>
+<script>
+/*!
+ * Chatterverse Identity Verification (KYC) module.
+ * Order: ID type -> scan -> OCR -> confirm -> face liveness -> ID-to-face match -> submit -> admin review -> badge.
+ * Open-source engines, all loaded on demand: Tesseract.js (OCR), OpenCV.js (ID edge detection / straightening),
+ * face-api.js (face descriptors), MediaPipe (liveness, in liveness.js). Final decisions are made on the server.
+ */
+(function (g) {
+  'use strict';
+  const FN = 'kyc', BUCKET = 'kyc-docs', CONSENT_VERSION = '2026-11-v1';
+  const LIB = {
+    tess: 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',
+    face: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/dist/face-api.js',
+    faceModels: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model/',
+    cv: 'https://docs.opencv.org/4.9.0/opencv.js',
+  };
+  // back: 'optional' = scan it if the card has useful info on the back; 'none' = no back side.
+  const GOV = [
+    ['philid', 'Philippine National ID (PhilID)', 'optional', /\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b/],
+    ['digital_philid', 'Digital National ID (ePhilID)', 'none', /\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b/],
+    ['drivers_license', 'Driver’s License', 'optional', /\b[A-Z]\d{2}[- ]?\d{2}[- ]?\d{6}\b/],
+    ['passport', 'Passport', 'none', /\b[A-Z]\d{7}[A-Z]?\b/],
+    ['umid', 'UMID', 'optional', /\b\d{4}[- ]?\d{7}[- ]?\d\b/],
+    ['philhealth', 'PhilHealth ID', 'optional', /\b\d{2}[- ]?\d{9}[- ]?\d\b/],
+    ['postal', 'Postal ID', 'optional', /\b[A-Z0-9]{10,14}\b/],
+    ['voters', 'Voter’s ID', 'optional', /\b\d{4}[- ]?\d{4}[- ]?[A-Z0-9]{4,}[- ]?[A-Z0-9]{0,10}\b/],
+    ['prc', 'PRC ID', 'optional', /\b\d{7}\b/],
+  ];
+  const SCH = [
+    ['shs', 'Senior High School ID', 'optional'], ['college', 'College Student ID', 'optional'],
+    ['university', 'University Student ID', 'optional'], ['techvoc', 'Technical-Vocational School ID', 'optional'],
+    ['other_school', 'Other school-issued ID', 'optional'],
+  ];
+  const TYPES = { government: GOV, school: SCH };
+  const typeInfo = (cat, id) => (TYPES[cat] || []).find((t) => t[0] === id) || [id, id, 'optional'];
+  const SL = { draft: 'Not Verified', id_submitted: 'ID Submitted', face_pending: 'Face Verification Pending', pending_review: 'Pending Admin Review',
+    verified: 'Verified', rejected: 'Rejected', resubmission_required: 'Resubmission Required', withdrawn: 'Not Verified' };
+  const BADGE = { government: 'Government ID Verified', school: 'School ID Verified' };
+  const FLAG_TXT = {
+    server_ocr_unavailable: 'Server OCR cross-check is not configured', server_ocr_unreadable: 'Server could not read the ID text', server_ocr_error: 'Server OCR failed',
+    name_not_found_on_id: 'Name was not found in the ID text', id_number_not_found_on_id: 'ID number was not found in the ID text',
+    server_face_match_unavailable: 'Server face comparison is not configured (score is from the user’s device)', server_face_match_error: 'Server face comparison failed',
+    no_client_match: 'No device face score', no_match_score: 'No face score at all: compare the photos by eye', low_confidence_match: 'Low-confidence face match',
+    client_match_very_low: 'Device face score is very low', face_mismatch: 'Face mismatch', no_face_found_on_id_or_selfie: 'No face found on the ID or selfie', manual_face_check: 'Compare faces manually',
+  };
+
+  let sb = null, C = {}, root = null, S = {}, cvP = null, tessP = null, faceP = null;
+  const kycTypes = {}; let badgeTableOk = true;
+
+  // ---------------- small helpers ----------------
+  const h = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+  const btn = (t, fn, cls) => { const b = h('button', cls || '', t); b.type = 'button'; b.onclick = () => fn(b); return b; };
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const loaders = {};
+  function loadScript(u) {
+    return loaders[u] || (loaders[u] = new Promise((res, rej) => {
+      const s = document.createElement('script'); s.src = u; s.async = true; s.onload = res; s.onerror = () => { delete loaders[u]; rej(new Error('Could not load ' + u)); };
+      document.head.appendChild(s);
+    }));
+  }
+  async function call(action, body) {
+    const { data, error } = await sb.functions.invoke(FN, { body: Object.assign({ action }, body || {}) });
+    if (error) { let m = error.message; try { const j = await error.context.json(); m = j.error || m; } catch (e) {} throw new Error(m); }
+    if (data && data.error) throw new Error(data.error);
+    return data;
+  }
+  const ERR = { consent_required: 'Please accept the Privacy Notice first.', already_pending: 'You already have an application waiting for review.', already_verified: 'Your identity is already verified.',
+    rate_limited: 'Too many attempts today. Please try again tomorrow.', gov_fields_required: 'Full name, date of birth and ID number are required.', school_required: 'Full name and school name are required.',
+    name_required: 'Full name is required.', file_missing_or_invalid: 'The image did not upload correctly. Please retake it.', liveness_not_passed: 'The face check was not completed. Please try again.',
+    liveness_stale: 'The face check expired. Please do it again.', liveness_reused: 'That face check was already used. Please do it again.', bad_state: 'This application changed. Reload and try again.',
+    forbidden: 'You are not allowed to do that.', reason_required: 'Please write a reason (at least 5 characters).', cannot_review_own: 'You cannot review your own application.' };
+  const errText = (e) => ERR[e && e.message] || ('Something went wrong (' + ((e && e.message) || 'error') + '). Please try again.');
+  const canvasBlob = (c, q) => new Promise((r) => c.toBlob(r, 'image/jpeg', q || 0.88));
+  function scaled(src, maxSide) {
+    const k = Math.min(1, maxSide / Math.max(src.width, src.height)); if (k === 1) return src;
+    const c = document.createElement('canvas'); c.width = Math.round(src.width * k); c.height = Math.round(src.height * k);
+    c.getContext('2d').drawImage(src, 0, 0, c.width, c.height); return c;
+  }
+  async function fileToCanvas(file) {
+    let bmp;
+    try { bmp = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+    catch (e) { bmp = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = URL.createObjectURL(file); }); }
+    const w = bmp.width || bmp.naturalWidth, hh = bmp.height || bmp.naturalHeight;
+    const c = document.createElement('canvas'); c.width = w; c.height = hh; c.getContext('2d').drawImage(bmp, 0, 0);
+    return scaled(c, 2400);
+  }
+
+  // ---------------- styles ----------------
+  const CSS = `
+.kyc{display:flex;flex-direction:column;gap:12px;padding:4px 2px 28px}
+.kyc h3{margin:0;font-size:1.05rem}.kyc p{margin:0}.kyc .sub{color:var(--mut);font-size:.86rem;line-height:1.4}
+.kyc-card{background:var(--bg2);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.kyc-steps{display:flex;gap:6px}.kyc-steps i{flex:1;height:5px;border-radius:3px;background:var(--line);transition:background .3s}
+.kyc-steps i.done{background:#22c55e}.kyc-steps i.on{background:var(--me)}
+.kyc-stl{display:flex;justify-content:space-between;font-size:.74rem;color:var(--mut)}
+.kyc-pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.78rem;font-weight:650;background:var(--line);color:var(--tx)}
+.kyc-pill.verified{background:#22c55e;color:#fff}.kyc-pill.rejected{background:#ef4444;color:#fff}.kyc-pill.resubmission_required{background:#f59e0b;color:#fff}
+.kyc-pill.pending_review,.kyc-pill.face_pending,.kyc-pill.id_submitted{background:color-mix(in srgb,var(--me) 22%,transparent);color:var(--tx)}
+.kyc-cats{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:420px){.kyc-cats{grid-template-columns:1fr}}
+.kyc-cat{border:2px solid var(--line);background:transparent;color:var(--tx);border-radius:14px;padding:12px;text-align:left;display:flex;flex-direction:column;gap:6px;font:inherit;cursor:pointer}
+.kyc-cat.on.gov{border-color:#0f9d74;background:color-mix(in srgb,#0f9d74 10%,transparent)}.kyc-cat.on.sch{border-color:#f59e0b;background:color-mix(in srgb,#f59e0b 12%,transparent)}
+.kyc-cat b{font-size:.95rem}.kyc-cat span{font-size:.78rem;color:var(--mut);line-height:1.35}
+.kyc-ico{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:#fff}
+.kyc-ico.gov{background:#0f9d74}.kyc-ico.sch{background:#f59e0b}.kyc-ico svg{width:20px;height:20px}
+.kyc-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border-radius:12px;background:var(--bg2);cursor:pointer;border:2px solid transparent}
+.kyc-row.on{border-color:var(--me)}
+.kyc-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:520px){.kyc-fields{grid-template-columns:1fr}}
+.kyc-fields label{display:flex;flex-direction:column;gap:4px;font-size:.78rem;color:var(--mut)}
+.kyc-fields label.wide{grid-column:1/-1}.kyc-fields input,.kyc-fields textarea,.kyc-fields select{border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--tx);padding:10px 12px;font:inherit;font-size:.92rem;min-width:0}
+.kyc-fields input.miss{border-color:#f59e0b}.kyc-fields .auto{color:#22c55e;font-size:.7rem}.kyc-fields .nf{color:#f59e0b;font-size:.7rem}
+.kyc-prev{width:100%;border-radius:12px;background:#000;display:block;max-height:46vh;object-fit:contain}
+.kyc-bar{height:8px;border-radius:5px;background:var(--line);overflow:hidden}.kyc-bar i{display:block;height:100%;width:0;background:var(--me);transition:width .25s}
+.kyc-msg{font-size:.85rem;color:var(--mut)}.kyc-err{color:#ef4444}.kyc-ok{color:#22c55e}
+.kyc-btns{display:flex;gap:8px;flex-wrap:wrap}.kyc-btns button{flex:1 1 140px}
+.kyc-chk{display:flex;gap:10px;align-items:flex-start;font-size:.86rem;line-height:1.4}.kyc-chk input{margin-top:3px;width:18px;height:18px;flex:none}
+.kyc-notice{max-height:210px;overflow:auto;font-size:.82rem;line-height:1.45;color:var(--mut)}.kyc-notice b{color:var(--tx)}
+.kyc-chip{display:inline-block;padding:2px 8px;border-radius:8px;font-size:.74rem;background:color-mix(in srgb,#f59e0b 22%,transparent);margin:2px 4px 2px 0}
+.kyc-imgs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.kyc-imgs img{width:100%;border-radius:10px;background:#000;cursor:zoom-in}
+.kyc-kv{display:grid;grid-template-columns:130px 1fr;gap:4px 10px;font-size:.86rem}.kyc-kv span:nth-child(odd){color:var(--mut)}
+.kyc-hist{font-size:.8rem;color:var(--mut);display:flex;flex-direction:column;gap:4px}
+.kyc-ov{position:fixed;inset:0;z-index:99998;background:rgba(5,6,10,.9);display:flex;align-items:center;justify-content:center;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+.kyc-sheet{width:min(680px,100%);max-height:100%;display:flex;flex-direction:column;gap:10px;padding:12px;color:#fff;overflow:auto}
+.kyc-top{display:flex;justify-content:space-between;align-items:center}.kyc-top b{font-size:1rem}
+.kyc-top button{background:none;color:#fff;font-size:1.6rem;line-height:1;padding:2px 10px}
+.kyc-cam{position:relative;width:100%;aspect-ratio:4/3;max-height:62vh;background:#000;border-radius:14px;overflow:hidden;margin:0 auto}
+.kyc-cam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.kyc-guide{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:14px;border:2px solid rgba(255,255,255,.75);box-shadow:0 0 0 999px rgba(0,0,0,.55);overflow:hidden;transition:border-color .2s}
+.kyc-guide.good{border-color:#22c55e}.kyc-guide.bad{border-color:#ef4444}
+.kyc-guide::after{content:"";position:absolute;left:0;right:0;height:18%;top:-18%;background:linear-gradient(to bottom,transparent,rgba(124,58,237,.45),transparent);animation:kycs 2.4s ease-in-out infinite}
+.kyc-guide.good::after{background:linear-gradient(to bottom,transparent,rgba(34,197,94,.5),transparent)}
+@keyframes kycs{to{top:100%}}
+.kyc-guide i{position:absolute;width:22px;height:22px;border:4px solid #fff;opacity:.95}
+.kyc-guide i:nth-child(1){left:6px;top:6px;border-right:0;border-bottom:0;border-radius:8px 0 0 0}.kyc-guide i:nth-child(2){right:6px;top:6px;border-left:0;border-bottom:0;border-radius:0 8px 0 0}
+.kyc-guide i:nth-child(3){left:6px;bottom:6px;border-right:0;border-top:0;border-radius:0 0 0 8px}.kyc-guide i:nth-child(4){right:6px;bottom:6px;border-left:0;border-top:0;border-radius:0 0 8px 0}
+.kyc-hint{position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:.82rem;text-shadow:0 1px 4px #000}
+.kyc-busy{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.6);font-size:.9rem;text-align:center;padding:20px}
+.kyc-ov .kyc-btns button{background:var(--me);color:#fff}.kyc-ov .kyc-btns button.gray{background:#2b2d33;color:#fff}.kyc-ov button:disabled{opacity:.45}
+.kyc-prevbox{background:#111;border-radius:14px;padding:8px}.kyc-prevbox canvas{width:100%;max-height:52vh;object-fit:contain;display:block}
+.kyc-issue{font-size:.84rem;margin:2px 0}.kyc-issue.block{color:#fca5a5}.kyc-issue.warn{color:#fcd34d}.kyc-issue.okk{color:#86efac}
+@media (orientation:landscape) and (max-height:520px){.kyc-cam{max-height:70vh}}
+@media(prefers-reduced-motion:reduce){.kyc-guide::after{animation:none}}`;
+  function css() { if (document.getElementById('kyc-css')) return; const s = h('style'); s.id = 'kyc-css'; s.textContent = CSS; document.head.appendChild(s); }
+
+  const SVG = {
+    gov: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5 20 5.5v5.6c0 5-3.3 8.3-8 10.4-4.7-2.1-8-5.4-8-10.4V5.5l8-3Z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>',
+    sch: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5 2.5 9.5 12 14l9.5-4.5L12 5Z"/><path d="M6.5 11.8v4c0 1.2 2.4 2.7 5.5 2.7s5.5-1.5 5.5-2.7v-4"/><path d="M21.5 9.5v5"/></svg>',
+  };
+  const ico = (k) => { const d = h('div', 'kyc-ico ' + (k === 'government' ? 'gov' : 'sch')); d.innerHTML = k === 'government' ? SVG.gov : SVG.sch; return d; };
+
+  // ---------------- badges (used by the main app) ----------------
+  async function loadBadges(client, ids) {
+    if (!badgeTableOk || !ids || !ids.length) return;
+    try {
+      const { data, error } = await client.from('kyc_badges').select('user_id,badge').in('user_id', ids);
+      if (error) { badgeTableOk = false; return; }
+      (data || []).forEach((r) => { kycTypes[r.user_id] = r.badge; });
+    } catch (e) { badgeTableOk = false; }
+  }
+  function badgeEl(uid, tier) {
+    const k = kycTypes[uid]; if (!k || tier === 'blue') return null;
+    const b = h('span', 'vbadge'); b.title = BADGE[k]; b.setAttribute('aria-label', BADGE[k]);
+    b.innerHTML = k === 'government'
+      ? '<svg viewBox="0 0 24 24" role="img" aria-hidden="true"><path d="M12 1.8 21 5v6.1c0 5.5-3.7 9.2-9 11.1-5.3-1.9-9-5.6-9-11.1V5l9-3.2Z" fill="#0f9d74"/><path d="m7.4 11.9 3 3 6.3-6.4" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      : '<svg viewBox="0 0 24 24" role="img" aria-hidden="true"><rect x="1.5" y="1.5" width="21" height="21" rx="7" fill="#f59e0b"/><path d="M12 6.3 4.8 9.8 12 13.3l7.2-3.5L12 6.3Z" fill="#fff"/><path d="M8 12.6v3c0 .9 1.8 2 4 2s4-1.1 4-2v-3" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>';
+    return b;
+  }
+  const label = (uid) => (kycTypes[uid] ? BADGE[kycTypes[uid]] : null);
+
+  async function isApproved(client) {
+    try { const { data: { user } } = await client.auth.getUser(); if (!user) return false;
+      const { data } = await client.from('kyc_badges').select('user_id').eq('user_id', user.id).maybeSingle(); return !!data; } catch (e) { return false; }
+  }
+  // Gate for the old badge flows (Blue payment request). Grey is now handled by mount().
+  async function gate(box, ctx, onOk) {
+    css(); sb = ctx.sb; C = ctx;
+    if (ctx.tier && ctx.tier !== 'none') return onOk();
+    if (await isApproved(sb)) return onOk();
+    const c = h('div', 'kyc-card'); c.append(h('b', '', 'Identity verification required'),
+      h('div', 'sub', 'To request a badge, first verify your identity with a government or school ID and a quick face check.'),
+      btn('Open Identity Verification', () => ctx.openPage && ctx.openPage()));
+    box.append(c);
+  }
+
+  // ---------------- ID image processing ----------------
+  function quality(card) {
+    const w = Math.min(640, card.width), hh = Math.max(8, Math.round(card.height * (w / card.width)));
+    const t = h('canvas'); t.width = w; t.height = hh; const x = t.getContext('2d', { willReadFrequently: true }); x.drawImage(card, 0, 0, w, hh);
+    const d = x.getImageData(0, 0, w, hh).data, n0 = w * hh, gr = new Float32Array(n0); let sum = 0, gl = 0;
+    for (let i = 0, j = 0; i < d.length; i += 4, j++) { const v = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]; gr[j] = v; sum += v; if (v >= 250) gl++; }
+    const mean = sum / n0; gl /= n0; let sd = 0; for (let j = 0; j < n0; j++) sd += (gr[j] - mean) ** 2; sd = Math.sqrt(sd / n0);
+    let s = 0, s2 = 0, n = 0;
+    for (let y = 1; y < hh - 1; y++) for (let xx = 1; xx < w - 1; xx++) { const i = y * w + xx, l = 4 * gr[i] - gr[i - 1] - gr[i + 1] - gr[i - w] - gr[i + w]; s += l; s2 += l * l; n++; }
+    const blur = s2 / n - (s / n) ** 2, issues = [];
+    if (sd < 16) issues.push(['block', 'This does not look like an ID. Make sure the card fills the frame.']);
+    if (blur < 30) issues.push(['block', 'The image is too blurry. Hold steady and let the camera focus, or upload a sharper photo.']);
+    else if (blur < 60) issues.push(['warn', 'The image is a little soft. Text may be hard to read.']);
+    if (mean < 40) issues.push(['block', 'The image is too dark. Move to a brighter place.']);
+    else if (mean < 65) issues.push(['warn', 'The image is dim. More light will help.']);
+    if (gl > 0.18) issues.push(['block', 'Strong glare covers the ID. Tilt the card to avoid reflections.']);
+    else if (gl > 0.06) issues.push(['warn', 'There is some glare. Tilt the card slightly.']);
+    if (card.width < 450) issues.push(['block', 'The image resolution is too low.']);
+    else if (card.width < 700) issues.push(['warn', 'The image resolution is low. Move closer or use a better photo.']);
+    return { blur: +blur.toFixed(1), mean: +mean.toFixed(1), glare: +gl.toFixed(3), issues };
+  }
+  function ensureCV(ms) {
+    if (!cvP) cvP = loadScript(LIB.cv).then(async () => {
+      let c = g.cv; if (!c) throw new Error('cv'); if (c.Mat) return;
+      if (typeof c.then === 'function') { g.cv = await c; return; }
+      await new Promise((r) => { c.onRuntimeInitialized = r; });
+    });
+    return Promise.race([cvP, new Promise((_, rej) => setTimeout(() => rej(new Error('cv timeout')), ms))]);
+  }
+  // Finds the card (largest convex quadrilateral), straightens it, returns a canvas. null if no card found.
+  async function detectCard(src) {
+    await ensureCV(20000);
+    const cv = g.cv, keep = [];
+    const T = (m) => { keep.push(m); return m; };
+    try {
+      const mat = T(cv.imread(src)), sc = 720 / Math.max(mat.cols, mat.rows), small = T(new cv.Mat());
+      cv.resize(mat, small, new cv.Size(0, 0), sc, sc, cv.INTER_AREA);
+      const gray = T(new cv.Mat()), blur = T(new cv.Mat()), edges = T(new cv.Mat()), k = T(cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5)));
+      cv.cvtColor(small, gray, cv.COLOR_RGBA2GRAY); cv.GaussianBlur(gray, blur, new cv.Size(5, 5), 0); cv.Canny(blur, edges, 40, 120); cv.dilate(edges, edges, k);
+      const cs = T(new cv.MatVector()), hi = T(new cv.Mat()); cv.findContours(edges, cs, hi, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
+      const full = small.cols * small.rows; let best = null, bestA = 0;
+      for (let i = 0; i < cs.size(); i++) {
+        const c = cs.get(i), a = cv.contourArea(c);
+        if (a > full * 0.18) { const ap = new cv.Mat(), p = cv.arcLength(c, true); cv.approxPolyDP(c, ap, 0.02 * p, true);
+          if (ap.rows === 4 && cv.isContourConvex(ap) && a > bestA) { best = Array.from(ap.data32S); bestA = a; } ap.delete(); }
+        c.delete();
+      }
+      if (!best) return null;
+      let pts = [[best[0], best[1]], [best[2], best[3]], [best[4], best[5]], [best[6], best[7]]].map((p) => [p[0] / sc, p[1] / sc]);
+      const sm = pts.map((p) => p[0] + p[1]), df = pts.map((p) => p[0] - p[1]);
+      const tl = pts[sm.indexOf(Math.min(...sm))], br = pts[sm.indexOf(Math.max(...sm))], tr = pts[df.indexOf(Math.max(...df))], bl = pts[df.indexOf(Math.min(...df))];
+      const d = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+      let W = Math.max(d(tl, tr), d(bl, br)), H = Math.max(d(tl, bl), d(tr, br)), rot = false;
+      if (H > W) { [W, H] = [H, W]; rot = true; }
+      const ar = W / H; if (ar < 1.25 || ar > 1.95) return null;
+      const OW = Math.min(1600, Math.round(W)), OH = Math.round(OW / ar);
+      const from = rot ? [tr, br, bl, tl] : [tl, tr, br, bl];   // rotate portrait cards so text is upright
+      const sM = T(cv.matFromArray(4, 1, cv.CV_32FC2, from.flat())), dM = T(cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, OW, 0, OW, OH, 0, OH]));
+      const M = T(cv.getPerspectiveTransform(sM, dM)), out = T(new cv.Mat());
+      cv.warpPerspective(mat, out, M, new cv.Size(OW, OH), cv.INTER_LINEAR, cv.BORDER_REPLICATE);
+      const oc = h('canvas'); oc.width = OW; oc.height = OH; cv.imshow(oc, out); return oc;
+    } finally { keep.forEach((m) => { try { m.delete(); } catch (e) {} }); }
+  }
+  function guideCrop(src, rect) {
+    let r = rect;
+    if (!r) { const w = src.width, ar = 1.586; let cw = w, ch = cw / ar; if (ch > src.height) { ch = src.height; cw = ch * ar; } r = { x: (w - cw) / 2, y: (src.height - ch) / 2, w: cw, h: ch }; }
+    const c = h('canvas'); c.width = Math.round(r.w); c.height = Math.round(r.h); c.getContext('2d').drawImage(src, r.x, r.y, r.w, r.h, 0, 0, c.width, c.height); return c;
+  }
+
+  // ---------------- scanner overlay (camera + upload) ----------------
+  function scanDoc(title, tip, outer) {
+    return new Promise((resolve) => {
+      const ov = h('div', 'kyc-ov'), sheet = h('div', 'kyc-sheet'), top = h('div', 'kyc-top'), x = h('button', '', '×');
+      x.type = 'button'; x.setAttribute('aria-label', 'Close'); top.append(h('b', '', title), x);
+      const cam = h('div', 'kyc-cam'), video = h('video'), guide = h('div', 'kyc-guide'), hint = h('div', 'kyc-hint'), busy = h('div', 'kyc-busy');
+      video.playsInline = true; video.muted = true; video.autoplay = true; guide.append(h('i'), h('i'), h('i'), h('i')); busy.style.display = 'none';
+      cam.append(video, guide, hint, busy);
+      const tipEl = h('div', 'sub', tip); tipEl.style.color = '#cbd0dc';
+      const file = h('input'); file.type = 'file'; file.accept = 'image/*'; file.style.display = 'none';
+      const up = btn('Upload photo', () => file.click(), 'gray'), cap = btn('Capture', () => capture());
+      const ctrl = h('div', 'kyc-btns'); ctrl.append(up, cap);
+      const review = h('div'); review.style.display = 'none';
+      sheet.append(top, cam, review, tipEl, ctrl, file); ov.append(sheet); document.body.append(ov);
+      let stream = null, timer = 0, done = false, ro = null;
+      const finish = (r) => { if (done) return; done = true; clearInterval(timer); if (ro) ro.disconnect(); if (stream) stream.getTracks().forEach((t) => t.stop()); ov.remove(); resolve(r); };
+      x.onclick = () => finish(null);
+      const fit = () => { const cw = cam.clientWidth, ch = cam.clientHeight, w = Math.min(0.9 * cw, 0.86 * ch * 1.586); guide.style.width = w + 'px'; guide.style.height = (w / 1.586) + 'px'; };
+      ro = new ResizeObserver(fit); ro.observe(cam); fit();
+      const guideRect = () => {
+        const vw = video.videoWidth, vh = video.videoHeight; if (!vw) return null;
+        const cw = cam.clientWidth, ch = cam.clientHeight, sc = Math.max(cw / vw, ch / vh), ox = (vw * sc - cw) / 2, oy = (vh * sc - ch) / 2;
+        const gw = guide.offsetWidth, gh = guide.offsetHeight, gx = (cw - gw) / 2, gy = (ch - gh) / 2;
+        return { x: (gx + ox) / sc, y: (gy + oy) / sc, w: gw / sc, h: gh / sc };
+      };
+      const frameCanvas = () => { const c = h('canvas'); c.width = video.videoWidth; c.height = video.videoHeight; c.getContext('2d').drawImage(video, 0, 0); return c; };
+      const setBusy = (t) => { busy.style.display = t ? 'grid' : 'none'; busy.textContent = t || ''; };
+
+      async function handle(src, fromCam) {
+        setBusy('Detecting ID edges…'); let card = null, method = 'guide';
+        try { card = await detectCard(src); if (card) method = 'auto'; } catch (e) { card = null; }
+        if (!card) card = fromCam ? guideCrop(src, guideRect()) : src;
+        const q = quality(card); setBusy('');
+        showReview({ canvas: card, method, q });
+      }
+      function showReview(r) {
+        cam.style.display = 'none'; ctrl.style.display = 'none'; tipEl.style.display = 'none'; review.style.display = 'block'; review.replaceChildren();
+        const pb = h('div', 'kyc-prevbox'); r.canvas.style.cssText = 'width:100%;max-height:52vh;object-fit:contain;display:block'; pb.append(r.canvas); review.append(pb);
+        review.append(h('div', 'kyc-issue ' + (r.method === 'auto' ? 'okk' : 'warn'), r.method === 'auto' ? 'ID edges detected, cropped and straightened.' : 'Could not find the ID edges automatically, so the guide area was used. Make sure the whole card is inside the frame.'));
+        r.q.issues.forEach(([lvl, m]) => review.append(h('div', 'kyc-issue ' + lvl, m)));
+        if (!r.q.issues.length) review.append(h('div', 'kyc-issue okk', 'Looks sharp, bright and clear.'));
+        const blocked = r.q.issues.some((i) => i[0] === 'block'), b = h('div', 'kyc-btns');
+        const use = btn('Use this photo', () => finish(r)); use.disabled = blocked;
+        b.append(btn('Retake', () => { review.style.display = 'none'; cam.style.display = ''; ctrl.style.display = ''; tipEl.style.display = ''; }, 'gray'), btn('Upload another', () => file.click(), 'gray'), use);
+        review.append(b);
+      }
+      function capture() { if (!video.videoWidth) return; handle(frameCanvas(), true); }
+      file.onchange = async () => { const f = file.files && file.files[0]; file.value = ''; if (!f) return; try { setBusy('Reading image…'); cam.style.display = ''; await handle(await fileToCanvas(f), false); } catch (e) { setBusy(''); hint.textContent = 'Could not read that image.'; } };
+
+      (async () => {
+        try {
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw { name: 'SecurityError' };
+          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+          video.srcObject = stream; await video.play(); ensureCV(60000).catch(() => {});
+          timer = setInterval(() => {
+            if (review.style.display === 'block' || !video.videoWidth) return;
+            const r = guideRect(); if (!r) return; const q = quality(guideCrop(frameCanvas(), r)), bl = q.issues.find((i) => i[0] === 'block'), wn = q.issues.find((i) => i[0] === 'warn');
+            guide.classList.toggle('bad', !!bl); guide.classList.toggle('good', !bl && !wn);
+            hint.textContent = bl ? bl[1].split('.')[0] : wn ? wn[1].split('.')[0] : 'Looks good. Hold steady, then tap Capture';
+          }, 700);
+        } catch (e) {
+          cap.disabled = true; hint.textContent = '';
+          busy.style.display = 'grid';
+          busy.textContent = (!g.isSecureContext ? 'Camera needs a secure (https) connection.' : e && e.name === 'NotAllowedError' ? 'Camera access was blocked. Allow it in your browser settings, or upload a photo instead.'
+            : e && e.name === 'NotFoundError' ? 'No camera found. Upload a photo of your ID instead.' : 'Could not start the camera. You can upload a photo instead.');
+        }
+      })();
+    });
+  }
+
+  // ---------------- OCR + field extraction ----------------
+  const MON = { JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6, JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12 };
+  const iso = (y, m, d) => (y >= 1900 && y <= 2100 && m >= 1 && m <= 12 && d >= 1 && d <= 31 ? y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0') : null);
+  function datesIn(s) {
+    const U = s.toUpperCase(), out = []; let m;
+    const a = /\b([A-Z]{3,9})\.?\s+(\d{1,2})\s*,?\s*(\d{4})\b/g; while ((m = a.exec(U))) { const v = MON[m[1].slice(0, 3)] && iso(+m[3], MON[m[1].slice(0, 3)], +m[2]); if (v) out.push(v); }
+    const b = /\b(\d{1,2})\s+([A-Z]{3,9})\.?\s*,?\s*(\d{4})\b/g; while ((m = b.exec(U))) { const v = MON[m[2].slice(0, 3)] && iso(+m[3], MON[m[2].slice(0, 3)], +m[1]); if (v) out.push(v); }
+    const c = /\b(\d{4})\s*[-\/.]\s*(\d{1,2})\s*[-\/.]\s*(\d{1,2})\b/g; while ((m = c.exec(U))) { const v = iso(+m[1], +m[2], +m[3]); if (v) out.push(v); }
+    const d = /\b(\d{1,2})\s*[-\/.]\s*(\d{1,2})\s*[-\/.]\s*(\d{4})\b/g; while ((m = d.exec(U))) { const p = +m[1], q = +m[2], v = p > 12 ? iso(+m[3], q, p) : iso(+m[3], p, q); if (v) out.push(v); }
+    return out;
+  }
+  const LBL = /^(?:last\s*name|surname|apelyido|given\s*names?|first\s*name|mga\s*pangalan|middle\s*name|gitnang\s*apelyido|name|address|tirahan|date\s*of\s*birth|birth\s*date|petsa\s*ng\s*kapanganakan|sex|kasarian|nationality|citizenship|student\s*(?:no\.?|number|id)|id\s*(?:no\.?|number)|license\s*no\.?|expiration\s*date|expiry|course|program|strand|grade\s*level|year\s*level)\b[\s\/:.\-,]*/i;
+  const STOP = /(?:name|birth|sex|nationality|date|no\.?|number|signature|expir|blood|height|weight)\b|\d{4}[- ]\d{4}|\/\s*[A-Za-z]/i;
+  // Finds a label line and returns its value: the rest of that line, or the next line(s) when the value sits below the label.
+  function labelVal(lines, re, take, ok) {
+    for (let i = 0; i < lines.length; i++) {
+      if (!re.test(lines[i])) continue;
+      let v = lines[i].replace(new RegExp('^.*?(' + re.source + ')[\\s\\/:.\\-]*', 'i'), '').trim(), p;
+      do { p = v; v = v.replace(LBL, '').trim(); } while (v !== p);
+      if (v.length < 2) {
+        v = '';
+        for (let j = 1; j <= (take || 1); j++) {
+          const nx = (lines[i + j] || '').trim();
+          if (!nx || (j === 1 && LBL.test(nx)) || (j > 1 && STOP.test(nx))) break;
+          v += (v ? ' ' : '') + nx;
+        }
+      }
+      if (v.length >= 2 && (!ok || ok(v))) return v;
+    }
+    return '';
+  }
+  const BAN = /REPUBLIC|PHILIPPINES|REPUBLIKA|PILIPINAS|LICEN|DRIVER|PASSPORT|IDENTIF|CARD|NATIONAL|UNIVERSITY|COLLEGE|SCHOOL|STUDENT|DEPARTMENT|TRANSPORT|OFFICE|SOCIAL|SECURITY|SYSTEM|HEALTH|CORPORATION|COMMISSION|PROFESSIONAL|NAME|ADDRESS|SIGNATURE|BIRTH|DATE|SEX|NATIONALITY|VALID|EXPIR|INSTITUTE|ACADEMY|SENIOR|GRADE|COURSE|BACHELOR|SCIENCE|ENGINEERING|PHILHEALTH|POSTAL|VOTER|REGULATION|AGENCY|BLOOD|CONDITIONS/;
+  function parseName(lines) {
+    const dl = labelVal(lines, /last\s*name\s*,\s*first\s*name(?:\s*,\s*middle\s*name)?/i, 1, (x) => x.includes(','));
+    if (dl) { const [l, f] = dl.split(/,(.+)/); return ((f || '').trim() + ' ' + l.trim()).replace(/\s+/g, ' ').trim(); }
+    const last = labelVal(lines, /(?:last\s*name|surname|apelyido)/i), given = labelVal(lines, /(?:given\s*names?|first\s*names?|mga\s*pangalan)/i), mid = labelVal(lines, /(?:middle\s*name|gitnang\s*apelyido)/i);
+    if (last && given) return [given, mid, last].filter(Boolean).join(' ').replace(/\s+/g, ' ');
+    const nm = labelVal(lines, /(?:^|\s)name\b/i); if (nm && /^[A-Za-z ,.'-]{5,}$/.test(nm)) return nm;
+    const cand = lines.find((l) => /^[A-Z][A-Z ,.'-]{5,}$/.test(l) && l.split(/\s+/).length >= 2 && l.split(/\s+/).length <= 6 && !BAN.test(l)); return cand || '';
+  }
+  function parseFields(cat, idType, text) {
+    const lines = text.split('\n').map((s) => s.replace(/\s+/g, ' ').trim()).filter((s) => s.length > 1), flat = lines.join(' '), F = {};
+    F.full_name = parseName(lines);
+    const all = datesIn(flat), today = new Date().toISOString().slice(0, 10);
+    if (cat === 'government') {
+      const dobLine = lines.find((l) => /birth|dob|kapanganakan/i.test(l)), dobAt = dobLine && datesIn(dobLine + ' ' + (lines[lines.indexOf(dobLine) + 1] || ''))[0];
+      F.dob = dobAt || all.filter((d) => d < '2015-01-01' && d > '1920-01-01').sort()[0] || '';
+      const exLine = lines.find((l) => /expir|valid\s*until|validity/i.test(l)), exAt = exLine && datesIn(exLine + ' ' + (lines[lines.indexOf(exLine) + 1] || ''))[0];
+      F.expiry = exAt || all.filter((d) => d > today).sort().pop() || '';
+      const re = typeInfo(cat, idType)[3]; let m = re && flat.toUpperCase().match(re);
+      F.id_number = m ? m[0].replace(/\s+/g, '') : labelVal(lines, /(?:license|licence|passport|id|crn|pcn|prn|vin)\s*(?:no\.?|number|#)/i, 1, (x) => /\d/.test(x));
+      F.address = labelVal(lines, /(?:address|tirahan)/i, 3);
+      const FU = flat.toUpperCase(), sx = FU.match(/\b(?:SEX|KASARIAN)\b[:\s\/A-Z]{0,12}?\b(MALE|FEMALE|LALAKI|BABAE|M|F)\b/) || FU.match(/\b(?:PHL|FILIPINO)\s+(M|F)\b/); F.sex = sx ? (/^(F|FEMALE|BABAE)$/.test(sx[1]) ? 'F' : 'M') : '';
+      const ntv = (labelVal(lines, /nationality|citizenship/i) || '').split(/\s+/)[0]; F.nationality = (/^(PHL|PH|FILIPINO|PHILIPPINES)$/i.test(ntv) || /\bFILIPINO\b|\bPHL\b/i.test(flat)) ? 'Filipino' : ntv;
+    } else {
+      F.school_name = (lines.slice(0, 10).find((l) => /UNIVERSITY|COLLEGE|SCHOOL|INSTITUTE|ACADEMY|PAMANTASAN|PAARALAN/i.test(l) && l.length > 6) || '').replace(/[^A-Za-z0-9 .,'&-]/g, '').trim();
+      const sn = labelVal(lines, /student\s*(?:no\.?|number|id)|id\s*(?:no\.?|number)/i, 1, (x) => /\d/.test(x)); const sm = flat.match(/\b\d{2,4}[-–]\d{4,7}(?:[-–][A-Z0-9]+)*\b/) || flat.match(/\b\d{7,12}\b/);
+      F.student_number = (sn && /\d/.test(sn) ? sn.split(/\s+/)[0] : sm ? sm[0] : '');
+      const cr = labelVal(lines, /(?:course|program|strand|grade\s*level|year\s*level)/i), cm = flat.match(/\b(BACHELOR OF [A-Z ,&-]{4,50}|BS\s?[A-Z]{2,8}|AB\s?[A-Z]{2,8}|GRADE\s?\d{1,2}|STEM|ABM|HUMSS|TVL)\b/i);
+      F.course = cr || (cm ? cm[0] : '');
+      const ay = flat.match(/\b(?:A\.?Y\.?|S\.?Y\.?|ACADEMIC YEAR|SCHOOL YEAR)\s*[:\-]?\s*(20\d{2}\s*[-–/]\s*(?:20)?\d{2})/i) || flat.match(/\b(20\d{2}\s*[-–]\s*20\d{2})\b/); F.academic_year = ay ? ay[1].replace(/\s+/g, '') : '';
+      const vl = lines.find((l) => /valid|expir|until/i.test(l)), vAt = vl && datesIn(vl + ' ' + (lines[lines.indexOf(vl) + 1] || ''))[0]; F.validity = vAt || all.filter((d) => d > today).sort().pop() || '';
+    }
+    Object.keys(F).forEach((k) => { F[k] = (F[k] || '').toString().trim(); });
+    return F;
+  }
+  async function ocr(canvases, onProg) {
+    if (!tessP) tessP = loadScript(LIB.tess);
+    await tessP;
+    const worker = await g.Tesseract.createWorker('eng', 1, { logger: (m) => { if (m.status === 'recognizing text') onProg && onProg(m.progress); } });
+    try {
+      let text = '', conf = 0, n = 0;
+      for (const c of canvases) { const { data } = await worker.recognize(scaled(c, 1800)); text += '\n' + data.text; conf += data.confidence; n++; }
+      return { text, confidence: n ? conf / n : 0 };
+    } finally { await worker.terminate(); }
+  }
+
+  // ---------------- face matching (advisory on the device; the server decides) ----------------
+  function loadFace() {
+    if (!faceP) faceP = loadScript(LIB.face).then(async () => {
+      const fa = g.faceapi; await fa.tf.ready();
+      await Promise.all([fa.nets.ssdMobilenetv1.loadFromUri(LIB.faceModels), fa.nets.faceLandmark68Net.loadFromUri(LIB.faceModels), fa.nets.faceRecognitionNet.loadFromUri(LIB.faceModels)]);
+      return fa;
+    }).catch((e) => { faceP = null; throw e; });
+    return faceP;
+  }
+  async function faceDesc(fa, canvas) { return fa.detectSingleFace(canvas, new fa.SsdMobilenetv1Options({ minConfidence: 0.35 })).withFaceLandmarks().withFaceDescriptor(); }
+  const pctFromDistance = (d) => Math.round(100 / (1 + Math.exp(12 * (d - 0.55))));
+  function cropFace(canvas, box) {
+    const m = 0.35, x = Math.max(0, box.x - box.width * m), y = Math.max(0, box.y - box.height * m), w = Math.min(canvas.width - x, box.width * (1 + 2 * m)), hh = Math.min(canvas.height - y, box.height * (1 + 2 * m));
+    const c = h('canvas'); c.width = Math.round(w); c.height = Math.round(hh); c.getContext('2d').drawImage(canvas, x, y, w, hh, 0, 0, c.width, c.height); return c;
+  }
+
+  // ---------------- upload ----------------
+  async function uploadAll(appId, items) {
+    const urls = await call('upload_urls', { app_id: appId, kinds: Object.keys(items) }), paths = {};
+    for (const k of Object.keys(items)) {
+      const { error } = await sb.storage.from(BUCKET).uploadToSignedUrl(urls[k].path, urls[k].token, items[k], { contentType: 'image/jpeg' });
+      if (error) throw new Error('upload_failed'); paths[k] = urls[k].path;
+    }
+    return paths;
+  }
+
+  // ---------------- screens ----------------
+  const STEPS = ['ID', 'Scan', 'Confirm', 'Face', 'Review'];
+  function stepper(n) {
+    const w = h('div'), bar = h('div', 'kyc-steps'), lb = h('div', 'kyc-stl');
+    STEPS.forEach((s, i) => { const b = h('i', i < n ? 'done' : i === n ? 'on' : ''); bar.append(b); lb.append(h('span', '', s)); });
+    w.append(bar, lb); return w;
+  }
+  function show(...nodes) { const w = h('div', 'kyc'); w.append(...nodes); root.replaceChildren(w); return w; }
+  const NOTICE = [
+    ['What we collect', 'Photos of your ID (front, and back if you add it), the details you confirm from it (such as name, birth date, ID or student number, address), and one live face photo from the face check.'],
+    ['Why', 'To confirm that you are a real person and that the ID belongs to you, so that we can give your account a verified badge. We do not use it for advertising or sell it.'],
+    ['Who can see it', 'Only you and Chatterverse administrators who review verification. Images are kept in a private, access-controlled storage area and are never public. Administrator views are logged.'],
+    ['How it is processed', 'Text reading and face comparison first run on your device. The Chatterverse operator may also use service providers for text reading and face comparison to double-check results on the server. A person always makes the final decision.'],
+    ['How long we keep it', 'Your live face photo is deleted as soon as a decision is made. ID images are deleted ' + '30 days after the decision. Applications you leave unfinished are cleared after 3 days. The badge type and decision dates are kept as a record. You can delete your ID images yourself at any time after a decision.'],
+    ['Security', 'Connections use HTTPS and stored files are encrypted at rest by our hosting provider. Only the server can change verification status.'],
+    ['Your rights', 'Under the Data Privacy Act of 2012 (RA 10173) you may access, correct, or ask for deletion of your data, and object to processing. Contact: jonjonsanjose11@gmail.com.'],
+    ['School IDs', 'A School ID badge means the ID details were reviewed. It does not confirm that you are currently enrolled.'],
+  ];
+
+  async function home() {
+    css(); S = {}; const loading = show(h('div', 'sub', 'Loading verification status…'));
+    let st; try { st = await call('status'); } catch (e) { return show(h('div', 'kyc-msg kyc-err', 'Identity verification is not set up yet. (' + (e.message || 'error') + ')'), btn('Try again', home)); }
+    const app = st.app, status = app ? app.status : 'draft', kids = [];
+    let isAdmin = false; try { isAdmin = (await call('whoami')).admin; } catch (e) {}
+    kids.push(h('h3', '', 'Identity Verification'));
+    const card = h('div', 'kyc-card'), pill = h('span', 'kyc-pill ' + status, st.badge && status !== 'pending_review' ? 'Verified' : SL[status]);
+    card.append(pill);
+    if (st.badge) { const r = h('div'); r.style.cssText = 'display:flex;align-items:center;gap:10px'; r.append(ico(st.badge.badge), (() => { const d = h('div'); d.append(h('b', '', BADGE[st.badge.badge]), h('div', 'sub', st.badge.badge === 'school' ? 'Your school ID details were reviewed. This does not confirm enrollment.' : 'Your identity was checked against an accepted government ID.')); return d; })()); card.append(r); }
+    if (app) {
+      const kv = h('div', 'kyc-kv'); const t = typeInfo(app.category, app.id_type);
+      [['Category', app.category === 'government' ? 'Government ID' : 'School ID'], ['ID type', t[1]], ['Submitted', app.submitted_at ? new Date(app.submitted_at).toLocaleString() : 'Not yet']].forEach(([k, v]) => kv.append(h('span', '', k), h('span', '', v)));
+      card.append(kv);
+      if (['rejected', 'resubmission_required'].includes(status) && app.review_reason) card.append(h('div', 'kyc-msg kyc-err', 'Reason: ' + app.review_reason));
+    }
+    const prog = { draft: 1, id_submitted: 3, face_pending: 3, pending_review: 4, verified: 5, rejected: 0, resubmission_required: 0 }[status] || 0;
+    kids.push(card, stepper(prog));
+    const next = {
+      draft: 'Start by choosing which ID you want to use.', id_submitted: 'Your ID was received. Next: the face check.', face_pending: 'Next: the face check.',
+      pending_review: 'All steps are done. An administrator is reviewing your application. You will see the result here.', verified: 'You are verified.',
+      rejected: 'Your application was not approved. You can start a new one.', resubmission_required: 'Please submit a clearer or different ID.',
+    }[status];
+    kids.push(h('div', 'sub', next));
+    const b = h('div', 'kyc-btns');
+    if (!app || ['rejected', 'resubmission_required', 'withdrawn'].includes(status)) { if (!st.badge) b.append(btn(status === 'draft' || !app ? 'Start verification' : 'Start a new application', () => stepType())); }
+    if (app && ['draft'].includes(status)) b.append(btn('Continue', () => stepType(app)));
+    if (app && ['id_submitted', 'face_pending'].includes(status)) b.append(btn('Continue to face check', () => { S = { appId: app.id, category: app.category, idType: app.id_type }; stepFace(); }));
+    if (app && ['draft', 'id_submitted', 'face_pending', 'pending_review'].includes(status)) b.append(btn('Cancel application', async () => { if (!confirm('Cancel this application and delete the uploaded images?')) return; try { await call('cancel', { app_id: app.id }); } catch (e) { alert(errText(e)); } home(); }, 'gray'));
+    if (app && ['verified', 'rejected', 'resubmission_required'].includes(status) && !app.files_deleted_at) b.append(btn('Delete my ID images', async () => { if (!confirm('Delete your ID images now? Your decision record stays.')) return; try { await call('delete_files', { app_id: app.id }); C.toast && C.toast('ID images deleted'); } catch (e) { alert(errText(e)); } home(); }, 'gray'));
+    if (isAdmin) b.append(btn('Admin: review applications', () => adminList(), 'gray'));
+    if (b.children.length) kids.push(b);
+    if (st.history && st.history.length) { const hs = h('div', 'kyc-hist'); hs.append(h('b', '', 'History')); st.history.slice(-8).reverse().forEach((x) => hs.append(h('div', '', new Date(x.created_at).toLocaleString() + ' · ' + x.action.replace(/_/g, ' ')))); kids.push(hs); }
+    show(...kids);
+  }
+
+  // step 1: consent + category + type
+  function stepType(existing) {
+    css(); S = existing ? { appId: existing.id, category: existing.category, idType: existing.id_type } : {};
+    const notice = h('div', 'kyc-card'); notice.append(h('b', '', 'Privacy Notice'));
+    const nb = h('div', 'kyc-notice'); NOTICE.forEach(([t, x]) => { const p = h('p'); p.append(h('b', '', t + '. '), document.createTextNode(x)); p.style.marginBottom = '6px'; nb.append(p); }); notice.append(nb);
+    const chk = h('label', 'kyc-chk'), cb = h('input'); cb.type = 'checkbox'; chk.append(cb, h('span', '', 'I have read the Privacy Notice. I agree that Chatterverse collects my ID and a live face photo to verify my identity.'));
+    const cats = h('div', 'kyc-cats'), list = h('div'), msg = h('div', 'kyc-msg kyc-err'); list.style.cssText = 'display:flex;flex-direction:column;gap:8px';
+    const mk = (k, title, desc) => { const c = h('button', 'kyc-cat ' + (k === 'government' ? 'gov' : 'sch')); c.type = 'button'; c.append(ico(k), h('b', '', title), h('span', '', desc)); c.onclick = () => { S.category = k; S.idType = null; draw(); }; return c; };
+    const cg = mk('government', 'Government ID', 'Issued by a government agency. Badge: Government ID Verified.'), cs = mk('school', 'School ID', 'Issued by your school. Badge: School ID Verified (does not confirm enrollment).');
+    cats.append(cg, cs);
+    const go = btn('Continue', async (b) => {
+      msg.textContent = ''; if (!cb.checked) return (msg.textContent = 'Please accept the Privacy Notice to continue.'); if (!S.category || !S.idType) return (msg.textContent = 'Choose a category and an ID type.');
+      b.disabled = true; try { const r = await call('begin', { category: S.category, id_type: S.idType, consent: true }); S.appId = r.app_id; stepScan(); } catch (e) { msg.textContent = errText(e); b.disabled = false; }
+    });
+    function draw() {
+      cg.classList.toggle('on', S.category === 'government'); cs.classList.toggle('on', S.category === 'school'); list.replaceChildren();
+      if (!S.category) return; list.append(h('div', 'sub', 'Choose your ID type'));
+      TYPES[S.category].forEach((t) => { const r = h('div', 'kyc-row' + (S.idType === t[0] ? ' on' : ''), t[1]); r.onclick = () => { S.idType = t[0]; draw(); }; list.append(r); });
+    }
+    draw();
+    show(btn('← Back', home, 'ghost'), stepper(0), h('h3', '', 'Choose your ID'), h('div', 'sub', 'You will scan your ID first. The face check comes after.'), cats, list, notice, chk, msg, go);
+  }
+
+  // step 2: scan front/back
+  async function stepScan() {
+    const t = typeInfo(S.category, S.idType); S.front = S.back = null;
+    const msg = h('div', 'kyc-msg'), prevF = h('div'), prevB = h('div');
+    const preview = (c, host, name) => { host.replaceChildren(); if (!c) return; const im = h('canvas'); im.width = c.width; im.height = c.height; im.getContext('2d').drawImage(c, 0, 0); im.className = 'kyc-prev'; host.append(h('b', '', name), im); };
+    const tip = 'Place the ID on a plain, dark surface. Fit it inside the frame, avoid glare, and keep all four corners visible.';
+    const sf = btn('Scan front of ID', async () => { const r = await scanDoc('Front of ' + t[1], tip); if (r) { S.front = r; preview(r.canvas, prevF, 'Front'); draw(); } });
+    const sb2 = btn(S.back ? 'Retake back' : 'Scan back of ID', async () => { const r = await scanDoc('Back of ' + t[1], tip); if (r) { S.back = r; preview(r.canvas, prevB, 'Back'); draw(); } }, 'gray');
+    const next = btn('Read my ID', () => stepOcr());
+    const btns = h('div', 'kyc-btns');
+    function draw() { sf.textContent = S.front ? 'Retake front' : 'Scan front of ID'; sb2.textContent = S.back ? 'Retake back' : 'Scan back of ID'; next.disabled = !S.front; }
+    btns.append(sf); if (t[2] !== 'none') btns.append(sb2); btns.append(next); draw();
+    show(btn('← Back', () => stepType({ id: S.appId, category: S.category, id_type: S.idType }), 'ghost'), stepper(1), h('h3', '', 'Scan your ' + t[1]),
+      h('div', 'sub', t[2] === 'none' ? 'Scan the photo page. This ID has no back side to scan.' : 'Scan the front. If the back has information (such as a validity date or address), scan it too. You can also upload a photo from your device.'), btns, msg, prevF, prevB);
+    ensureCV(60000).catch(() => {}); if (!tessP) tessP = loadScript(LIB.tess).catch(() => {}); loadFace().catch(() => {});
+  }
+
+  // step 3: OCR (+ portrait detection), then confirmation
+  async function stepOcr() {
+    const bar = h('i'), barw = h('div', 'kyc-bar'), msg = h('div', 'kyc-msg', 'Reading your ID…'); barw.append(bar);
+    show(stepper(2), h('h3', '', 'Reading your ID'), barw, msg);
+    let res;
+    try { res = await ocr([S.front.canvas].concat(S.back ? [S.back.canvas] : []), (p) => { bar.style.width = Math.round(p * 80) + '%'; }); }
+    catch (e) { return show(h('div', 'kyc-msg kyc-err', 'Could not load the text reader. Check your connection and try again.'), btn('Try again', stepOcr), btn('Back', stepScan, 'gray')); }
+    bar.style.width = '85%'; msg.textContent = 'Looking for your photo on the ID…';
+    S.ocr = { text: res.text, confidence: Math.round(res.confidence) }; S.auto = parseFields(S.category, S.idType, res.text);
+    S.portrait = null; S.faceChecked = false;
+    try { const fa = await loadFace(); const r = await faceDesc(fa, scaled(S.front.canvas, 1400)); S.faceChecked = true; if (r) { S.idDesc = r.descriptor; S.portrait = cropFace(scaled(S.front.canvas, 1400), r.detection.box); } } catch (e) {}
+    bar.style.width = '100%';
+    const found = Object.values(S.auto).filter(Boolean).length;
+    if (S.ocr.confidence < 35 && found < 2) return show(stepper(2), h('h3', '', 'We could not read this ID'), h('div', 'sub', 'The text was not clear enough. Retake the photo in better light, or upload a sharper image.'), btn('Retake or upload', stepScan));
+    stepConfirm();
+  }
+  function stepConfirm() {
+    const gov = S.category === 'government', t = typeInfo(S.category, S.idType);
+    const spec = gov ? [['full_name', 'Full name *'], ['dob', 'Date of birth *', 'date'], ['id_number', 'ID number *'], ['sex', 'Sex'], ['nationality', 'Nationality'], ['expiry', 'Expiration date', 'date'], ['address', 'Address', 'area']]
+      : [['full_name', 'Full name *'], ['school_name', 'School name *'], ['student_number', 'Student number'], ['course', 'Course or grade level'], ['academic_year', 'Academic year'], ['validity', 'Validity or expiration date', 'date']];
+    const grid = h('div', 'kyc-fields'), inputs = {};
+    spec.forEach(([k, lab, type]) => {
+      const l = h('label', type === 'area' ? 'wide' : ''), tag = h('span'); const got = !!S.auto[k];
+      l.append(h('span', '', lab)); const i = h(type === 'area' ? 'textarea' : 'input'); if (type === 'area') i.rows = 2; else i.type = type === 'date' ? 'date' : 'text';
+      i.value = (S.fields && S.fields[k] != null ? S.fields[k] : S.auto[k]) || ''; i.maxLength = k === 'address' ? 300 : 120; inputs[k] = i; i.oninput = () => { i.classList.remove('miss'); validate(); };
+      tag.className = got ? 'auto' : 'nf'; tag.textContent = got ? 'Read from your ID. Check it.' : 'Not found. Enter it if your ID shows it.'; l.append(i, tag); if (!got && lab.includes('*')) i.classList.add('miss'); grid.append(l);
+    });
+    const req = gov ? ['full_name', 'dob', 'id_number'] : ['full_name', 'school_name'];
+    const chk = h('label', 'kyc-chk'), cb = h('input'); cb.type = 'checkbox'; chk.append(cb, h('span', '', 'I checked these details against my ID and they are correct.'));
+    const msg = h('div', 'kyc-msg'), go = btn('Confirm and continue', () => submitId(collect(), go));
+    const collect = () => { const f = {}; Object.keys(inputs).forEach((k) => { f[k] = inputs[k].value.trim(); }); return f; };
+    function validate() { const f = collect(), ok = req.every((k) => f[k] && f[k].length >= 2) && cb.checked && !(S.faceChecked && !S.portrait); go.disabled = !ok; }
+    cb.onchange = validate;
+    const prev = h('div', 'kyc-card'); prev.append(h('b', '', 'Your submitted ID')); const im = h('canvas', 'kyc-prev'); im.width = S.front.canvas.width; im.height = S.front.canvas.height; im.getContext('2d').drawImage(S.front.canvas, 0, 0); prev.append(im);
+    if (S.back) { const ib = h('canvas', 'kyc-prev'); ib.width = S.back.canvas.width; ib.height = S.back.canvas.height; ib.getContext('2d').drawImage(S.back.canvas, 0, 0); prev.append(ib); }
+    const kids = [btn('← Back', stepScan, 'ghost'), stepper(2), h('h3', '', 'Check your details'), h('div', 'sub', 'We read these from your ' + t[1] + '. Fix anything that is wrong. Not every ID has every field, so leave blank what your ID does not show. Fields with * are required.'), prev];
+    if (S.portrait) { const p = h('div', 'kyc-card'); p.append(h('b', '', gov ? 'Photo found on your ID' : 'Student photo found on your ID')); S.portrait.style.cssText = 'width:96px;border-radius:10px'; p.append(S.portrait); kids.push(p); }
+    else if (S.faceChecked) { const w = h('div', 'kyc-msg kyc-err', 'We could not find a clear face photo on this ID, and we need it to match you. Retake the front so the photo is visible and sharp.'); kids.push(w); }
+    kids.push(grid, chk, msg, go); const w = show(...kids); validate(); if (S.fields) cb.checked = false;
+  }
+  async function submitId(fields, goBtn) {
+    S.fields = fields; goBtn.disabled = true; const bar = h('i'), barw = h('div', 'kyc-bar'); barw.append(bar);
+    show(stepper(2), h('h3', '', 'Securely uploading'), barw, h('div', 'kyc-msg', 'Your images go to a private storage area.')); bar.style.width = '15%';
+    try {
+      const items = { front: await canvasBlob(scaled(S.front.canvas, 1600)) }; if (S.back) items.back = await canvasBlob(scaled(S.back.canvas, 1600));
+      const paths = await uploadAll(S.appId, items); bar.style.width = '70%';
+      await call('submit_id', { app_id: S.appId, front_path: paths.front, back_path: paths.back || null, fields, ocr_original: S.auto, ocr_confidence: S.ocr.confidence }); bar.style.width = '100%';
+      stepFace();
+    } catch (e) { show(h('div', 'kyc-msg kyc-err', errText(e)), btn('Try again', () => stepConfirm()), btn('Cancel', home, 'gray')); }
+  }
+
+  // step 4: face liveness -> match -> finalize
+  function stepFace() {
+    const go = btn('Start face check', runFace);
+    show(stepper(3), h('h3', '', 'Face check'), h('div', 'sub', 'Your ID is saved. Now we confirm that a real person is present. You will do a few quick random movements (like looking left or smiling) in front of your camera. Keep only your face in view.'), go, btn('Do this later', home, 'gray'));
+  }
+  async function runFace() {
+    let r; try { r = await g.Liveness.open({ supabase: sb, captureSelfie: true }); } catch (e) { r = { status: 'retry' }; }
+    if (!r || r.status === 'retry') return stepFace();
+    if (r.status === 'failed') return show(stepper(3), h('h3', '', 'Face check failed'), h('div', 'kyc-msg kyc-err', 'We could not confirm that a live person is present. You can try again.'), btn('Try again', runFace), btn('Back to status', home, 'gray'));
+    if (!r.selfie || !r.sessionId) return show(h('div', 'kyc-msg kyc-err', 'The live photo was not captured. Please try the face check again.'), btn('Try again', runFace));
+    const bar = h('i'), barw = h('div', 'kyc-bar'), msg = h('div', 'kyc-msg', 'Comparing your face with the ID photo…'); barw.append(bar);
+    show(stepper(3), h('h3', '', 'Matching your face to your ID'), barw, msg); bar.style.width = '25%';
+    let cf = null;
+    try {
+      const fa = await loadFace(), sc = await fileToCanvas(r.selfie), sd = await faceDesc(fa, sc); bar.style.width = '60%';
+      if (sd && S.idDesc) { const d = fa.euclideanDistance(S.idDesc, sd.descriptor); cf = { distance: +d.toFixed(4), pct: pctFromDistance(d) }; }
+    } catch (e) { cf = null; }
+    try {
+      bar.style.width = '75%'; const paths = await uploadAll(S.appId, { selfie: r.selfie });
+      const out = await call('finalize', { app_id: S.appId, liveness_session_id: r.sessionId, selfie_path: paths.selfie, client_face: cf }); bar.style.width = '100%';
+      S.front = S.back = null; S.idDesc = null;
+      if (out.status === 'rejected') return show(stepper(0), h('h3', '', 'Face did not match'), h('div', 'kyc-msg kyc-err', out.reason || 'The live face did not match the photo on the ID.'), btn('Back to status', home));
+      show(stepper(5), h('h3', '', 'Submitted'), h('div', 'kyc-msg kyc-ok', 'Your application is now Pending Admin Review.'), h('div', 'sub', 'An administrator will review your ID and face check. You will see the final status on this page.'), btn('View status', home));
+    } catch (e) { show(h('div', 'kyc-msg kyc-err', errText(e)), btn('Try the face check again', runFace), btn('Back to status', home, 'gray')); }
+  }
+
+  // ---------------- admin dashboard ----------------
+  async function adminList() {
+    css(); const fS = h('select'), fC = h('select'), fT = h('select'), list = h('div'), msg = h('div', 'kyc-msg');
+    [['pending_review', 'Pending review'], ['', 'All statuses'], ['verified', 'Verified'], ['rejected', 'Rejected'], ['resubmission_required', 'Resubmission required'], ['face_pending', 'Face pending'], ['id_submitted', 'ID submitted']].forEach(([v, t]) => { const o = h('option', '', t); o.value = v; fS.append(o); });
+    [['', 'Government and School'], ['government', 'Government IDs'], ['school', 'School IDs']].forEach(([v, t]) => { const o = h('option', '', t); o.value = v; fC.append(o); });
+    const o0 = h('option', '', 'All ID types'); o0.value = ''; fT.append(o0); GOV.concat(SCH).forEach((t) => { const o = h('option', '', t[1]); o.value = t[0]; fT.append(o); });
+    [fS, fC, fT].forEach((s) => { s.style.cssText = 'padding:9px 10px;border-radius:10px;background:var(--bg2);color:var(--tx);border:1px solid var(--line);font:inherit'; s.onchange = load; });
+    const bar = h('div'); bar.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap'; bar.append(fS, fC, fT);
+    async function load() {
+      list.replaceChildren(); msg.textContent = 'Loading…';
+      let q = sb.from('kyc_applications').select('id,user_id,category,id_type,status,submitted_at,created_at,face_score,face_score_source,flags,fields,liveness_passed').order('created_at', { ascending: false }).limit(100);
+      if (fS.value) q = q.eq('status', fS.value); else q = q.neq('status', 'draft').neq('status', 'withdrawn'); if (fC.value) q = q.eq('category', fC.value); if (fT.value) q = q.eq('id_type', fT.value);
+      const { data, error } = await q; if (error) { msg.textContent = 'Could not load: ' + error.message; return; }
+      msg.textContent = data.length ? '' : 'No applications match.';
+      const ids = [...new Set(data.map((r) => r.user_id))]; const un = {}; if (ids.length) { const p = await sb.from('profiles').select('id,username').in('id', ids); (p.data || []).forEach((x) => { un[x.id] = x.username; }); }
+      data.forEach((r) => {
+        const row = h('div', 'kyc-row'), l = h('div'); l.append(h('b', '', (r.fields && r.fields.full_name) || un[r.user_id] || 'Unnamed'), h('div', 'sub', '@' + (un[r.user_id] || r.user_id.slice(0, 8)) + ' · ' + typeInfo(r.category, r.id_type)[1] + ' · ' + (r.category === 'government' ? 'Government' : 'School')));
+        const rt = h('div'); rt.style.textAlign = 'right'; rt.append(h('span', 'kyc-pill ' + r.status, SL[r.status]), h('div', 'sub', r.face_score != null ? 'Face ' + Math.round(r.face_score) + '% (' + r.face_score_source + ')' : 'No face score'));
+        row.append(l, rt); row.onclick = () => adminDetail(r.id, adminList); list.append(row);
+      });
+      list.style.cssText = 'display:flex;flex-direction:column;gap:8px';
+    }
+    show(btn('← Back', home, 'ghost'), h('h3', '', 'Identity verification review'), h('div', 'sub', 'Only administrators can see this. Opening an application is recorded in the audit log.'), bar, msg, list); load();
+  }
+  async function adminDetail(id, back) {
+    show(btn('← Back', back, 'ghost'), h('div', 'sub', 'Loading application…'));
+    let d; try { d = await call('admin_get', { app_id: id }); } catch (e) { return show(btn('← Back', back, 'ghost'), h('div', 'kyc-msg kyc-err', errText(e))); }
+    const a = d.app, kids = [btn('← Back', back, 'ghost'), h('h3', '', typeInfo(a.category, a.id_type)[1]), (() => { const p = h('div'); p.append(h('span', 'kyc-pill ' + a.status, SL[a.status]), document.createTextNode('  '), h('span', 'kyc-pill', a.category === 'government' ? 'Government ID' : 'School ID')); return p; })()];
+    const imgs = h('div', 'kyc-imgs'); [['front_path', 'ID front'], ['back_path', 'ID back'], ['selfie_path', 'Live face photo']].forEach(([k, n]) => { if (d.urls[k]) { const w = h('div'); const im = h('img'); im.src = d.urls[k]; im.alt = n; im.onclick = () => window.open(d.urls[k], '_blank', 'noopener'); w.append(im, h('div', 'sub', n)); imgs.append(w); } });
+    kids.push(imgs.children.length ? imgs : h('div', 'sub', 'Images were deleted or are not available.'));
+    const fc = h('div', 'kyc-card'); fc.append(h('b', '', 'Details confirmed by the user')); const kv = h('div', 'kyc-kv'); const orig = a.ocr_original || {};
+    Object.entries(a.fields || {}).filter(([, v]) => v).forEach(([k, v]) => { kv.append(h('span', '', k.replace(/_/g, ' ')), h('span', '', v + (orig[k] !== undefined && orig[k] !== v ? '   (OCR read: ' + (orig[k] || 'nothing') + ')' : ''))); }); fc.append(kv); kids.push(fc);
+    const sc = h('div', 'kyc-card'); sc.append(h('b', '', 'Checks')); const k2 = h('div', 'kyc-kv');
+    const rows = [['Face liveness', a.liveness_passed ? 'Passed (server-verified session)' : 'Not passed'], ['Face match', a.face_score != null ? Math.round(a.face_score) + '% from ' + (a.face_score_source === 'rekognition' ? 'server comparison' : 'user’s device only') : 'No score'],
+      ['OCR confidence', a.ocr_confidence != null ? Math.round(a.ocr_confidence) + '%' : 'n/a'], ['Server OCR', a.server_ocr ? (a.server_ocr.read ? 'Name match ' + Math.round((a.server_ocr.name_match || 0) * 100) + '%, ID number ' + (a.server_ocr.id_number_match === null ? 'n/a' : a.server_ocr.id_number_match ? 'found' : 'NOT found') : 'Not read') : 'Not configured']];
+    rows.forEach(([k, v]) => k2.append(h('span', '', k), h('span', '', v))); sc.append(k2);
+    if ((a.flags || []).length) { const f = h('div'); f.append(h('div', 'sub', 'Flags')); a.flags.forEach((x) => f.append(h('span', 'kyc-chip', FLAG_TXT[x] || x))); sc.append(f); } kids.push(sc);
+    if (a.status === 'pending_review') {
+      const reason = h('textarea'); reason.rows = 2; reason.placeholder = 'Reason (required to reject or request resubmission)'; reason.style.cssText = 'width:100%;box-sizing:border-box;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--tx);padding:10px;font:inherit';
+      const msg = h('div', 'kyc-msg'); const decide = async (dec, b) => { if (dec === 'approve' && !confirm('Approve this application and give the ' + (a.category === 'government' ? 'Government ID' : 'School ID') + ' Verified badge?')) return; b.disabled = true; try { await call('admin_decide', { app_id: a.id, decision: dec, reason: reason.value }); C.toast && C.toast('Saved'); back(); } catch (e) { msg.textContent = errText(e); msg.className = 'kyc-msg kyc-err'; b.disabled = false; } };
+      const bt = h('div', 'kyc-btns'); bt.append(btn('Approve', (b) => decide('approve', b)), btn('Request resubmission', (b) => decide('resubmit', b), 'gray'), btn('Reject', (b) => decide('reject', b), 'gray'));
+      kids.push(reason, msg, bt);
+    } else if (a.review_reason) kids.push(h('div', 'kyc-msg', 'Decision note: ' + a.review_reason));
+    const hs = h('div', 'kyc-hist'); hs.append(h('b', '', 'Audit history')); (d.history || []).forEach((x) => hs.append(h('div', '', new Date(x.created_at).toLocaleString() + ' · ' + x.actor_role + ' · ' + x.action.replace(/_/g, ' ') + (x.note ? ' · ' + x.note : '')))); kids.push(hs);
+    show(...kids);
+  }
+
+  function mount(box, ctx) { css(); C = ctx || {}; sb = C.sb; root = box; root.replaceChildren(); home(); }
+  g.KYC = { mount, gate, isApproved, loadBadges, badgeEl, label };
 })(window);
 
 </script>
@@ -2619,6 +3269,7 @@ async function ensureNames(ids) {
     const tr = hasVerificationColumn ? tierFrom(p) : "none"; badgeTier[p.id] = tr; verifiedUsers[p.id] = tr !== "none";
     verifiedLoaded.add(p.id);
   });
+  try { await KYC.loadBadges(sb, need); } catch (e) {}
   loadPhotos(need);
   need.forEach(i => {
     if (!names[i]) names[i] = "Someone";
@@ -2627,6 +3278,7 @@ async function ensureNames(ids) {
   });
 }
 function verifiedBadge(uid) {
+  { const kb = window.KYC && KYC.badgeEl(uid, badgeTier[uid]); if (kb) return kb; }
   if (!verifiedUsers[uid]) return null;
   const b = el("span", "vbadge");
   b.title = badgeTier[uid] === "blue" ? "Blue verified" : "Verified account";
@@ -2670,6 +3322,7 @@ async function refreshAccountStatus(showNotice = true) {
   return true;
 }
 function verifiedBadge(uid) {
+  { const kb = window.KYC && KYC.badgeEl(uid, badgeTier[uid]); if (kb) return kb; }
   if (!verifiedUsers[uid]) return null;
   const b = el("span", "vbadge");
   b.title = badgeTier[uid] === "blue" ? "Blue verified" : "Verified account";
@@ -5459,7 +6112,7 @@ async function openProfileTransparency(uid) {
   const createdAt = uid === me.id ? (me.created_at || (meta.data && meta.data.created_at)) : (meta.data && meta.data.created_at);
   const updatedAt = meta.data && meta.data.updated_at;
   const verified = verificationAvailable ? meta.data?.is_verified === true : verifiedUsers[uid] === true;
-  const vr = row('<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.8 21 5v6.1c0 5.5-3.7 9.2-9 11.1-5.3-1.9-9-5.6-9-11.1V5l9-3.2Z" fill="currentColor"/><path d="m7.4 11.9 3 3 6.3-6.4" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>', "Verified account status", verified ? "Verified — this account has been verified by the Chatterverse team." : "Not verified", "pt-verified-detail");
+  const vr = row('<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.8 21 5v6.1c0 5.5-3.7 9.2-9 11.1-5.3-1.9-9-5.6-9-11.1V5l9-3.2Z" fill="currentColor"/><path d="m7.4 11.9 3 3 6.3-6.4" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>', "Verified account status", verified ? ((window.KYC && KYC.label(uid)) ? KYC.label(uid) + ". Identity details were reviewed by the Chatterverse team." + (KYC.label(uid) === "School ID Verified" ? " This does not confirm school enrollment." : "") : "Verified — this account has been verified by the Chatterverse team.") : "Not verified", "pt-verified-detail");
   vr.classList.add("pt-verified");
   if (!verified) vr.classList.add("pt-unverified");
   card.append(vr);
@@ -5797,7 +6450,7 @@ async function loadBdays() {
 }
 let S = {}, stCat = null, stItem = null;
 const ST = {
-  "Account Basics": ["Name", "Username", "Contact Information", "Verified Badge", "Profile color", "Password and safety", "Language and Region", "Deactivate or delete", "Account control"],
+  "Account Basics": ["Name", "Username", "Contact Information", "Identity Verification", "Verified Badge", "Profile color", "Password and safety", "Language and Region", "Deactivate or delete", "Account control"],
   "Privacy Settings": ["Message delivery", "Who can see your new posts?", "Review your posts and tags", "Who can follow you?", "Who can view your friends?", "Can people find you by your email?", "Can people find you by your phone number?", "Should your profile show up in search engines?", "Who can comment on your public posts?", "Who can see your profile information?"],
   "Security & Sign-in": ["Change password", "Active sessions", "Sign out of devices", "Remember this device", "Two-factor authentication", "Alerts for new sign-ins", "Trusted devices", "Recovery contact"],
   "Notifications": ["Sounds", "Custom sounds", "Comments", "Likes", "Replies to comments", "Tags", "Mentions", "Messages", "Reminders", "New followers", "New friends", "Suggested people", "Birthdays", "Group activity", "Profile activity", "Clips", "Push notifications", "Email notifications", "In-app notifications", "Notification sounds"],
@@ -6212,6 +6865,8 @@ function setDetail(it, row) {
       status.textContent = notes.length ? "Some activity types could not be loaded: " + notes.join(", ") + "." : "Recent activity";
     })();
   } else if (INFO[it]) { cap(INFO[it]);
+  } else if (it === "Identity Verification") {
+    KYC.mount(d, {sb, me, toast});
   } else if (it === "Verified Badge") {
     const t = myTier(), pick = el("div"), pane = el("div"), cards = {};
     const price = PAY_INFO.plans.filter(x => x.price).length ? " " + PAY_INFO.plans.filter(x => x.price).map(x => x.price + " for " + x.days + " days").join(", ") + "." : "";
@@ -6236,7 +6891,7 @@ function setDetail(it, row) {
     const choose = k => {
       Object.keys(cards).forEach(x => cards[x].style.borderColor = x === k ? (x === "blue" ? "#1d9bf0" : "#858b94") : "rgba(128,128,128,.35)");
       pane.replaceChildren(); msg.textContent = "";
-      if (k === "grey" && t !== "none") greyForm(); else faceGate(pane, () => { if (k === "grey") greyForm(); else payUi(pane); });
+      if (k === "grey") { if (t !== "none") greyForm(); else KYC.mount(pane, {sb, me, toast}); } else KYC.gate(pane, {sb, me, toast, tier: t, openPage: () => { stItem = "Identity Verification"; drawSet(); }}, () => payUi(pane));
     };
     const gp = TIER_PERKS.grey, bp = TIER_PERKS.blue;
     [["grey", "Grey badge", "Free", "Verified badge, " + gp.pins + " pinned post, " + gp.highlights + " story highlights, bio up to " + gp.bioMax + " characters, " + gp.linksMax + " links, basic stickers, groups up to " + gp.groupMax + " members. Reviewed by our team."],
