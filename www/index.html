@@ -1701,6 +1701,19 @@ requestAnimationFrame(k)})()</script>
     turn_right: { label: 'Turn your head right', icon: '↷', th: 1, score: (b, r) => Math.max(0, (0.5 - r) / 0.15) },
   };
 
+  // Plain-language explanation for each "try again" reason.
+  const RETRY_MSG = {
+    low_light: 'It was too dark. Move to a brighter spot.',
+    timeout: 'We did not catch the move in time. Do it a little slower and clearer, with your face in the oval.',
+    face_lost: 'We lost sight of your face. Keep your whole face in the picture.',
+    session_expired: 'That took too long. Start again and go a little faster.',
+    too_few_frames: 'Your phone read the camera too slowly. Close other apps and try again.',
+    rate_limited: 'Too many attempts in the last hour. Please wait a while and try again later.',
+    camera: 'We could not use the camera.',
+    model: 'We could not load face detection. Check your internet connection.',
+    server: 'We could not reach the verification service.',
+    cancelled: 'The check was cancelled.',
+  };
   const CSS = `
 .lv-root{--a:var(--me,#7c3aed);--ok:#22c55e;--bad:#ef4444;--warn:#f59e0b;
  --lv-card:var(--bg,#fff);--lv-in:var(--bg2,#f0f2f5);--lv-fg:var(--tx,#050505);--lv-mut:var(--mut,#65676b);
@@ -1850,10 +1863,11 @@ requestAnimationFrame(k)})()</script>
           ? 'More than one face was in view. Only you should be in the frame.'
           : 'We could not confirm that a live person is present.'],
         retry:    ['↻', 'var(--warn)', 'Let’s try again', reason === 'low_light'
-          ? 'It was too dark. Move to a brighter spot.'
-          : 'We could not clearly detect the movement. Face the camera in good light.'],
+          ? RETRY_MSG.low_light
+          : (RETRY_MSG[reason] || 'We could not clearly detect the movement. Face the camera in good light.')],
       }[status];
       res.innerHTML = `<div class="lv-badge" style="background:${map[1]}">${map[0]}</div><h3>${map[2]}</h3><p>${map[3]}</p>`;
+      if (status !== 'verified') { const cd = document.createElement('p'); cd.style.cssText = 'font-size:.72rem;opacity:.6;margin-top:4px'; cd.textContent = 'Code: ' + String(reason || 'unknown').slice(0, 40); res.appendChild(cd); }
       const b = document.createElement('button'); b.className = 'lv-btn';
       if (status === 'retry') {
         b.textContent = 'Try again';
@@ -1896,7 +1910,11 @@ requestAnimationFrame(k)})()</script>
       // Ask the server for the random challenge order.
       setIns('…', 'Preparing your check', '');
       const { data: sess, error: se } = await sb.functions.invoke(CFG.fn, { body: { action: 'start' } });
-      if (se || !sess || !sess.challenges) return showResult('retry', 'server'), void setCamMsg('Could not reach the verification service.');
+      if (se || !sess || !sess.challenges) {
+        let st = 0; try { st = (se && se.context && se.context.status) || 0; } catch (e) {}
+        if (st === 429 || (sess && sess.error === 'rate_limited')) return showResult('retry', 'rate_limited');
+        return showResult('retry', 'server'), void setCamMsg('Could not reach the verification service.' + (st ? ' (error ' + st + ')' : ''));
+      }
       const chal = sess.challenges.filter((id) => CH[id]);
 
       dotsEl.innerHTML = chal.map(() => '<i></i>').join('');
@@ -1928,7 +1946,7 @@ requestAnimationFrame(k)})()</script>
         const { data, error } = await sb.functions.invoke(CFG.fn, {
           body: { action: 'submit', session_id: sess.session_id, results, meta, client_status: 'verified' },
         });
-        if (error || !data || !data.status) return showResult('retry', 'server');
+        if (error || !data || !data.status) { let st = 0; try { st = (error && error.context && error.context.status) || 0; } catch (e) {} return showResult('retry', st === 429 ? 'rate_limited' : 'server'), void setCamMsg('Could not finish the check.' + (st ? ' (error ' + st + ')' : '')); }
         let { status, reason } = data;
         if (status === 'retry' && attempt >= CFG.maxAttempts) { status = 'failed'; reason = 'too_many_retries'; }
         showResult(status, reason);
