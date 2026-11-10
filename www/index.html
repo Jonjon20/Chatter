@@ -2173,7 +2173,7 @@ requestAnimationFrame(k)})()</script>
     catch (e) { bmp = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = URL.createObjectURL(file); }); }
     const w = bmp.width || bmp.naturalWidth, hh = bmp.height || bmp.naturalHeight;
     const c = document.createElement('canvas'); c.width = w; c.height = hh; c.getContext('2d').drawImage(bmp, 0, 0);
-    return scaled(c, 2400);
+    return scaled(c, 3200);
   }
 
   // ---------------- styles ----------------
@@ -2274,31 +2274,14 @@ requestAnimationFrame(k)})()</script>
 
   // ---------------- ID image processing ----------------
   function quality(card) {
-    // Keep live checks cheap: use a modest working image and sample the Laplacian.
-    const w = Math.min(480, card.width), hh = Math.max(8, Math.round(card.height * (w / card.width)));
-    const t = h('canvas'); t.width = w; t.height = hh;
-    const x = t.getContext('2d', { willReadFrequently: true });
-    x.drawImage(card, 0, 0, w, hh);
-    const d = x.getImageData(0, 0, w, hh).data, n0 = w * hh;
-    const gray = new Uint8Array(n0);
-    let sum = 0, sumSq = 0, glare = 0;
-    for (let i = 0, j = 0; i < d.length; i += 4, j++) {
-      const v = (77 * d[i] + 150 * d[i + 1] + 29 * d[i + 2]) >> 8;
-      gray[j] = v; sum += v; sumSq += v * v;
-      if (v >= 250) glare++;
-    }
-    const mean = sum / n0, sd = Math.sqrt(Math.max(0, sumSq / n0 - mean * mean));
-    // Sampling every second pixel cuts the expensive sharpness pass by ~75%.
-    let lapSum = 0, lapSq = 0, samples = 0;
-    for (let y = 1; y < hh - 1; y += 2) {
-      for (let xx = 1; xx < w - 1; xx += 2) {
-        const i = y * w + xx;
-        const v = 4 * gray[i] - gray[i - 1] - gray[i + 1] - gray[i - w] - gray[i + w];
-        lapSum += v; lapSq += v * v; samples++;
-      }
-    }
-    const blur = samples ? Math.max(0, lapSq / samples - (lapSum / samples) ** 2) : 0;
-    const gl = glare / n0, issues = [];
+    const w = Math.min(640, card.width), hh = Math.max(8, Math.round(card.height * (w / card.width)));
+    const t = h('canvas'); t.width = w; t.height = hh; const x = t.getContext('2d', { willReadFrequently: true }); x.drawImage(card, 0, 0, w, hh);
+    const d = x.getImageData(0, 0, w, hh).data, n0 = w * hh, gr = new Float32Array(n0); let sum = 0, gl = 0;
+    for (let i = 0, j = 0; i < d.length; i += 4, j++) { const v = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]; gr[j] = v; sum += v; if (v >= 250) gl++; }
+    const mean = sum / n0; gl /= n0; let sd = 0; for (let j = 0; j < n0; j++) sd += (gr[j] - mean) ** 2; sd = Math.sqrt(sd / n0);
+    let s = 0, s2 = 0, n = 0;
+    for (let y = 1; y < hh - 1; y++) for (let xx = 1; xx < w - 1; xx++) { const i = y * w + xx, l = 4 * gr[i] - gr[i - 1] - gr[i + 1] - gr[i - w] - gr[i + w]; s += l; s2 += l * l; n++; }
+    const blur = s2 / n - (s / n) ** 2, issues = [];
     if (sd < 16) issues.push(['block', 'This does not look like an ID. Make sure the card fills the frame.']);
     if (blur < 30) issues.push(['block', 'The image is too blurry. Hold steady and let the camera focus, or upload a sharper photo.']);
     else if (blur < 60) issues.push(['warn', 'The image is a little soft. Text may be hard to read.']);
@@ -2306,8 +2289,9 @@ requestAnimationFrame(k)})()</script>
     else if (mean < 65) issues.push(['warn', 'The image is dim. More light will help.']);
     if (gl > 0.18) issues.push(['block', 'Strong glare covers the ID. Tilt the card to avoid reflections.']);
     else if (gl > 0.06) issues.push(['warn', 'There is some glare. Tilt the card slightly.']);
-    if (card.width < 450) issues.push(['block', 'The image resolution is too low.']);
-    else if (card.width < 700) issues.push(['warn', 'The image resolution is low. Move closer or use a better photo.']);
+    const longSide = Math.max(card.width || 0, card.height || 0);
+    if (longSide < 450) issues.push(['block', 'The image resolution is too low. Move closer to the ID or upload the original photo.']);
+    else if (longSide < 700) issues.push(['warn', 'The image resolution is low. Move closer or upload the original photo.']);
     return { blur: +blur.toFixed(1), mean: +mean.toFixed(1), glare: +gl.toFixed(3), issues };
   }
   function ensureCV(ms) {
@@ -2344,7 +2328,7 @@ requestAnimationFrame(k)})()</script>
       let W = Math.max(d(tl, tr), d(bl, br)), H = Math.max(d(tl, bl), d(tr, br)), rot = false;
       if (H > W) { [W, H] = [H, W]; rot = true; }
       const ar = W / H; if (ar < 1.25 || ar > 1.95) return null;
-      const OW = Math.min(1600, Math.round(W)), OH = Math.round(OW / ar);
+      const OW = Math.min(2400, Math.round(W)), OH = Math.round(OW / ar);
       const from = rot ? [tr, br, bl, tl] : [tl, tr, br, bl];   // rotate portrait cards so text is upright
       const sM = T(cv.matFromArray(4, 1, cv.CV_32FC2, from.flat())), dM = T(cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, OW, 0, OW, OH, 0, OH]));
       const M = T(cv.getPerspectiveTransform(sM, dM)), out = T(new cv.Mat());
@@ -2383,24 +2367,13 @@ requestAnimationFrame(k)})()</script>
         const gw = guide.offsetWidth, gh = guide.offsetHeight, gx = (cw - gw) / 2, gy = (ch - gh) / 2;
         return { x: (gx + ox) / sc, y: (gy + oy) / sc, w: gw / sc, h: gh / sc };
       };
-      const frameCanvas = () => {
-        // Capture only the guide area instead of the entire 1080p/4K camera frame.
-        const r = guideRect(); if (!r) return null;
-        const maxW = 1400, scale = Math.min(1, maxW / r.w);
-        const c = h('canvas'); c.width = Math.max(1, Math.round(r.w * scale)); c.height = Math.max(1, Math.round(r.h * scale));
-        c.getContext('2d', { alpha: false }).drawImage(video, r.x, r.y, r.w, r.h, 0, 0, c.width, c.height);
-        return c;
-      };
+      const frameCanvas = () => { const c = h('canvas'); c.width = video.videoWidth; c.height = video.videoHeight; c.getContext('2d').drawImage(video, 0, 0); return c; };
       const setBusy = (t) => { busy.style.display = t ? 'grid' : 'none'; busy.textContent = t || ''; };
 
       async function handle(src, fromCam) {
-        let card = src, method = 'guide';
-        // Camera capture is already cropped to the guide. Avoid loading/running OpenCV
-        // on every capture; reserve perspective detection for manually uploaded photos.
-        if (!fromCam) {
-          setBusy('Detecting ID edges…');
-          try { const detected = await detectCard(src); if (detected) { card = detected; method = 'auto'; } } catch (e) {}
-        }
+        setBusy('Detecting ID edges…'); let card = null, method = 'guide';
+        try { card = await detectCard(src); if (card) method = 'auto'; } catch (e) { card = null; }
+        if (!card) card = fromCam ? guideCrop(src, guideRect()) : src;
         const q = quality(card); setBusy('');
         showReview({ canvas: card, method, q });
       }
@@ -2415,21 +2388,21 @@ requestAnimationFrame(k)})()</script>
         b.append(btn('Retake', () => { review.style.display = 'none'; cam.style.display = ''; ctrl.style.display = ''; tipEl.style.display = ''; }, 'gray'), btn('Upload another', () => file.click(), 'gray'), use);
         review.append(b);
       }
-      function capture() { if (!video.videoWidth) return; const frame = frameCanvas(); if (frame) handle(frame, true); }
+      function capture() { if (!video.videoWidth) return; handle(frameCanvas(), true); }
       file.onchange = async () => { const f = file.files && file.files[0]; file.value = ''; if (!f) return; try { setBusy('Reading image…'); cam.style.display = ''; await handle(await fileToCanvas(f), false); } catch (e) { setBusy(''); hint.textContent = 'Could not read that image.'; } };
 
       (async () => {
         try {
           if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw { name: 'SecurityError' };
-          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } }, audio: false });
+          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 2560 }, height: { ideal: 1440 }, frameRate: { ideal: 30, max: 30 } }, audio: false });
           video.srcObject = stream; await video.play();
           timer = setInterval(() => {
             if (document.hidden || review.style.display === 'block' || !video.videoWidth) return;
-            const r = guideRect(); if (!r) return; const lc = h('canvas'); lc.width = 280; lc.height = Math.round(280 * r.h / r.w);
+            const r = guideRect(); if (!r) return; const lc = h('canvas'); lc.width = 400; lc.height = Math.round(400 * r.h / r.w);
             lc.getContext('2d').drawImage(video, r.x, r.y, r.w, r.h, 0, 0, lc.width, lc.height); const q = quality(lc), bl = q.issues.find((i) => i[0] === 'block'), wn = q.issues.find((i) => i[0] === 'warn');
             guide.classList.toggle('bad', !!bl); guide.classList.toggle('good', !bl && !wn);
             hint.textContent = bl ? bl[1].split('.')[0] : wn ? wn[1].split('.')[0] : 'Looks good. Hold steady, then tap Capture';
-          }, 1800);
+          }, 1200);
         } catch (e) {
           cap.disabled = true; hint.textContent = '';
           busy.style.display = 'grid';
@@ -2506,26 +2479,15 @@ requestAnimationFrame(k)})()</script>
     Object.keys(F).forEach((k) => { F[k] = (F[k] || '').toString().trim(); });
     return F;
   }
-  let ocrWorkerP = null;
-  async function getOcrWorker() {
+  async function ocr(canvases, onProg) {
     if (!tessP) tessP = loadScript(LIB.tess);
     await tessP;
-    if (!ocrWorkerP) {
-      ocrWorkerP = g.Tesseract.createWorker('eng', 1, {
-        logger: (m) => { if (m.status === 'recognizing text' && C.onOcrProgress) C.onOcrProgress(m.progress); }
-      }).catch((e) => { ocrWorkerP = null; throw e; });
-    }
-    return ocrWorkerP;
-  }
-  async function ocr(canvases, onProg) {
-    const worker = await getOcrWorker();
-    let text = '', conf = 0, n = 0;
-    for (const c of canvases) {
-      const { data } = await worker.recognize(scaled(c, 1400));
-      text += '\n' + data.text; conf += data.confidence; n++;
-      if (onProg) onProg(n / canvases.length);
-    }
-    return { text, confidence: n ? conf / n : 0 };
+    const worker = await g.Tesseract.createWorker('eng', 1, { logger: (m) => { if (m.status === 'recognizing text') onProg && onProg(m.progress); } });
+    try {
+      let text = '', conf = 0, n = 0;
+      for (const c of canvases) { const { data } = await worker.recognize(scaled(c, 2400)); text += '\n' + data.text; conf += data.confidence; n++; }
+      return { text, confidence: n ? conf / n : 0 };
+    } finally { await worker.terminate(); }
   }
 
   // ---------------- face matching (advisory on the device; the server decides) ----------------
@@ -2645,7 +2607,7 @@ requestAnimationFrame(k)})()</script>
     btns.append(sf); if (t[2] !== 'none') btns.append(sb2); btns.append(next); draw();
     show(btn('← Back', () => stepType({ id: S.appId, category: S.category, id_type: S.idType }), 'ghost'), stepper(1), h('h3', '', 'Scan your ' + t[1]),
       h('div', 'sub', t[2] === 'none' ? 'Scan the photo page. This ID has no back side to scan.' : 'Scan the front. If the back has information (such as a validity date or address), scan it too. You can also upload a photo from your device.'), btns, msg, prevF, prevB);
-    if (!tessP) tessP = loadScript(LIB.tess).catch(() => {}); setTimeout(() => { getOcrWorker().catch(() => {}); }, 250);
+    if (!tessP) tessP = loadScript(LIB.tess).catch(() => {}); setTimeout(() => { ensureCV(60000).catch(() => {}); }, 600);
   }
 
   // step 3: OCR (+ portrait detection), then confirmation
@@ -2667,7 +2629,7 @@ requestAnimationFrame(k)})()</script>
   function stepConfirm() {
     const gov = S.category === 'government', t = typeInfo(S.category, S.idType);
     const spec = gov ? [['full_name', 'Full name *'], ['dob', 'Date of birth *', 'date'], ['id_number', 'ID number *'], ['sex', 'Sex'], ['nationality', 'Nationality'], ['expiry', 'Expiration date', 'date'], ['address', 'Address', 'area']]
-      : [['full_name', 'Full name *'], ['school_name', 'School name *'], ['student_number', 'Student number'], ['course', 'Course or grade level'], ['academic_year', 'Academic year'], ['validity', 'Validity or expiration date', 'date']];
+      : [['full_name', 'Full name *'], ['school_name', 'School name *'], ['student_number', 'Student number'], ['course', 'Course or grade level'], ['academic_year', 'Academic year'], ['validity', 'Validity / expiration date (optional)', 'date']];
     const grid = h('div', 'kyc-fields'), inputs = {};
     spec.forEach(([k, lab, type]) => {
       const l = h('label', type === 'area' ? 'wide' : ''), tag = h('span'); const got = !!S.auto[k];
@@ -2692,7 +2654,7 @@ requestAnimationFrame(k)})()</script>
     S.fields = fields; goBtn.disabled = true; const bar = h('i'), barw = h('div', 'kyc-bar'); barw.append(bar);
     show(stepper(2), h('h3', '', 'Securely uploading'), barw, h('div', 'kyc-msg', 'Your images go to a private storage area.')); bar.style.width = '15%';
     try {
-      const items = { front: await canvasBlob(scaled(S.front.canvas, 1600)) }; if (S.back) items.back = await canvasBlob(scaled(S.back.canvas, 1600));
+      const items = { front: await canvasBlob(scaled(S.front.canvas, 2400)) }; if (S.back) items.back = await canvasBlob(scaled(S.back.canvas, 2400));
       const paths = await uploadAll(S.appId, items); bar.style.width = '70%';
       await call('submit_id', { app_id: S.appId, front_path: paths.front, back_path: paths.back || null, fields, ocr_original: S.auto, ocr_confidence: S.ocr.confidence }); bar.style.width = '100%';
       stepFace();
@@ -2775,6 +2737,7 @@ requestAnimationFrame(k)})()</script>
   function mount(box, ctx) { css(); C = ctx || {}; sb = C.sb; root = box; root.replaceChildren(); home(); }
   g.KYC = { mount, gate, isApproved, loadBadges, badgeEl, label };
 })(window);
+
 </script>
 <script>
 // ====== PUT YOUR SUPABASE KEYS HERE (Project Settings > API Keys) ======
