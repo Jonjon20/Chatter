@@ -2135,7 +2135,7 @@ requestAnimationFrame(k)})()</script>
     client_match_very_low: 'Device face score is very low', face_mismatch: 'Face mismatch', no_face_found_on_id_or_selfie: 'No face found on the ID or selfie', manual_face_check: 'Compare faces manually',
   };
 
-  let sb = null, C = {}, root = null, S = {}, cvP = null, tessP = null, faceP = null;
+  let sb = null, C = {}, root = null, S = {}, cvP = null, tessP = null, faceP = null, ocrWorkerP = null;
   const kycTypes = {}; let badgeTableOk = true;
 
   // ---------------- small helpers ----------------
@@ -2303,7 +2303,7 @@ requestAnimationFrame(k)})()</script>
     return Promise.race([cvP, new Promise((_, rej) => setTimeout(() => rej(new Error('cv timeout')), ms))]);
   }
   // Finds the card (largest convex quadrilateral), straightens it, returns a canvas. null if no card found.
-  async function detectCard(src) {
+  async function detectCard(src, orientation) {
     await ensureCV(20000);
     const cv = g.cv, keep = [];
     const T = (m) => { keep.push(m); return m; };
@@ -2325,11 +2325,11 @@ requestAnimationFrame(k)})()</script>
       const sm = pts.map((p) => p[0] + p[1]), df = pts.map((p) => p[0] - p[1]);
       const tl = pts[sm.indexOf(Math.min(...sm))], br = pts[sm.indexOf(Math.max(...sm))], tr = pts[df.indexOf(Math.max(...df))], bl = pts[df.indexOf(Math.min(...df))];
       const d = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
-      let W = Math.max(d(tl, tr), d(bl, br)), H = Math.max(d(tl, bl), d(tr, br)), rot = false;
-      if (H > W) { [W, H] = [H, W]; rot = true; }
-      const ar = W / H; if (ar < 1.25 || ar > 1.95) return null;
+      const W = Math.max(d(tl, tr), d(bl, br)), H = Math.max(d(tl, bl), d(tr, br));
+      const ar = W / H;
+      if (orientation === 'portrait' ? (ar < 0.55 || ar > 0.82) : (ar < 1.25 || ar > 1.95)) return null;
       const OW = Math.min(2400, Math.round(W)), OH = Math.round(OW / ar);
-      const from = rot ? [tr, br, bl, tl] : [tl, tr, br, bl];   // rotate portrait cards so text is upright
+      const from = [tl, tr, br, bl];
       const sM = T(cv.matFromArray(4, 1, cv.CV_32FC2, from.flat())), dM = T(cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, OW, 0, OW, OH, 0, OH]));
       const M = T(cv.getPerspectiveTransform(sM, dM)), out = T(new cv.Mat());
       cv.warpPerspective(mat, out, M, new cv.Size(OW, OH), cv.INTER_LINEAR, cv.BORDER_REPLICATE);
@@ -2346,20 +2346,26 @@ requestAnimationFrame(k)})()</script>
   function scanDoc(title, tip, outer) {
     return new Promise((resolve) => {
       const ov = h('div', 'kyc-ov'), sheet = h('div', 'kyc-sheet'), top = h('div', 'kyc-top'), x = h('button', '', '×');
+      let orientation = 'landscape'; const ratio = () => orientation === 'portrait' ? 0.70 : 1.586;
       x.type = 'button'; x.setAttribute('aria-label', 'Close'); top.append(h('b', '', title), x);
+      const orient = h('div', 'kyc-btns'); orient.style.margin = '8px 0';
+      const portraitBtn = btn('▯ Portrait ID', () => setOrientation('portrait'), 'gray');
+      const landscapeBtn = btn('▭ Landscape ID', () => setOrientation('landscape'), 'gray'); orient.append(portraitBtn, landscapeBtn);
       const cam = h('div', 'kyc-cam'), video = h('video'), guide = h('div', 'kyc-guide'), hint = h('div', 'kyc-hint'), busy = h('div', 'kyc-busy');
       video.playsInline = true; video.muted = true; video.autoplay = true; guide.append(h('i'), h('i'), h('i'), h('i')); busy.style.display = 'none';
       cam.append(video, guide, hint, busy);
-      const tipEl = h('div', 'sub', tip); tipEl.style.color = '#cbd0dc';
+      const tipEl = h('div', 'sub', 'Choose the ID orientation first, then ' + tip); tipEl.style.color = '#cbd0dc';
       const file = h('input'); file.type = 'file'; file.accept = 'image/*'; file.style.display = 'none';
       const up = btn('Upload photo', () => file.click(), 'gray'), cap = btn('Capture', () => capture());
       const ctrl = h('div', 'kyc-btns'); ctrl.append(up, cap);
       const review = h('div'); review.style.display = 'none';
-      sheet.append(top, cam, review, tipEl, ctrl, file); ov.append(sheet); document.body.append(ov);
+      sheet.append(top, orient, cam, review, tipEl, ctrl, file); ov.append(sheet); document.body.append(ov);
       let stream = null, timer = 0, done = false, ro = null;
       const finish = (r) => { if (done) return; done = true; clearInterval(timer); if (ro) ro.disconnect(); if (stream) stream.getTracks().forEach((t) => t.stop()); ov.remove(); resolve(r); };
       x.onclick = () => finish(null);
-      const fit = () => { const cw = cam.clientWidth, ch = cam.clientHeight, w = Math.min(0.9 * cw, 0.86 * ch * 1.586); guide.style.width = w + 'px'; guide.style.height = (w / 1.586) + 'px'; };
+      const setOrientation = (v) => { orientation = v; portraitBtn.classList.toggle('active', v === 'portrait'); landscapeBtn.classList.toggle('active', v === 'landscape'); fit(); };
+      const fit = () => { const cw = cam.clientWidth, ch = cam.clientHeight, ar = ratio(); const w = Math.min(0.9 * cw, 0.86 * ch * ar); guide.style.width = w + 'px'; guide.style.height = (w / ar) + 'px'; };
+      setOrientation('landscape');
       ro = new ResizeObserver(fit); ro.observe(cam); fit();
       const guideRect = () => {
         const vw = video.videoWidth, vh = video.videoHeight; if (!vw) return null;
@@ -2371,9 +2377,11 @@ requestAnimationFrame(k)})()</script>
       const setBusy = (t) => { busy.style.display = t ? 'grid' : 'none'; busy.textContent = t || ''; };
 
       async function handle(src, fromCam) {
-        setBusy('Detecting ID edges…'); let card = null, method = 'guide';
-        try { card = await detectCard(src); if (card) method = 'auto'; } catch (e) { card = null; }
-        if (!card) card = fromCam ? guideCrop(src, guideRect()) : src;
+        setBusy(fromCam ? 'Preparing photo…' : 'Detecting ID edges…'); let card = null, method = 'guide';
+        // Camera capture is already cropped to the guide. Avoid running the expensive OpenCV
+        // contour/warp pass on every live camera capture; keep edge detection for uploaded photos.
+        if (!fromCam) { try { card = await detectCard(src, orientation); if (card) method = 'auto'; } catch (e) { card = null; } }
+        if (!card) card = src;
         const q = quality(card); setBusy('');
         showReview({ canvas: card, method, q });
       }
@@ -2388,21 +2396,21 @@ requestAnimationFrame(k)})()</script>
         b.append(btn('Retake', () => { review.style.display = 'none'; cam.style.display = ''; ctrl.style.display = ''; tipEl.style.display = ''; }, 'gray'), btn('Upload another', () => file.click(), 'gray'), use);
         review.append(b);
       }
-      function capture() { if (!video.videoWidth) return; handle(frameCanvas(), true); }
+      function capture() { if (!video.videoWidth) return; const r = guideRect(); if (!r) return; handle(guideCrop(frameCanvas(), r), true); }
       file.onchange = async () => { const f = file.files && file.files[0]; file.value = ''; if (!f) return; try { setBusy('Reading image…'); cam.style.display = ''; await handle(await fileToCanvas(f), false); } catch (e) { setBusy(''); hint.textContent = 'Could not read that image.'; } };
 
       (async () => {
         try {
           if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw { name: 'SecurityError' };
-          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 2560 }, height: { ideal: 1440 }, frameRate: { ideal: 30, max: 30 } }, audio: false });
+          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 24 } }, audio: false });
           video.srcObject = stream; await video.play();
+          const liveCanvas = h('canvas'); liveCanvas.width = orientation === 'portrait' ? 176 : 280; liveCanvas.height = orientation === 'portrait' ? 280 : 176; const liveCtx = liveCanvas.getContext('2d', { willReadFrequently: true });
           timer = setInterval(() => {
             if (document.hidden || review.style.display === 'block' || !video.videoWidth) return;
-            const r = guideRect(); if (!r) return; const lc = h('canvas'); lc.width = 400; lc.height = Math.round(400 * r.h / r.w);
-            lc.getContext('2d').drawImage(video, r.x, r.y, r.w, r.h, 0, 0, lc.width, lc.height); const q = quality(lc), bl = q.issues.find((i) => i[0] === 'block'), wn = q.issues.find((i) => i[0] === 'warn');
+            const r = guideRect(); if (!r) return; liveCtx.drawImage(video, r.x, r.y, r.w, r.h, 0, 0, liveCanvas.width, liveCanvas.height); const q = quality(liveCanvas), bl = q.issues.find((i) => i[0] === 'block'), wn = q.issues.find((i) => i[0] === 'warn');
             guide.classList.toggle('bad', !!bl); guide.classList.toggle('good', !bl && !wn);
             hint.textContent = bl ? bl[1].split('.')[0] : wn ? wn[1].split('.')[0] : 'Looks good. Hold steady, then tap Capture';
-          }, 1200);
+          }, 2400);
         } catch (e) {
           cap.disabled = true; hint.textContent = '';
           busy.style.display = 'grid';
@@ -2482,12 +2490,12 @@ requestAnimationFrame(k)})()</script>
   async function ocr(canvases, onProg) {
     if (!tessP) tessP = loadScript(LIB.tess);
     await tessP;
-    const worker = await g.Tesseract.createWorker('eng', 1, { logger: (m) => { if (m.status === 'recognizing text') onProg && onProg(m.progress); } });
-    try {
-      let text = '', conf = 0, n = 0;
-      for (const c of canvases) { const { data } = await worker.recognize(scaled(c, 2400)); text += '\n' + data.text; conf += data.confidence; n++; }
-      return { text, confidence: n ? conf / n : 0 };
-    } finally { await worker.terminate(); }
+    // Reuse one OCR worker instead of downloading/loading/terminating it on every scan.
+    if (!ocrWorkerP) ocrWorkerP = g.Tesseract.createWorker('eng', 1, { logger: (m) => { if (m.status === 'recognizing text') onProg && onProg(m.progress); } }).catch((e) => { ocrWorkerP = null; throw e; });
+    const worker = await ocrWorkerP;
+    let text = '', conf = 0, n = 0;
+    for (const c of canvases) { const { data } = await worker.recognize(scaled(c, 1800)); text += '\n' + data.text; conf += data.confidence; n++; }
+    return { text, confidence: n ? conf / n : 0 };
   }
 
   // ---------------- face matching (advisory on the device; the server decides) ----------------
@@ -2620,7 +2628,7 @@ requestAnimationFrame(k)})()</script>
     bar.style.width = '85%'; msg.textContent = 'Looking for your photo on the ID…';
     S.ocr = { text: res.text, confidence: Math.round(res.confidence) }; S.auto = parseFields(S.category, S.idType, res.text);
     S.portrait = null; S.faceChecked = false;
-    try { const fa = await loadFace(); const small = scaled(S.front.canvas, 960), r = await faceDesc(fa, small); S.faceChecked = true; if (r) { S.idDesc = r.descriptor; S.portrait = cropFace(small, r.detection.box); } } catch (e) {}
+    try { const fa = await loadFace(); const small = scaled(S.front.canvas, 640), r = await faceDesc(fa, small); S.faceChecked = true; if (r) { S.idDesc = r.descriptor; S.portrait = cropFace(small, r.detection.box); } } catch (e) {}
     bar.style.width = '100%';
     const found = Object.values(S.auto).filter(Boolean).length;
     if (S.ocr.confidence < 35 && found < 2) return show(stepper(2), h('h3', '', 'We could not read this ID'), h('div', 'sub', 'The text was not clear enough. Retake the photo in better light, or upload a sharper image.'), btn('Retake or upload', stepScan));
