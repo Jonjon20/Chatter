@@ -2274,9 +2274,9 @@ requestAnimationFrame(k)})()</script>
 
   // ---------------- ID image processing ----------------
   function quality(card) {
-    const w = Math.min(640, card.width), hh = Math.max(8, Math.round(card.height * (w / card.width)));
+    const w = Math.min(320, card.width), hh = Math.max(8, Math.round(card.height * (w / card.width)));
     const t = h('canvas'); t.width = w; t.height = hh; const x = t.getContext('2d', { willReadFrequently: true }); x.drawImage(card, 0, 0, w, hh);
-    const d = x.getImageData(0, 0, w, hh).data, n0 = w * hh, gr = new Float32Array(n0); let sum = 0, gl = 0;
+    const d = x.getImageData(0, 0, w, hh).data, n0 = w * hh, gr = new Uint8ClampedArray(n0); let sum = 0, gl = 0;
     for (let i = 0, j = 0; i < d.length; i += 4, j++) { const v = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]; gr[j] = v; sum += v; if (v >= 250) gl++; }
     const mean = sum / n0; gl /= n0; let sd = 0; for (let j = 0; j < n0; j++) sd += (gr[j] - mean) ** 2; sd = Math.sqrt(sd / n0);
     let s = 0, s2 = 0, n = 0;
@@ -2346,26 +2346,21 @@ requestAnimationFrame(k)})()</script>
   function scanDoc(title, tip, outer) {
     return new Promise((resolve) => {
       const ov = h('div', 'kyc-ov'), sheet = h('div', 'kyc-sheet'), top = h('div', 'kyc-top'), x = h('button', '', '×'); ov.style.zIndex = '2147483000'; ov.style.pointerEvents = 'auto';
-      let orientation = 'landscape'; const ratio = () => orientation === 'portrait' ? 0.70 : 1.586;
+      const orientation = 'landscape'; const ratio = () => 1.586;
       x.type = 'button'; x.setAttribute('aria-label', 'Close'); top.append(h('b', '', title), x);
-      const orient = h('div', 'kyc-btns'); orient.style.margin = '8px 0';
-      const portraitBtn = btn('▯ Portrait ID', () => setOrientation('portrait'), 'gray');
-      const landscapeBtn = btn('▭ Landscape ID', () => setOrientation('landscape'), 'gray'); orient.append(portraitBtn, landscapeBtn);
       const cam = h('div', 'kyc-cam'), video = h('video'), guide = h('div', 'kyc-guide'), hint = h('div', 'kyc-hint'), busy = h('div', 'kyc-busy');
       video.playsInline = true; video.muted = true; video.autoplay = true; guide.append(h('i'), h('i'), h('i'), h('i')); busy.style.display = 'none';
       cam.append(video, guide, hint, busy);
-      const tipEl = h('div', 'sub', 'Choose the ID orientation first, then ' + tip); tipEl.style.color = '#cbd0dc';
+      const tipEl = h('div', 'sub', 'Place your ID inside the landscape frame, then ' + tip); tipEl.style.color = '#cbd0dc';
       const file = h('input'); file.type = 'file'; file.accept = 'image/*'; file.style.display = 'none';
       const up = btn('Upload photo', () => file.click(), 'gray'), cap = btn('Capture', () => capture());
       const ctrl = h('div', 'kyc-btns'); ctrl.append(up, cap);
       const review = h('div'); review.style.display = 'none';
-      sheet.append(top, orient, cam, review, tipEl, ctrl, file); ov.append(sheet); document.body.append(ov);
+      sheet.append(top, cam, review, tipEl, ctrl, file); ov.append(sheet); document.body.append(ov);
       let stream = null, timer = 0, done = false, ro = null;
       const finish = (r) => { if (done) return; done = true; clearInterval(timer); if (ro) ro.disconnect(); if (stream) stream.getTracks().forEach((t) => t.stop()); ov.remove(); resolve(r); };
       x.onclick = () => finish(null);
-      const setOrientation = (v) => { orientation = v; portraitBtn.classList.toggle('active', v === 'portrait'); landscapeBtn.classList.toggle('active', v === 'landscape'); fit(); };
       const fit = () => { const cw = cam.clientWidth, ch = cam.clientHeight, ar = ratio(); const w = Math.min(0.9 * cw, 0.86 * ch * ar); guide.style.width = w + 'px'; guide.style.height = (w / ar) + 'px'; };
-      setOrientation('landscape');
       ro = new ResizeObserver(fit); ro.observe(cam); fit();
       const guideRect = () => {
         const vw = video.videoWidth, vh = video.videoHeight; if (!vw) return null;
@@ -2396,21 +2391,36 @@ requestAnimationFrame(k)})()</script>
         b.append(btn('Retake', () => { review.style.display = 'none'; cam.style.display = ''; ctrl.style.display = ''; tipEl.style.display = ''; }, 'gray'), btn('Upload another', () => file.click(), 'gray'), use);
         review.append(b);
       }
-      function capture() { if (!video.videoWidth) return; const r = guideRect(); if (!r) return; handle(guideCrop(frameCanvas(), r), true); }
+      function capture() {
+        if (!video.videoWidth || done) return;
+        const r = guideRect(); if (!r) return;
+        // Crop directly from the live video. Avoid allocating a full-resolution
+        // frame canvas on mobile devices.
+        const c = h('canvas'); c.width = 900; c.height = Math.round(900 / 1.586);
+        const ctx = c.getContext('2d', { alpha: false });
+        ctx.drawImage(video, r.x, r.y, r.w, r.h, 0, 0, c.width, c.height);
+        handle(c, true);
+      }
       file.onchange = async () => { const f = file.files && file.files[0]; file.value = ''; if (!f) return; try { setBusy('Reading image…'); cam.style.display = ''; await handle(await fileToCanvas(f), false); } catch (e) { setBusy(''); hint.textContent = 'Could not read that image.'; } };
 
       (async () => {
         try {
           if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw { name: 'SecurityError' };
-          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 24 } }, audio: false });
-          video.srcObject = stream; await video.play();
-          const liveCanvas = h('canvas'); liveCanvas.width = orientation === 'portrait' ? 176 : 280; liveCanvas.height = orientation === 'portrait' ? 280 : 176; const liveCtx = liveCanvas.getContext('2d', { willReadFrequently: true });
-          timer = setInterval(() => {
-            if (document.hidden || review.style.display === 'block' || !video.videoWidth) return;
-            const r = guideRect(); if (!r) return; liveCtx.drawImage(video, r.x, r.y, r.w, r.h, 0, 0, liveCanvas.width, liveCanvas.height); const q = quality(liveCanvas), bl = q.issues.find((i) => i[0] === 'block'), wn = q.issues.find((i) => i[0] === 'warn');
-            guide.classList.toggle('bad', !!bl); guide.classList.toggle('good', !bl && !wn);
-            hint.textContent = bl ? bl[1].split('.')[0] : wn ? wn[1].split('.')[0] : 'Looks good. Hold steady, then tap Capture';
-          }, 2400);
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { ideal: 'environment' },
+              width: { ideal: 640, max: 1280 },
+              height: { ideal: 480, max: 720 },
+              frameRate: { ideal: 15, max: 24 }
+            },
+            audio: false
+          });
+          video.srcObject = stream;
+          await video.play();
+          // Do not run repeated image-quality analysis while the camera is open.
+          // That work now happens once, after Capture, to reduce mobile CPU load.
+          guide.classList.add('good');
+          hint.textContent = 'Fit the whole ID inside the frame, hold steady, then tap Capture';
         } catch (e) {
           cap.disabled = true; hint.textContent = '';
           busy.style.display = 'grid';
@@ -2625,7 +2635,8 @@ requestAnimationFrame(k)})()</script>
     btns.append(sf); if (t[2] !== 'none') btns.append(sb2); btns.append(next); draw();
     show(btn('← Back', () => stepType({ id: S.appId, category: S.category, id_type: S.idType }), 'ghost'), stepper(1), h('h3', '', 'Scan your ' + t[1]),
       h('div', 'sub', t[2] === 'none' ? 'Scan the photo page. This ID has no back side to scan.' : 'Scan the front. If the back has information (such as a validity date or address), scan it too. You can also upload a photo from your device.'), btns, msg, prevF, prevB);
-    if (!tessP) tessP = loadScript(LIB.tess).catch(() => {}); setTimeout(() => { ensureCV(60000).catch(() => {}); }, 600);
+    // Load OCR and OpenCV only when their specific processing step starts.
+    // Preloading either library while entering the camera screen can freeze slower phones.
   }
 
   // step 3: OCR (+ portrait detection), then confirmation
