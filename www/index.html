@@ -2345,7 +2345,7 @@ requestAnimationFrame(k)})()</script>
   // ---------------- scanner overlay (camera + upload) ----------------
   function scanDoc(title, tip, outer) {
     return new Promise((resolve) => {
-      const ov = h('div', 'kyc-ov'), sheet = h('div', 'kyc-sheet'), top = h('div', 'kyc-top'), x = h('button', '', '×');
+      const ov = h('div', 'kyc-ov'), sheet = h('div', 'kyc-sheet'), top = h('div', 'kyc-top'), x = h('button', '', '×'); ov.style.zIndex = '2147483000'; ov.style.pointerEvents = 'auto';
       let orientation = 'landscape'; const ratio = () => orientation === 'portrait' ? 0.70 : 1.586;
       x.type = 'button'; x.setAttribute('aria-label', 'Close'); top.append(h('b', '', title), x);
       const orient = h('div', 'kyc-btns'); orient.style.margin = '8px 0';
@@ -2607,15 +2607,26 @@ requestAnimationFrame(k)})()</script>
     const msg = h('div', 'kyc-msg'), prevF = h('div'), prevB = h('div');
     const preview = (c, host, name) => { host.replaceChildren(); if (!c) return; const im = h('canvas'); im.width = c.width; im.height = c.height; im.getContext('2d').drawImage(c, 0, 0); im.className = 'kyc-prev'; host.append(h('b', '', name), im); };
     const tip = 'Place the ID on a plain, dark surface. Fit it inside the frame, avoid glare, and keep all four corners visible.';
-    const sf = btn('Scan front of ID', async () => { const r = await scanDoc('Front of ' + t[1], tip); if (r) { S.front = r; preview(r.canvas, prevF, 'Front'); draw(); } });
-    const sb2 = btn(S.back ? 'Retake back' : 'Scan back of ID', async () => { const r = await scanDoc('Back of ' + t[1], tip); if (r) { S.back = r; preview(r.canvas, prevB, 'Back'); draw(); } }, 'gray');
+    const sf = btn('Scan front of ID', async (b) => {
+      msg.textContent = ''; b.disabled = true;
+      try { const r = await scanDoc('Front of ' + t[1], tip); if (r) { S.front = r; preview(r.canvas, prevF, 'Front'); draw(); } }
+      catch (e) { msg.textContent = 'Hindi mabuksan ang ID scanner. I-refresh ang page at subukan ulit. Kung naka-block ang camera, payagan ito sa browser settings.'; console.error('Chatterverse ID scanner:', e); }
+      finally { if (b.isConnected) b.disabled = false; }
+    });
+    const sb2 = btn(S.back ? 'Retake back' : 'Scan back of ID', async (b) => {
+      msg.textContent = ''; b.disabled = true;
+      try { const r = await scanDoc('Back of ' + t[1], tip); if (r) { S.back = r; preview(r.canvas, prevB, 'Back'); draw(); } }
+      catch (e) { msg.textContent = 'Hindi mabuksan ang ID scanner. I-refresh ang page at subukan ulit. Kung naka-block ang camera, payagan ito sa browser settings.'; console.error('Chatterverse ID scanner:', e); }
+      finally { if (b.isConnected) b.disabled = false; }
+    }, 'gray');
     const next = btn('Read my ID', () => stepOcr());
     const btns = h('div', 'kyc-btns');
     function draw() { sf.textContent = S.front ? 'Retake front' : 'Scan front of ID'; sb2.textContent = S.back ? 'Retake back' : 'Scan back of ID'; next.disabled = !S.front; }
     btns.append(sf); if (t[2] !== 'none') btns.append(sb2); btns.append(next); draw();
     show(btn('← Back', () => stepType({ id: S.appId, category: S.category, id_type: S.idType }), 'ghost'), stepper(1), h('h3', '', 'Scan your ' + t[1]),
       h('div', 'sub', t[2] === 'none' ? 'Scan the photo page. This ID has no back side to scan.' : 'Scan the front. If the back has information (such as a validity date or address), scan it too. You can also upload a photo from your device.'), btns, msg, prevF, prevB);
-    if (!tessP) tessP = loadScript(LIB.tess).catch(() => {}); setTimeout(() => { ensureCV(60000).catch(() => {}); }, 600);
+    // Keep the scanner responsive: load OCR/OpenCV only when those features are actually needed.
+    // Preloading these large libraries here can freeze the main thread before the camera opens.
   }
 
   // step 3: OCR (+ portrait detection), then confirmation
