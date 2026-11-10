@@ -2625,8 +2625,7 @@ requestAnimationFrame(k)})()</script>
     btns.append(sf); if (t[2] !== 'none') btns.append(sb2); btns.append(next); draw();
     show(btn('← Back', () => stepType({ id: S.appId, category: S.category, id_type: S.idType }), 'ghost'), stepper(1), h('h3', '', 'Scan your ' + t[1]),
       h('div', 'sub', t[2] === 'none' ? 'Scan the photo page. This ID has no back side to scan.' : 'Scan the front. If the back has information (such as a validity date or address), scan it too. You can also upload a photo from your device.'), btns, msg, prevF, prevB);
-    // Keep the scanner responsive: load OCR/OpenCV only when those features are actually needed.
-    // Preloading these large libraries here can freeze the main thread before the camera opens.
+    if (!tessP) tessP = loadScript(LIB.tess).catch(() => {}); setTimeout(() => { ensureCV(60000).catch(() => {}); }, 600);
   }
 
   // step 3: OCR (+ portrait detection), then confirmation
@@ -2660,13 +2659,13 @@ requestAnimationFrame(k)})()</script>
     const chk = h('label', 'kyc-chk'), cb = h('input'); cb.type = 'checkbox'; chk.append(cb, h('span', '', 'I checked these details against my ID and they are correct.'));
     const msg = h('div', 'kyc-msg'), go = btn('Confirm and continue', () => submitId(collect(), go));
     const collect = () => { const f = {}; Object.keys(inputs).forEach((k) => { f[k] = inputs[k].value.trim(); }); return f; };
-    function validate() { const f = collect(), ok = req.every((k) => f[k] && f[k].length >= 2) && cb.checked && !(S.faceChecked && !S.portrait); go.disabled = !ok; }
+    function validate() { const f = collect(), ok = req.every((k) => f[k] && f[k].length >= 2) && cb.checked; go.disabled = !ok; }
     cb.onchange = validate;
     const prev = h('div', 'kyc-card'); prev.append(h('b', '', 'Your submitted ID')); const im = h('canvas', 'kyc-prev'); im.width = S.front.canvas.width; im.height = S.front.canvas.height; im.getContext('2d').drawImage(S.front.canvas, 0, 0); prev.append(im);
     if (S.back) { const ib = h('canvas', 'kyc-prev'); ib.width = S.back.canvas.width; ib.height = S.back.canvas.height; ib.getContext('2d').drawImage(S.back.canvas, 0, 0); prev.append(ib); }
     const kids = [btn('← Back', stepScan, 'ghost'), stepper(2), h('h3', '', 'Check your details'), h('div', 'sub', 'We read these from your ' + t[1] + '. Fix anything that is wrong. Not every ID has every field, so leave blank what your ID does not show. Fields with * are required.'), prev];
     if (S.portrait) { const p = h('div', 'kyc-card'); p.append(h('b', '', gov ? 'Photo found on your ID' : 'Student photo found on your ID')); S.portrait.style.cssText = 'width:96px;border-radius:10px'; p.append(S.portrait); kids.push(p); }
-    else if (S.faceChecked) { const w = h('div', 'kyc-msg kyc-err', 'We could not find a clear face photo on this ID, and we need it to match you. Retake the front so the photo is visible and sharp.'); kids.push(w); }
+    else if (S.faceChecked) { const w = h('div', 'kyc-msg', 'We could not detect a clear face photo on this ID. You can still submit your details and ID for administrator review. Face verification may be completed later or reviewed manually.'); kids.push(w); }
     kids.push(grid, chk, msg, go); const w = show(...kids); validate(); if (S.fields) cb.checked = false;
   }
   async function submitId(fields, goBtn) {
@@ -2710,6 +2709,7 @@ requestAnimationFrame(k)})()</script>
   async function adminList() {
     css(); const fS = h('select'), fC = h('select'), fT = h('select'), list = h('div'), msg = h('div', 'kyc-msg');
     [['pending_review', 'Pending review'], ['', 'All statuses'], ['verified', 'Verified'], ['rejected', 'Rejected'], ['resubmission_required', 'Resubmission required'], ['face_pending', 'Face pending'], ['id_submitted', 'ID submitted']].forEach(([v, t]) => { const o = h('option', '', t); o.value = v; fS.append(o); });
+    fS.value = ''; // Show newly submitted ID-only applications to admins by default.
     [['', 'Government and School'], ['government', 'Government IDs'], ['school', 'School IDs']].forEach(([v, t]) => { const o = h('option', '', t); o.value = v; fC.append(o); });
     const o0 = h('option', '', 'All ID types'); o0.value = ''; fT.append(o0); GOV.concat(SCH).forEach((t) => { const o = h('option', '', t[1]); o.value = t[0]; fT.append(o); });
     [fS, fC, fT].forEach((s) => { s.style.cssText = 'padding:9px 10px;border-radius:10px;background:var(--bg2);color:var(--tx);border:1px solid var(--line);font:inherit'; s.onchange = load; });
