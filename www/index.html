@@ -9019,8 +9019,15 @@ async function onCallPush(d, answer) {
   const lockOnly = lockedNow();
   if (!lockOnly) { setTab("chats"); openRoom(d.room); }
   if (age > 45000) { if (lockOnly) leaveLocked(); return toast("Missed call"); }
-  if (call || ringIn) return;
-  if (answer) joinCall(d.room, video); else onRing({room: d.room, from: d.caller || d.from, video});
+  if (call) return;
+  const from = d.caller || d.from;
+  if (answer) {
+    // Sinagot na sa notification / call screen: huwag nang ipakita ulit ang sariling ring ng app (ang dahilan ng "dalawang Answer/Decline")
+    ringDone[d.room + "|" + from] = Date.now();
+    document.body.classList.remove("callonly");
+    if (ringIn) dismissRing();
+    joinCall(d.room, video);
+  } else if (!ringIn) onRing({room: d.room, from, video});
 }
 async function dropPush() { if (pushTok) { try { await sb.rpc("unregister_device", {tok: pushTok}); } catch (e) {} pushTok = null; } }
 
@@ -9132,6 +9139,7 @@ function ringStart() { try { ringTone = {a: sfx(ringIn && ringIn.video ? "vring"
 function ringStop() { if (ringTone) { sfxStop("ring"); sfxStop("vring"); ringTone = null; } }
 function dismissRing() { try { localStorage.removeItem("ringIn"); } catch (e) {} if (ringIn) { clearTimeout(ringIn.timer); ringDone[ringIn.room + "|" + ringIn.from] = Date.now(); } ringIn = null; ringStop(); $("#ring").classList.add("hide"); if (document.body.classList.contains("callonly")) leaveLocked(); }
 // Naka-lock ang phone at tumatawag: ang ring screen lang ang ipapakita, hindi ang chat. Pagkatapos, umalis sa app.
+function nat(fn) { try { if (window.ChatterNative && window.ChatterNative[fn]) window.ChatterNative[fn](); } catch (e) {} }
 function lockedNow() { try { return !!(window.ChatterNative && window.ChatterNative.lockedCall && window.ChatterNative.lockedCall()); } catch (e) { return false; } }
 function leaveLocked() { document.body.classList.remove("callonly"); setTimeout(() => { try { if (window.ChatterNative && window.ChatterNative.leave) window.ChatterNative.leave(); } catch (e) {} setTimeout(() => document.documentElement.classList.remove("lockcall"), 500); }, 450); }
 // Kapag na-unlock na ang phone (o bumalik ang user sa app), ibalik ang normal na app
@@ -9200,7 +9208,7 @@ async function checkRinging() {
 }
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") checkRinging(); });
 addEventListener("focus", checkRinging); addEventListener("online", checkRinging);
-const cancelRing = r => { (members[r.id] || []).filter(u => u !== me.id).forEach(u => sendInbox(u, "cancel", {room: r.id, from: me.id})); sb.rpc("end_call_ring", {rid: r.id}).then(() => {}, () => {}); };
+const cancelRing = r => { (members[r.id] || []).filter(u => u !== me.id).forEach(u => sendInbox(u, "cancel", {room: r.id, from: me.id})); sb.rpc("end_call_ring", {rid: r.id}).then(() => {}, () => {}); sb.rpc("ring_cancel_push", {rid: r.id, video: false}).then(() => {}, () => {}); };
 
 // start / join
 async function startCall(video) {
@@ -9226,6 +9234,7 @@ async function beginCall(r, video, caller) {
   } catch (e) { if (caller) cancelRing(r); return alert("Couldn't access your " + (video ? "camera and microphone" : "microphone") + ". Check your browser permissions."); }
   if (call) { stream.getTracks().forEach(t => t.stop()); return; }
   call = {room: r.id, video, caller, dm: !!r.is_dm, stream, peers: {}, mic: true, cam: video, everConnected: false, start: 0, timer: null, ch: null, wait: null};
+  nat("callStarted");   // Android: panatilihing bukas ang mikropono kahit na-lock ang phone
   $("#ctitle").textContent = title(r);
   { const ca = $("#cav"), o = r.is_dm ? other(r) : null; if (ca) ca.replaceChildren(o ? avatar(o, ((names[o] || "?")[0] || "?").toUpperCase(), "md") : Object.assign(el("span", "cav-g"), {innerHTML: icon("users", 22)})); }
   $("#ccam").classList.toggle("hide", !video); $("#ccam").innerHTML = icon("video", 24); $("#ccam").classList.remove("off");
@@ -9344,10 +9353,12 @@ function updateStatus() {
 }
 function endCall(why) {
   const c = call; if (!c) return; call = null;
+  nat("callEnded");
   clearInterval(c.timer); clearTimeout(c.wait);
   try { c.ch.send({type: "broadcast", event: "sig", payload: {t: "leave", from: me.id}}); } catch (e) {}
   if (c.caller) logCall(c);
   if (c.caller && !c.everConnected) (members[c.room] || []).filter(u => u !== me.id).forEach(u => sendInbox(u, "cancel", {room: c.room, from: me.id}));
+  if (c.caller && !c.everConnected) sb.rpc("ring_cancel_push", {rid: c.room, video: false}).then(() => {}, () => {});   // patayin ang ring sa phone na naka-close ang app
   if (c.caller) sb.rpc("end_call_ring", {rid: c.room}).then(() => {}, () => {});
   Object.values(c.peers).forEach(P => { try { P.pc.close(); } catch (e) {} });
   c.stream.getTracks().forEach(t => t.stop());
