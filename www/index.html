@@ -10239,7 +10239,9 @@ var C=[
     ".lvg .modes button{background:none;border:0;opacity:.55;padding:6px 2px;font-weight:700}.lvg .modes button.on{opacity:1;border-bottom:2px solid #fff}",
     ".lvg .tools{position:absolute;right:12px;top:70px;z-index:4;display:flex;flex-direction:column;gap:10px}.lvg .note{position:absolute;left:24px;right:24px;top:30%;text-align:center;opacity:.85;line-height:1.5;z-index:2}",
     ".fm .lv{position:relative}.fm .lv.live::after{content:'';position:absolute;top:7px;right:7px;width:10px;height:10px;border-radius:50%;background:#fe2c55;border:2px solid var(--cd,#16161c)}",
-    ".fm .lv{cursor:pointer!important}#golive.show{pointer-events:auto;cursor:pointer}#tabs .tab.dtlive{cursor:pointer!important}"
+    ".fm .lv{cursor:pointer!important}#golive.show{pointer-events:auto;cursor:pointer}#tabs .tab.dtlive{cursor:pointer!important}",
+    ".lvo.slup{animation:lvup .28s ease-out}.lvo.sldn{animation:lvdn .28s ease-out}@keyframes lvup{from{transform:translateY(100%)}to{transform:none}}@keyframes lvdn{from{transform:translateY(-100%)}to{transform:none}}",
+    ".lvo .lvhint{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 130px);transform:translateX(-50%);background:rgba(0,0,0,.55);padding:6px 14px;border-radius:16px;font-size:13px;z-index:3;pointer-events:none;animation:lvfade 3.5s forwards;white-space:nowrap}@keyframes lvfade{0%,70%{opacity:1}100%{opacity:0}}"
   ].join("");
   document.head.appendChild(css);
 
@@ -10445,10 +10447,11 @@ var C=[
 
   // ---------- WATCH (viewer) ----------
   var watch = null;
-  function openWatch(lives, idx) {
+  function openWatch(lives, idx, dir) {
     if (watch) closeWatch();
     var live = lives[idx]; if (!live) return;
     var root = h("div", "lvo lvv"), stage = h("div", "stage"), video = h("video"), msg = h("div", "msg", "Connecting…"), grid = null, setSeats = null;
+    if (dir) root.classList.add(dir > 0 ? "slup" : "sldn");
     video.autoplay = true; video.playsInline = true; video.setAttribute("playsinline", "");
     stage.append(video, msg); root.appendChild(stage);
     var top = h("div", "top"), host = h("div", "host"), hn = h("div", "hn", live.host_name || "LIVE"), lvb = h("span", "lvb", "LIVE"), cnt = h("div", "cnt"), cx = h("button", "ib"); cx.type = "button"; cx.setAttribute("aria-label", "Close"); cx.innerHTML = ic("x");
@@ -10486,12 +10489,17 @@ var C=[
     hb.onclick = function () { var now = Date.now(); if (now - lastHeart < 250) return; lastHeart = now; floatHeart(hearts); v.heart(); };
     if (seatBtn) seatBtn.onclick = function () { if (seated) { v.leaveSeat(); return; } if (requested) return say("Waiting for the host…"); requested = true; v.reqSeat(); say("Request sent. The host will let you in."); };
     cx.onclick = closeWatch;
-    // i-swipe pataas/pababa para lumipat ng live
-    var y0 = null;
-    root.addEventListener("touchstart", function (e) { if (e.target.closest && e.target.closest(".bt")) return; y0 = e.touches[0].clientY; }, {passive: true});
-    root.addEventListener("touchend", function (e) { if (y0 == null) return; var dy = e.changedTouches[0].clientY - y0; y0 = null; if (Math.abs(dy) < 70) return; var n = idx + (dy < 0 ? 1 : -1); if (lives[n]) { openWatch(lives, n); } }, {passive: true});
+    // Lumipat ng live: i-swipe pataas (susunod) o pababa (nauna); gulong ng mouse at arrow keys sa desktop
+    var go = function (d) { var n = idx + d; if (lives[n]) openWatch(lives, n, d); else say(d > 0 ? "That's the last LIVE" : "That's the first LIVE"); };
+    var y0 = null, x0 = null;
+    root.addEventListener("touchstart", function (e) { if (e.target.closest && e.target.closest(".bt,.req")) return; y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; }, {passive: true});
+    root.addEventListener("touchend", function (e) { if (y0 == null) return; var dy = e.changedTouches[0].clientY - y0, dx = e.changedTouches[0].clientX - x0; y0 = null; if (Math.abs(dy) < 60 || Math.abs(dy) < Math.abs(dx)) return; go(dy < 0 ? 1 : -1); }, {passive: true});
+    var wlast = 0; root.addEventListener("wheel", function (e) { var now = Date.now(); if (now - wlast < 700 || Math.abs(e.deltaY) < 20) return; wlast = now; go(e.deltaY > 0 ? 1 : -1); }, {passive: true});
+    var onkey = function (e) { if (e.target && e.target.tagName === "INPUT") return; if (e.key === "ArrowDown") go(1); else if (e.key === "ArrowUp") go(-1); };
+    document.addEventListener("keydown", onkey);
+    if (lives.length > 1 && !dir) { var hint = h("div", "lvhint", "Swipe up for the next LIVE"); root.appendChild(hint); setTimeout(function () { hint.remove(); }, 3600); }
     watch = {root: root, v: v, audio: audio};
-    watch.cleanup = function () { try { v.close(); } catch (e) {} if (audio) { try { audio.srcObject = null; audio.remove(); } catch (e) {} } try { root.remove(); } catch (e) {} };
+    watch.cleanup = function () { document.removeEventListener("keydown", onkey); try { v.close(); } catch (e) {} if (audio) { try { audio.srcObject = null; audio.remove(); } catch (e) {} } try { root.remove(); } catch (e) {} };
     watch.getAudio = function () { return audio; };
     if (live.mode === "voice") { var n = nat(); }
   }
@@ -10531,6 +10539,43 @@ var C=[
     renderDisc(); discT = setInterval(renderDisc, 8000);
   };
   function closeDisc() { if (!disc) return; clearInterval(discT); disc.root.remove(); disc = null; }
+
+  // ---------- Native screen capture (Android app): ang mga frame at tunog ay galing sa ScreenCaptureService ----------
+  function nativeScreen() {
+    return new Promise(function (resolve, reject) {
+      var n = nat(), cv = document.createElement("canvas"), cx = cv.getContext("2d"), stream = cv.captureStream(15), got = false, done = false, audioOk = false, img = new Image(), node = null, actx = null;
+      var t = setTimeout(function () { fail(); }, 30000);
+      function fail() { if (done) return; done = true; clearTimeout(t); window.__lvFrame = window.__lvAudio = window.__lvScreenReady = null; reject(new Error("denied")); }
+      function check() { if (done || !got || !audioOk) return; done = true; clearTimeout(t); resolve(stream); }
+      // tunog ng laro: PCM (stereo, 44.1 kHz) mula sa native -> AudioWorklet -> audio track
+      try {
+        actx = new (window.AudioContext || window.webkitAudioContext)({sampleRate: 44100});
+        var code = "class P extends AudioWorkletProcessor{constructor(){super();this.l=[];this.r=[];this.n=0;this.o=0;this.s=false;this.port.onmessage=function(e){this.l.push(e.data.l);this.r.push(e.data.r);this.n+=e.data.l.length}.bind(this)}" +
+          "process(i,o){var out=o[0],L=out[0],R=out[1]||out[0],len=L.length;if(!this.s){if(this.n<4096)return true;this.s=true}var k=0;while(k<len){if(!this.l.length){this.s=false;break}var bl=this.l[0],br=this.r[0],take=Math.min(len-k,bl.length-this.o);for(var j=0;j<take;j++){L[k+j]=bl[this.o+j];R[k+j]=br[this.o+j]}k+=take;this.o+=take;this.n-=take;if(this.o>=bl.length){this.l.shift();this.r.shift();this.o=0}}" +
+          "while(this.n>13230&&this.l.length>1){var b=this.l.shift();this.r.shift();this.n-=b.length;this.o=0}return true}}registerProcessor('lv-pcm',P)";
+        var url = URL.createObjectURL(new Blob([code], {type: "application/javascript"}));
+        actx.audioWorklet.addModule(url).then(function () {
+          node = new AudioWorkletNode(actx, "lv-pcm", {numberOfOutputs: 1, outputChannelCount: [2]});
+          var dst = actx.createMediaStreamDestination(); node.connect(dst); stream.addTrack(dst.stream.getAudioTracks()[0]); audioOk = true; check();
+        }).catch(function () { audioOk = true; check(); });
+      } catch (e) { audioOk = true; }
+      window.__lvFrame = function (b64, w, h) {
+        img.onload = function () { if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; } cx.drawImage(img, 0, 0); if (!got) { got = true; check(); } };
+        img.src = "data:image/jpeg;base64," + b64;
+      };
+      window.__lvAudio = function (b64) {
+        if (!node) return;
+        try {
+          var bin = atob(b64), len = bin.length >> 2, l = new Float32Array(len), r = new Float32Array(len);
+          for (var i = 0; i < len; i++) { var p = i * 4, a = bin.charCodeAt(p) | (bin.charCodeAt(p + 1) << 8), b = bin.charCodeAt(p + 2) | (bin.charCodeAt(p + 3) << 8); if (a > 32767) a -= 65536; if (b > 32767) b -= 65536; l[i] = a / 32768; r[i] = b / 32768; }
+          node.port.postMessage({l: l, r: r}, [l.buffer, r.buffer]);
+        } catch (e) {}
+      };
+      window.__lvScreenReady = function (ok) { if (!ok) fail(); };
+      window.__lvScreenStopped = function () { if (hostScr) { say("Screen sharing stopped"); hostScr.finish(); } };
+      try { n.startScreenCapture(true); } catch (e) { fail(); }
+    });
+  }
 
   // ---------- GO LIVE ----------
   var goScr = null, hostScr = null;
@@ -10573,8 +10618,9 @@ var C=[
         } else if (mode === "camera") {
           media = await navigator.mediaDevices.getUserMedia({video: {facingMode: {ideal: facing}, width: {ideal: 1280}, height: {ideal: 720}}, audio: {echoCancellation: true, noiseSuppression: true}});
         } else {
-          if (!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia)) throw new Error("screen");
-          var scr = await navigator.mediaDevices.getDisplayMedia({video: {frameRate: 30}, audio: true}), mic = null;
+          var nn0 = nat(), useNative = !!(nn0 && nn0.startScreenCapture);
+          if (!useNative && !(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia)) throw new Error("screen");
+          var scr = useNative ? await nativeScreen() : await navigator.mediaDevices.getDisplayMedia({video: {frameRate: 30}, audio: true}), mic = null;
           try { mic = await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: true, noiseSuppression: true}}); } catch (e) {}
           media = new MediaStream(scr.getVideoTracks());
           var ac = scr.getAudioTracks()[0], mt = mic && mic.getAudioTracks()[0];
@@ -10583,6 +10629,7 @@ var C=[
         }
       } catch (e) {
         starting = false; go.disabled = false; go.textContent = "Go LIVE";
+        if (e && e.message === "denied") return say("Screen sharing was cancelled");
         if (e && e.message === "screen") return alert("Mobile gaming LIVE needs screen capture, which isn't available in this app version yet. It works in a desktop browser.");
         return say(mode === "voice" ? "Allow microphone access to go LIVE" : "Allow camera and microphone access to go LIVE");
       }
@@ -10624,7 +10671,7 @@ var C=[
     mu.onclick = function () { muted = !muted; host.mute(muted); mu.classList.toggle("on", muted); mu.innerHTML = ic(muted ? "micoff" : "mic"); };
     function sendCm() { var t = inp.value.trim(); if (!t) return; var now = Date.now(); if (now - lastCm < 900) return; lastCm = now; inp.value = ""; addChat(cm, myName(), t); host.send("chat", {n: myName(), u: me.id, t: t}); }
     sendb.onclick = sendCm; inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); sendCm(); } };
-    function finish() { if (!hostScr) return; hostScr = null; try { host.end(); } catch (e) {} var nn = nat(); if (nn && nn.callEnded) { try { nn.callEnded(); } catch (e) {} } root.remove(); setTimeout(function () { renderDiscSoon(); }, 300); }
+    function finish() { if (!hostScr) return; hostScr = null; try { host.end(); } catch (e) {} var nn = nat(); if (nn && nn.callEnded) { try { nn.callEnded(); } catch (e) {} } if (nn && nn.stopScreenCapture && live.mode === "game") { try { nn.stopScreenCapture(); } catch (e) {} } root.remove(); setTimeout(function () { renderDiscSoon(); }, 300); }
     end.onclick = function () { if (confirm("End your LIVE?")) finish(); };
     // kung natapos ang screen share sa mismong browser
     media.getVideoTracks().forEach(function (t) { t.onended = function () { if (hostScr) { say("Screen sharing stopped"); finish(); } }; });
