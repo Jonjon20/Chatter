@@ -379,7 +379,7 @@ html.dt .sheetbg:not(.fullp):not(.cm-sheet):not(.pmdt) .sh::before{display:none}
 .fm{height:66px;padding:0 14px;gap:10px}
 .fm .hb{width:44px;height:44px;padding:0;border-radius:15px;background:var(--cd);color:var(--accent, #7c3aed);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.18);flex:none}
 .fm .hb svg{width:24px;height:24px}
-.fm .sp{width:44px;flex:none}
+.fm .sp{width:44px;flex:none}\n.fm .lv{width:44px;height:44px;padding:0;border:0;border-radius:15px;background:var(--cd);color:var(--accent, #7c3aed);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.18);flex:none;cursor:default}\n.fm .lv svg{width:26px;height:26px}
 .fm .tt{flex:1;max-width:270px;margin:0 auto;gap:2px;padding:4px;background:var(--cd);border:1px solid var(--line);border-radius:18px}
 .fm .tt button{flex:1;padding:9px 10px;border-radius:14px;font-size:15px;font-weight:700;color:var(--mut);background:none}
 .fm .tt button.on{background:var(--pgrad);color:#fff;box-shadow:0 4px 12px color-mix(in srgb,var(--accent-deep) 35%,transparent)}
@@ -4408,6 +4408,7 @@ try { fhide = new Set(JSON.parse(localStorage.getItem("fhide") || "[]")); } catc
 try { if (localStorage.getItem("fvis") === "friends") fdraft.vis = "friends"; } catch (e) {}
 const agoS = t => { const s = Math.max(0, (Date.now() - Date.parse(t)) / 1000); if (s < 60) return "now"; if (s < 3600) return Math.floor(s / 60) + "m"; if (s < 86400) return Math.floor(s / 3600) + "h"; if (s < 604800) return Math.floor(s / 86400) + "d"; return Math.floor(s / 604800) + "w"; };
 const FI = {
+  live: '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.4" fill="currentColor"/><path d="M8.3 8.3a5.2 5.2 0 0 0 0 7.4M15.7 8.3a5.2 5.2 0 0 1 0 7.4"/><path d="M5.4 5.4a9.3 9.3 0 0 0 0 13.2M18.6 5.4a9.3 9.3 0 0 1 0 13.2"/></svg>',
   ham: '<svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M3 5.5h18M3 12h18M3 18.5h18"/></svg>',
   photo: '<svg width="34" height="34" viewBox="0 0 24 24"><rect x="2.5" y="3.5" width="19" height="17" rx="3.5" fill="currentColor"/><circle cx="9" cy="9.5" r="1.9" style="fill:var(--bg)"/><path d="M2.5 17.5l6.5-6.5 4 4 3-3 5.5 5.5v3H2.5z" style="fill:var(--bg)"/></svg>',
   plus: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg>',
@@ -4708,7 +4709,8 @@ function feedRender() {
   const fm = el("div", "fm"), hb = el("button", "hb"), tt = el("div", "tt");
   hb.type = "button"; hb.innerHTML = FI.ham; hb.onclick = openMenu;
   [["post", "Feed"], ["clip", "Clips"]].forEach(([k, t]) => { const b = el("button", fmode === k ? "on" : "", t); b.type = "button"; b.onclick = () => { if (fmode !== k) { dropFile(); fdraft.open = false; fdraft.txt = ""; } fmode = k; fposts = []; floading = true; feedDirty = true; render(); loadFeed(); }; tt.append(b); });
-  fm.append(hb, tt, el("div", "sp")); top.append(fm);
+  const lv = el("button", "lv"); lv.type = "button"; lv.innerHTML = FI.live; lv.setAttribute("aria-label", "Live"); lv.title = "Live";   // icon lang muna, wala pang function
+  fm.append(hb, tt, lv); top.append(fm);
   // "Share something…"
   const cmp = el("div", "cmp"), ph = el("div", "cph", fmode === "clip" ? "Add a clip" : "Share something…"), gi = el("button", "pi2");
   ph.onclick = () => openDraft(); gi.type = "button"; gi.innerHTML = FI.photo; gi.onclick = () => pickMedia();
@@ -7926,7 +7928,7 @@ function fill(m) {
   o.pic.replaceChildren(); o.pic.classList.add("hide");
   if (gone) { o.bub.textContent = "Message taken back"; o.bub.classList.remove("stkb"); o.bub.classList.add("gone"); o.bub.classList.remove("clog"); o.bub.classList.remove("hide"); }
   else {
-    o.bub.classList.remove("gone"); o.bub.classList.toggle("clog", !!cl); if (cl) drawCall(o.bub, m, cl); else { const stg = storyTag(m.body), blk = storyReplyBlocked(m), tx = blk ? "" : stg ? stg.text : ctg ? ctg.text : safeMessageText(m.body); const stk = !blk && !stg && !ctg ? stickerTag(m.body) : null, vtg = !blk && !stg && !ctg && !stk && typeof voiceTag === "function" ? voiceTag(m.body) : null; if (vtg) { o.bub.replaceChildren(voicePlayer(vtg)); } else if (stk) { const sp = el("span", "stk"); if (stk.img) { const im = el("img"); im.src = stk.img; im.alt = stk.emoji; im.draggable = false; sp.append(im); } else sp.textContent = stk.emoji; sp.title = stk.label; o.bub.replaceChildren(sp); } else o.bub.replaceChildren(mentionFrag(tx || "", "menu")); o.bub.classList.toggle("stkb", !!stk); o.bub.classList.toggle("hide", !tx); o.row.classList.toggle("hide", !!blk); }
+    o.bub.classList.remove("gone"); o.bub.classList.toggle("clog", !!cl); if (cl) drawCall(o.bub, m, cl); else { const stg = storyTag(m.body), blk = storyReplyBlocked(m), tx = blk ? "" : stg ? stg.text : ctg ? ctg.text : safeMessageText(m.body); const stk = !blk && !stg && !ctg ? stickerTag(m.body) : null, vtg = !blk && !stg && !ctg && !stk && typeof voiceTag === "function" ? voiceTag(m.body) : null; const xel = !blk && !stg && !ctg && !stk && !vtg && typeof extraBubble === "function" ? extraBubble(m.body) : null; if (vtg) { o.bub.replaceChildren(voicePlayer(vtg)); } else if (xel) { o.bub.replaceChildren(xel); } else if (stk) { const sp = el("span", "stk"); if (stk.img) { const im = el("img"); im.src = stk.img; im.alt = stk.emoji; im.draggable = false; sp.append(im); } else sp.textContent = stk.emoji; sp.title = stk.label; o.bub.replaceChildren(sp); } else o.bub.replaceChildren(mentionFrag(tx || "", "menu")); o.bub.classList.toggle("stkb", !!stk); o.bub.classList.toggle("hide", !tx); o.row.classList.toggle("hide", !!blk); }
     if (ctg) drawClipMsg(o, m, ctg);
     if (m.image_path && isVid(m.image_path)) {
       o.pic.classList.remove("hide");
@@ -9350,6 +9352,8 @@ const safeMessageText = b => {
   { const ct = clipTag(raw); if (ct) return "🎬 Clip" + (ct.text ? ": " + ct.text : ""); }
   { const sk = stickerTag(raw); if (sk) return "Sticker " + sk.emoji; }
   if (typeof voiceTag === "function" && voiceTag(raw)) return "🎤 Voice message";
+  if (typeof locTag === "function" && locTag(raw)) return "📍 Location";
+  if (typeof fileTag === "function" && fileTag(raw)) return "📎 File";
   // Catch any future/unknown internal marker so implementation strings never appear in chat UI.
   if (/^\s*\[\[[a-z][\w-]*(?::[^\]]*)?\]\]/i.test(raw)) return "App activity";
   return raw;
@@ -9842,6 +9846,809 @@ var C=[
     b.onclick = startRec; f.insertBefore(b, send);
   }
   addMic(); setInterval(addMic, 3000);
+})();
+</script>
+<script>
+/* ===== Chatterverse extras 3: "+" menu (Camera, Photos, Location, Files), in-chat camera (TEXT / NORMAL / VIDEO), location and file messages ===== */
+(function () {
+  var say = function (t) { try { toast(t); } catch (e) {} };
+  var nat = function () { return window.ChatterNative || null; };
+  var $id = function (x) { return document.getElementById(x); };
+  var IC = {
+    cam: '<path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/>',
+    img: '<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 9"/>',
+    pin: '<path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+    clip: '<path d="M20 11.5l-8 8a5 5 0 0 1-7-7l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7l-8.5 8.5a1.7 1.7 0 0 1-2.4-2.4l7.5-7.5"/>',
+    x: '<path d="M6 6l12 12M18 6L6 18"/>',
+    bolt: '<path d="M13 3L5 13.5h6L10 21l8-10.5h-6L13 3z"/>',
+    flip: '<path d="M20 12a8 8 0 0 0-14-5.3L4 9"/><path d="M4 4v5h5"/><path d="M4 12a8 8 0 0 0 14 5.3L20 15"/><path d="M20 20v-5h-5"/>',
+    align: '<path d="M4 7h16M4 12h10M4 17h14"/>',
+    pill: '<rect x="3" y="5" width="18" height="14" rx="3.5"/><path d="M8.5 15.5L12 8.5l3.5 7M9.7 13.2h4.6"/>',
+    bg: '<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/>'
+  };
+  var svg = function (n, size) { return '<svg viewBox="0 0 24 24" width="' + (size || 22) + '" height="' + (size || 22) + '" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + IC[n] + '</svg>'; };
+  var st = document.createElement("style");
+  st.textContent = [
+    ".cvplus{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:8px 14px 20px}",
+    ".cvplus button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px;border-radius:14px;background:rgba(128,128,128,.14);border:0;color:inherit;font:inherit;font-size:12px;cursor:pointer}",
+    ".cvplus button b{font-size:26px;font-weight:400;line-height:1}",
+    "#cvcam{position:fixed;inset:0;z-index:100000;background:#000;color:#fff;display:flex;flex-direction:column;font-family:inherit}",
+    "#cvcam .cvtop{display:flex;align-items:center;gap:6px;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 8px;z-index:2}",
+    "#cvcam .cvtop .sp{flex:1}#cvcam button{font:inherit;color:#fff;cursor:pointer}",
+    "#cvcam .cvc{width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.16);font-size:20px;display:flex;align-items:center;justify-content:center}",
+    "#cvcam .cvc.on{background:#fff;color:#000}",
+    "#cvcam .stage{position:relative;flex:1;min-height:0;overflow:hidden}",
+    "#cvcam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}",
+    "#cvcam .txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:28px}",
+    "#cvcam .txt textarea{width:100%;background:transparent;border:0;outline:0;resize:none;color:#fff;font-size:30px;line-height:1.25;font-weight:700;text-align:center;overflow:hidden;max-height:70%}",
+    "#cvcam .txt textarea::placeholder{color:rgba(255,255,255,.7)}",
+    "#cvcam .tools{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:8px}",
+    "#cvcam .bot{padding:8px 0 calc(env(safe-area-inset-bottom,0px) + 14px);display:flex;flex-direction:column;align-items:center;gap:12px;background:#000;z-index:2}",
+    "#cvcam .modes{display:flex;gap:22px;font-size:12px;letter-spacing:.08em}",
+    "#cvcam .modes button{background:none;border:0;opacity:.55;padding:4px 2px}#cvcam .modes button.on{opacity:1;border-bottom:2px solid #fff}",
+    "#cvcam .shut{width:76px;height:76px;border-radius:50%;border:4px solid #fff;background:transparent;padding:0;display:flex;align-items:center;justify-content:center}",
+    "#cvcam .shut i{width:58px;height:58px;border-radius:50%;background:#fff;transition:all .15s}",
+    "#cvcam.rec .shut i{background:#e5484d;border-radius:12px;width:34px;height:34px}",
+    "#cvcam .tm{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(229,72,77,.9);padding:2px 10px;border-radius:12px;font-size:13px;z-index:3}",
+    ".cvloc,.cvfile{display:flex;align-items:center;gap:10px;min-width:190px}",
+    ".cvloc .ic,.cvfile .ic{font-size:26px}.cvloc .t,.cvfile .t{font-size:13px;opacity:.8;word-break:break-all}.cvloc b,.cvfile b{display:block;word-break:break-all}",
+    ".cvloc button,.cvfile button{margin-top:6px}"
+  ].join("");
+  document.head.appendChild(st);
+
+  // ---------- Location / File sa bubble ----------
+  window.locTag = function (b) {
+    var x = /^\[\[loc:(-?\d{1,3}(?:\.\d+)?),(-?\d{1,3}(?:\.\d+)?)\]\]$/.exec(String(b == null ? "" : b).trim());
+    if (!x) return null; var la = +x[1], lo = +x[2];
+    return Math.abs(la) <= 90 && Math.abs(lo) <= 180 ? {lat: la, lng: lo} : null;
+  };
+  window.fileTag = function (b) {
+    var x = /^\[\[file:([A-Za-z0-9_\-\/\.]+):(\d{1,9}):([A-Za-z0-9._\-]{1,80})\]\]$/.exec(String(b == null ? "" : b).trim());
+    return x ? {path: x[1], size: +x[2], name: x[3]} : null;
+  };
+  var openExternal = function (url) { var n = nat(); if (n && n.openUrl) n.openUrl(url); else window.open(url, "_blank", "noopener"); };
+  var fsz = function (n) { return n < 1048576 ? Math.max(1, Math.round(n / 1024)) + " KB" : (n / 1048576).toFixed(1) + " MB"; };
+  window.extraBubble = function (body) {
+    var l = window.locTag(body), f = l ? null : window.fileTag(body);
+    if (l) {
+      var w = document.createElement("div"), ic = document.createElement("div"), mid = document.createElement("div"), b = document.createElement("button");
+      w.className = "cvloc"; ic.className = "ic"; ic.innerHTML = svg("pin", 28); mid.innerHTML = "<b>Location</b>";
+      var t = document.createElement("div"); t.className = "t"; t.textContent = l.lat.toFixed(5) + ", " + l.lng.toFixed(5); mid.append(t);
+      b.type = "button"; b.className = "gray sm"; b.textContent = "Open in Maps"; b.onclick = function (e) { e.stopPropagation(); openExternal("https://www.google.com/maps?q=" + l.lat + "," + l.lng); };
+      mid.append(b); w.append(ic, mid); return w;
+    }
+    if (f) {
+      var w2 = document.createElement("div"), ic2 = document.createElement("div"), mid2 = document.createElement("div"), b2 = document.createElement("button");
+      w2.className = "cvfile"; ic2.className = "ic"; ic2.innerHTML = svg("clip", 28); mid2.innerHTML = ""; var nm = document.createElement("b"); nm.textContent = f.name;
+      var t2 = document.createElement("div"); t2.className = "t"; t2.textContent = fsz(f.size);
+      b2.type = "button"; b2.className = "gray sm"; b2.textContent = "Open";
+      b2.onclick = async function (e) { e.stopPropagation(); b2.textContent = "…"; var url = null; try { url = await imgUrl(f.path); } catch (er) {} b2.textContent = "Open"; if (!url) return say("Couldn't open the file"); openExternal(url); };
+      mid2.append(nm, t2, b2); w2.append(ic2, mid2); return w2;
+    }
+    return null;
+  };
+
+  // ---------- "+" MENU ----------
+  function plusMenu() {
+    if (typeof sheet !== "function") return $id("file").click();
+    var sh = sheet("Share"), g = document.createElement("div"); g.className = "cvplus";
+    [[svg("cam", 28), "Camera", openCamera], [svg("img", 28), "Photos", function () { $id("file").click(); }], [svg("pin", 28), "Location", sendLocation], [svg("clip", 28), "Files", pickFile]].forEach(function (t) {
+      var b = document.createElement("button"); b.type = "button"; b.innerHTML = "<b>" + t[0] + "</b>" + t[1];
+      b.onclick = function () { try { closeSheet(); } catch (e) {} setTimeout(t[2], 120); }; g.append(b);
+    });
+    sh.body.append(g);
+  }
+  function wirePlus() { var a = $id("att"); if (a && !a.__cvplus) { a.__cvplus = 1; a.onclick = plusMenu; } }
+  wirePlus(); setInterval(wirePlus, 2500);
+
+  // ---------- LOCATION ----------
+  function sendLocation() {
+    var rid = typeof cur !== "undefined" ? cur : null;
+    if (!rid) return say("Open a chat first");
+    if (!navigator.geolocation) return say("Location isn't available on this device");
+    say("Getting your location…");
+    navigator.geolocation.getCurrentPosition(async function (p) {
+      var la = +p.coords.latitude.toFixed(5), lo = +p.coords.longitude.toFixed(5);
+      var ok = await appConfirm("Send your location?", la.toFixed(5) + ", " + lo.toFixed(5) + ". This shares where you are right now, once. It does not update live.", "Send");
+      if (!ok) return;
+      var ins = {room_id: rid, body: "[[loc:" + la + "," + lo + "]]"}; if (typeof replyTo !== "undefined" && replyTo) ins.reply_to = replyTo.id;
+      var r = await sb.from("messages").insert(ins).select().single();
+      try { sfx(r.error ? "err" : "sent"); } catch (e) {}
+      if (r.error) return say("Location could not be sent");
+      showSent(r.data, rid); try { setReply(null); } catch (e) {}
+    }, function (e) { say(e && e.code === 1 ? "Allow location access to share your location" : "Couldn't get your location"); }, {enableHighAccuracy: true, timeout: 15000, maximumAge: 30000});
+  }
+
+  // ---------- FILES ----------
+  async function uploadAny(blob, base, type) {
+    var tries = [[base, type], [base, "application/octet-stream"], [typeof rp === "function" ? rp(base) : base, type]], last = null;
+    for (var i = 0; i < tries.length; i++) {
+      var up = await media.upload(tries[i][0], blob, {cacheControl: "31536000", contentType: tries[i][1]});
+      if (!up.error) return tries[i][0];
+      last = up.error;
+    }
+    throw last || new Error("upload failed");
+  }
+  function pickFile() {
+    var rid = typeof cur !== "undefined" ? cur : null;
+    if (!rid) return say("Open a chat first");
+    var i = document.createElement("input"); i.type = "file";
+    i.onchange = async function () {
+      var f = i.files[0]; if (!f) return;
+      if (f.size > 20 * 1048576) return alert("File too large (max 20 MB).");
+      if (/\.(apk|exe|bat|cmd|com|msi|scr|js|jar|vbs|ps1|sh|dll|lnk|app)$/i.test(f.name)) return alert("This type of file can't be sent for safety.");
+      var safe = f.name.replace(/[^A-Za-z0-9._-]+/g, "_").replace(/^\.+/, "").slice(-60) || "file";
+      say("Sending file…");
+      try {
+        var base = me.id + "/" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7) + "_" + safe, path = await uploadAny(f, base, f.type || "application/octet-stream");
+        var ins = {room_id: rid, body: "[[file:" + path + ":" + f.size + ":" + safe + "]]"}; if (typeof replyTo !== "undefined" && replyTo) ins.reply_to = replyTo.id;
+        var r = await sb.from("messages").insert(ins).select().single();
+        try { sfx(r.error ? "err" : "sent"); } catch (e) {}
+        if (r.error) { try { media.remove([path]); } catch (e) {} return say("File could not be sent"); }
+        showSent(r.data, rid); try { setReply(null); } catch (e) {}
+      } catch (e) { say("Couldn't send the file"); }
+    };
+    i.click();
+  }
+
+  // ---------- IN-CHAT CAMERA ----------
+  var cam = null;
+  var BG = [["#1E90FF", "#1B5BD8"], ["#FF7E5F", "#FEB47B"], ["#8E2DE2", "#4A00E0"], ["#11998E", "#38EF7D"], ["#F7971E", "#FFD200"], ["#FF512F", "#DD2476"], ["#434343", "#000000"], ["#00C6FF", "#0072FF"]];
+  var FONTS = [["Classic", "700 1px sans-serif"], ["Serif", "700 1px Georgia, serif"], ["Mono", "700 1px monospace"], ["Script", "italic 700 1px cursive"]];
+  var ALIGN = ["center", "left", "right"];
+  function stopStream() { if (cam && cam.stream) { cam.stream.getTracks().forEach(function (t) { t.stop(); }); cam.stream = null; } }
+  function closeCam() {
+    if (!cam) return;
+    try { if (cam.rec && cam.rec.state !== "inactive") { cam.rec.onstop = null; cam.rec.stop(); } } catch (e) {}
+    clearInterval(cam.tick); stopStream(); cam.ov.remove(); cam = null;
+  }
+  async function startStream() {
+    stopStream();
+    try {
+      cam.stream = await navigator.mediaDevices.getUserMedia({video: {facingMode: {ideal: cam.facing}, width: {ideal: 1920}, height: {ideal: 1080}}, audio: false});
+    } catch (e) { say("Allow camera access to use the camera"); closeCam(); return false; }
+    var v = cam.ov.querySelector("video"); v.srcObject = cam.stream; v.style.transform = cam.facing === "user" ? "scaleX(-1)" : "none";
+    var tr = cam.stream.getVideoTracks()[0], caps = tr && tr.getCapabilities ? tr.getCapabilities() : {};
+    cam.ov.querySelector("#cvfl").style.display = caps && caps.torch ? "" : "none"; cam.torch = false; cam.ov.querySelector("#cvfl").classList.remove("on");
+    return true;
+  }
+  async function openCamera() {
+    if (cam) return;
+    if (typeof cur === "undefined" || !cur) return say("Open a chat first");
+    if (typeof call !== "undefined" && call) return say("Finish your call first");
+    if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) return say("Camera isn't available on this device");
+    var ov = document.createElement("div"); ov.id = "cvcam";
+    ov.innerHTML = '<div class="cvtop"><button class="cvc" id="cvx" aria-label="Close">' + svg("x") + '</button><span class="sp"></span><button class="cvc" id="cvfl" aria-label="Flash">' + svg("bolt") + '</button><button class="cvc" id="cvfp" aria-label="Flip camera">' + svg("flip") + '</button></div>' +
+      '<div class="stage"><video autoplay playsinline muted></video><div class="txt" id="cvtxt" style="display:none"><textarea id="cvta" rows="3" maxlength="240" placeholder="Tap to type…"></textarea>' +
+      '<div class="tools"><button class="cvc" id="cvfont" aria-label="Font">Aa</button><button class="cvc" id="cval" aria-label="Align">' + svg("align") + '</button><button class="cvc" id="cvpill" aria-label="Text background">' + svg("pill") + '</button><button class="cvc" id="cvbg" aria-label="Background">' + svg("bg") + '</button></div></div></div>' +
+      '<div class="bot"><div class="modes"><button data-m="text">TEXT</button><button data-m="photo" class="on">NORMAL</button><button data-m="video">VIDEO</button></div><button class="shut" id="cvsh" aria-label="Capture"><i></i></button></div>';
+    document.body.appendChild(ov);
+    cam = {ov: ov, facing: "environment", mode: "photo", stream: null, rec: null, chunks: [], tick: null, bg: 0, font: 0, al: 0, pill: false, torch: false};
+    if (!(await startStream())) return;
+    var q = function (s) { return ov.querySelector(s); };
+    q("#cvx").onclick = closeCam;
+    q("#cvfp").onclick = async function () { if (cam.rec) return; cam.facing = cam.facing === "user" ? "environment" : "user"; await startStream(); };
+    q("#cvfl").onclick = async function () { try { var tr = cam.stream.getVideoTracks()[0]; cam.torch = !cam.torch; await tr.applyConstraints({advanced: [{torch: cam.torch}]}); q("#cvfl").classList.toggle("on", cam.torch); } catch (e) { cam.torch = false; say("Flash isn't available"); } };
+    var paint = function () {
+      var t = q("#cvtxt"), g = BG[cam.bg]; t.style.background = "linear-gradient(160deg," + g[0] + "," + g[1] + ")";
+      var ta = q("#cvta"); ta.style.fontFamily = FONTS[cam.font][1].replace(/^.*?1px /, ""); ta.style.fontStyle = /italic/.test(FONTS[cam.font][1]) ? "italic" : "normal"; ta.style.textAlign = ALIGN[cam.al];
+      ta.style.background = cam.pill ? "rgba(0,0,0,.35)" : "transparent"; ta.style.borderRadius = "14px"; ta.style.padding = cam.pill ? "10px 12px" : "0";
+      ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, window.innerHeight * 0.5) + "px";
+    };
+    q("#cvta").oninput = paint;
+    q("#cvbg").onclick = function () { cam.bg = (cam.bg + 1) % BG.length; paint(); };
+    q("#cvfont").onclick = function () { cam.font = (cam.font + 1) % FONTS.length; paint(); say(FONTS[cam.font][0]); };
+    q("#cval").onclick = function () { cam.al = (cam.al + 1) % ALIGN.length; paint(); };
+    q("#cvpill").onclick = function () { cam.pill = !cam.pill; paint(); };
+    ov.querySelectorAll(".modes button").forEach(function (b) {
+      b.onclick = function () {
+        if (cam.rec) return; cam.mode = b.dataset.m;
+        ov.querySelectorAll(".modes button").forEach(function (x) { x.classList.toggle("on", x === b); });
+        var text = cam.mode === "text"; q("#cvtxt").style.display = text ? "flex" : "none"; q("video").style.display = text ? "none" : "";
+        q("#cvfl").style.visibility = q("#cvfp").style.visibility = text ? "hidden" : "visible";
+        if (text) { paint(); setTimeout(function () { q("#cvta").focus(); }, 80); }
+      };
+    });
+    q("#cvsh").onclick = shutter; paint();
+  }
+  function finishFile(blob, name) {
+    var f = new File([blob], name, {type: blob.type || "application/octet-stream"});
+    closeCam();
+    try { setPend(f); } catch (e) { say("Couldn't attach it"); }
+  }
+  async function shutter() {
+    if (!cam) return;
+    var q = function (s) { return cam.ov.querySelector(s); };
+    if (cam.mode === "photo") {
+      var v = q("video"); if (!v.videoWidth) return say("Camera isn't ready yet");
+      var c = document.createElement("canvas"); c.width = v.videoWidth; c.height = v.videoHeight;
+      var g = c.getContext("2d"); if (cam.facing === "user") { g.translate(c.width, 0); g.scale(-1, 1); } g.drawImage(v, 0, 0);
+      return c.toBlob(function (b) { if (!b) return say("Couldn't take the photo"); finishFile(b, "photo-" + Date.now() + ".jpg"); }, "image/jpeg", 0.9);
+    }
+    if (cam.mode === "text") {
+      var text = q("#cvta").value.trim(); if (!text) return say("Type something first");
+      var W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H; var x = cv.getContext("2d");
+      var bg = BG[cam.bg], gr = x.createLinearGradient(0, 0, W * 0.4, H); gr.addColorStop(0, bg[0]); gr.addColorStop(1, bg[1]); x.fillStyle = gr; x.fillRect(0, 0, W, H);
+      var fs = 84; x.font = FONTS[cam.font][1].replace("1px", fs + "px"); x.textBaseline = "middle";
+      var maxW = W - 180, words = text.split(/\s+/), lines = [], line = "";
+      text.split(/\n/).forEach(function (para) { line = ""; para.split(/\s+/).forEach(function (w) { var t = line ? line + " " + w : w; if (x.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; }); lines.push(line); });
+      var lh = fs * 1.3, total = lines.length * lh, y0 = (H - total) / 2 + lh / 2, al = ALIGN[cam.al], ax = al === "center" ? W / 2 : al === "left" ? 90 : W - 90;
+      x.textAlign = al;
+      lines.forEach(function (ln, k) {
+        var yy = y0 + k * lh, w = x.measureText(ln).width;
+        if (cam.pill) { x.fillStyle = "rgba(0,0,0,.35)"; var px = al === "center" ? ax - w / 2 : al === "left" ? ax : ax - w; x.beginPath(); x.roundRect ? x.roundRect(px - 24, yy - lh / 2 + 6, w + 48, lh - 12, 22) : x.rect(px - 24, yy - lh / 2 + 6, w + 48, lh - 12); x.fill(); }
+        x.fillStyle = "#fff"; x.fillText(ln, ax, yy);
+      });
+      return cv.toBlob(function (b) { if (!b) return say("Couldn't create the card"); finishFile(b, "text-" + Date.now() + ".jpg"); }, "image/jpeg", 0.92);
+    }
+    // VIDEO
+    if (cam.rec) { cam.rec.stop(); return; }
+    var stream = cam.stream, a = null;
+    try { a = await navigator.mediaDevices.getUserMedia({audio: true}); } catch (e) { say("Microphone is off, so the video will have no sound"); }
+    var ms = new MediaStream(stream.getVideoTracks().concat(a ? a.getAudioTracks() : []));
+    var mime = ["video/webm;codecs=vp8,opus", "video/webm", "video/mp4"].filter(function (m) { try { return MediaRecorder.isTypeSupported(m); } catch (e) { return false; } })[0] || "";
+    var rec; try { rec = mime ? new MediaRecorder(ms, {mimeType: mime}) : new MediaRecorder(ms); } catch (e) { if (a) a.getTracks().forEach(function (t) { t.stop(); }); return say("Video recording isn't supported on this device"); }
+    cam.rec = rec; cam.chunks = []; cam.t0 = Date.now();
+    rec.ondataavailable = function (e) { if (e.data && e.data.size) cam.chunks.push(e.data); };
+    var me2 = cam;
+    rec.onstop = function () {
+      clearInterval(me2.tick); if (a) a.getTracks().forEach(function (t) { t.stop(); });
+      var type = rec.mimeType || mime || "video/webm", blob = new Blob(me2.chunks, {type: type}), sec = (Date.now() - me2.t0) / 1000;
+      if (sec < 1) { me2.rec = null; me2.ov.classList.remove("rec"); var tm = me2.ov.querySelector(".tm"); if (tm) tm.remove(); return say("Too short"); }
+      if (blob.size > 50 * 1048576) { me2.rec = null; me2.ov.classList.remove("rec"); return alert("That video is too big (max 50 MB). Try a shorter one."); }
+      finishFile(blob, "video-" + Date.now() + "." + (/mp4/.test(type) ? "mp4" : "webm"));
+    };
+    rec.start(500); cam.ov.classList.add("rec");
+    var tm = document.createElement("div"); tm.className = "tm"; tm.textContent = "0:00"; q(".stage").appendChild(tm);
+    cam.tick = setInterval(function () { var s = Math.round((Date.now() - cam.t0) / 1000); tm.textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); if (s >= 60) { try { cam.rec.stop(); } catch (e) {} } }, 300);
+  }
+  window.openCamera = openCamera;
+})();
+</script>
+<script>
+/* ===== Chatterverse extras 4: "Go Live" pill: lumalabas kapag pinindot ang Newsfeed sa ibabang nav, nawawala pagkalipas ng 5 segundo. Wala pang function. ===== */
+(function () {
+  var css = document.createElement("style");
+  css.textContent = [
+    "#golive{position:fixed;z-index:60;left:50%;bottom:90px;transform:translate(-50%,10px);display:flex;align-items:center;gap:10px;padding:9px 20px 9px 14px;border-radius:16px;",
+    "background:var(--cd,#131416);color:var(--tx,#fff);border:2px solid var(--accent,#7c3aed);box-shadow:0 6px 22px rgba(0,0,0,.45),0 0 0 3px color-mix(in srgb,var(--accent,#7c3aed) 22%,transparent);",
+    "font-size:17px;font-weight:800;letter-spacing:.2px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease}",
+    "#golive.show{opacity:1;transform:translate(-50%,0)}",
+    "#golive svg{width:30px;height:26px;flex:none;color:var(--accent,#7c3aed)}"
+  ].join("");
+  document.head.appendChild(css);
+  var el = document.createElement("div"); el.id = "golive"; el.setAttribute("aria-hidden", "true");
+  el.innerHTML = '<svg viewBox="0 0 30 26" fill="none"><rect x="1" y="6" width="18" height="15" rx="3.8" fill="currentColor"/><path d="M21 11.5l7.5-4.3v11.6L21 14.5z" fill="currentColor"/><circle cx="26.5" cy="5" r="3.4" fill="#f02849" stroke="var(--cd,#131416)" stroke-width="1.6"/></svg><span>Go Live</span>';
+  document.body.appendChild(el);
+  var timer = null;
+  function place(btn) {
+    var nav = btn.parentElement, r = nav ? nav.getBoundingClientRect() : btn.getBoundingClientRect(), b = btn.getBoundingClientRect();
+    el.style.bottom = Math.max(8, Math.round(window.innerHeight - r.top + 8)) + "px";
+    var half = el.offsetWidth / 2, x = Math.min(window.innerWidth - half - 8, Math.max(half + 8, b.left + b.width / 2));
+    el.style.left = Math.round(x) + "px";
+  }
+  function show(btn) {
+    try { if (typeof DT === "function" && DT()) return; } catch (e) {}   // sa desktop view ay wala ito
+    place(btn); el.classList.add("show"); clearTimeout(timer);
+    timer = setTimeout(function () { el.classList.remove("show"); }, 5000);
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target && e.target.closest ? e.target.closest('.tab[data-t="feed"]') : null;
+    if (b) show(b);
+  }, true);
+})();
+</script>
+<script>
+/* ===== Chatterverse extras 5: "Go Live" sa side bar ng desktop (sa ibaba ng Notifications). Icon lang muna, wala pang function. ===== */
+(function () {
+  var css = document.createElement("style");
+  css.textContent = [
+    "#tabs .tab.dtlive{display:none!important}",                                   // phone: wala sa ibabang nav
+    "html.dt .side #tabs .tab.dtlive{display:flex!important}",                      // desktop: kasama sa side bar
+    "html.dt .side .tabs::before{height:52px}",
+    "html.dt .side .tabs:has(.tab[data-t=\"menu\"].on)::before{opacity:0}",   // kapag Profile ang bukas, huwag ilagay ang highlight sa Go Live                                    // 52px ang taas ng bawat item (dati 1/4 ng kabuuan, dahil 4 lang ang item)
+    "#tabs .tab.dtlive .lvi{color:var(--accent,#7c3aed)}",
+    "#tabs .tab.dtlive .lvi svg{width:28px;height:28px;display:block}",
+    "#tabs .tab.dtlive{cursor:default}"
+  ].join("\n");
+  document.head.appendChild(css);
+  function add() {
+    var tabs = document.getElementById("tabs");
+    if (!tabs || tabs.querySelector(".dtlive")) return;
+    var b = document.createElement("button"); b.type = "button"; b.className = "tab dtlive"; b.dataset.t = "golive"; b.title = "Go Live";
+    b.innerHTML = '<span class="lvi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2.4" fill="currentColor"/><path d="M8.3 8.3a5.2 5.2 0 0 0 0 7.4M15.7 8.3a5.2 5.2 0 0 1 0 7.4"/><path d="M5.4 5.4a9.3 9.3 0 0 0 0 13.2M18.6 5.4a9.3 9.3 0 0 1 0 13.2"/></svg></span>Go Live';
+    tabs.appendChild(b);   // huling anak: hindi nagagalaw ang bilang ng mga tab (ang highlight ay gumagamit ng nth-child)
+  }
+  add();
+})();
+</script>
+<script>
+/* ===== Chatterverse LIVE: Discover LIVE, Go LIVE (Voice chat, Device camera, Mobile gaming), manonood, comments at hearts =====
+   Direktang koneksyon ang host papunta sa bawat manonood (WebRTC, gamit ang ICE/TURN ng app). Limitado ang dami ng manonood (tingnan ang CAP). */
+(function () {
+  "use strict";
+  var CAP = {voice: 40, camera: 8, game: 8}, SEATS = 8, MAXCM = 40;
+  var say = function (t) { try { toast(t); } catch (e) {} };
+  var nat = function () { return window.ChatterNative || null; };
+  var h = function (tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+  var rid = function () { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-3); };
+  var myName = function () { try { return (typeof names !== "undefined" && names[me.id]) || (me.user_metadata && (me.user_metadata.username || me.user_metadata.name)) || "User"; } catch (e) { return "User"; } };
+  var ICO = {
+    x: '<path d="M6 6l12 12M18 6L6 18"/>',
+    flip: '<path d="M20 12a8 8 0 0 0-14-5.3L4 9"/><path d="M4 4v5h5"/><path d="M4 12a8 8 0 0 0 14 5.3L20 15"/><path d="M20 20v-5h-5"/>',
+    mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+    micoff: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M3 3l18 18"/>',
+    heart: '<path d="M12 20s-7.5-4.6-9.2-9.2C1.7 7.5 3.6 4.5 6.8 4.5c2 0 3.6 1.1 5.2 3 1.6-1.9 3.2-3 5.2-3 3.2 0 5.1 3 4 6.3C19.5 15.4 12 20 12 20z"/>',
+    send: '<path d="M4 12l16-8-6 16-3-7z"/>',
+    eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    cam: '<path d="M4 7h10a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/><path d="M16 11l6-3v8l-6-3"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+    game: '<rect x="2.5" y="7" width="19" height="11" rx="5"/><path d="M7 10.5v4M5 12.5h4M16 11.5h.01M18.5 13.5h.01"/>',
+    voice: '<path d="M4 12v-1M8 15V8M12 19V5M16 15V8M20 12v-1"/>',
+    live: '<circle cx="12" cy="12" r="2.4" fill="currentColor"/><path d="M8.3 8.3a5.2 5.2 0 0 0 0 7.4M15.7 8.3a5.2 5.2 0 0 1 0 7.4"/><path d="M5.4 5.4a9.3 9.3 0 0 0 0 13.2M18.6 5.4a9.3 9.3 0 0 1 0 13.2"/>'
+  };
+  var ic = function (n, s) { return '<svg viewBox="0 0 24 24" width="' + (s || 22) + '" height="' + (s || 22) + '" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICO[n] + '</svg>'; };
+  var MODES = [["voice", "Voice chat"], ["camera", "Device camera"], ["game", "Mobile gaming"]];
+  var modeName = function (m) { return (MODES.filter(function (x) { return x[0] === m; })[0] || [0, "LIVE"])[1]; };
+
+  var css = h("style");
+  css.textContent = [
+    ".lvo{position:fixed;inset:0;z-index:100001;background:#000;color:#fff;display:flex;flex-direction:column;font-family:inherit;padding-top:env(safe-area-inset-top,0px)}",
+    ".lvo button{font:inherit;color:inherit;cursor:pointer}.lvo .ib{width:42px;height:42px;border-radius:50%;border:0;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;padding:0;flex:none}",
+    ".lvo .ib.on{background:#fff;color:#000}.lvo .bar{display:flex;align-items:center;gap:10px;padding:10px 14px;z-index:3}.lvo .sp{flex:1}",
+    ".lvd .ttl{font-size:18px;font-weight:800;text-align:center;flex:1}",
+    ".lvd .strip{display:flex;gap:16px;overflow-x:auto;padding:6px 14px 14px;scrollbar-width:none}.lvd .strip::-webkit-scrollbar{display:none}",
+    ".lvd .tile{display:flex;flex-direction:column;align-items:center;gap:6px;flex:none;width:68px;background:none;border:0;padding:0;font-size:12px}",
+    ".lvd .ring{position:relative;width:62px;height:62px;border-radius:50%;padding:3px;background:linear-gradient(135deg,#25f4a0,#12b886)}.lvd .ring.go{background:#222}",
+    ".lvd .ring .in{width:100%;height:100%;border-radius:50%;background:#2a2a33;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;overflow:hidden}",
+    ".lvd .ring .bd{position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);background:#fe2c55;color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:6px;letter-spacing:.04em}",
+    ".lvd .nm{max-width:68px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.85}",
+    ".lvd .grid{flex:1;overflow:auto;padding:4px 14px 90px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px;align-content:start}",
+    ".lvd .card{position:relative;aspect-ratio:3/4;border-radius:16px;overflow:hidden;border:0;text-align:left;display:flex;flex-direction:column;justify-content:flex-end;padding:12px;background:linear-gradient(160deg,#3b1d8a,#12121c)}",
+    ".lvd .card.camera{background:linear-gradient(160deg,#0f766e,#0b1020)}.lvd .card.game{background:linear-gradient(160deg,#b4235a,#14101e)}",
+    ".lvd .card .tag{position:absolute;top:10px;left:10px;display:flex;gap:6px;align-items:center;font-size:11px;font-weight:800}",
+    ".lvd .card .tag b{background:#fe2c55;padding:1px 7px;border-radius:6px}.lvd .card .ct{font-weight:800;font-size:15px;line-height:1.2;max-height:2.4em;overflow:hidden}",
+    ".lvd .card .ch{font-size:12px;opacity:.8;margin-top:4px}.lvd .empty{grid-column:1/-1;text-align:center;opacity:.75;padding:50px 20px;line-height:1.5}",
+    ".lvd .cta{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);height:50px;border-radius:14px;border:0;background:#fe2c55;font-weight:800;font-size:17px}",
+    ".lvv .stage,.lvg .stage{position:absolute;inset:0;background:#0b0b10}.lvo video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}",
+    ".lvo video.contain{object-fit:contain}.lvo .msg{position:absolute;left:0;right:0;top:45%;text-align:center;opacity:.8;font-size:15px;padding:0 24px}",
+    ".lvv .top,.lvg .top{position:relative;z-index:3;display:flex;align-items:center;gap:10px;padding:10px 12px;background:linear-gradient(#000a,#0000)}",
+    ".lvo .host{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.4);padding:4px 12px 4px 4px;border-radius:24px;min-width:0}",
+    ".lvo .av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#4f46e5);display:flex;align-items:center;justify-content:center;font-weight:800;flex:none;overflow:hidden}",
+    ".lvo .hn{font-weight:800;font-size:14px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
+    ".lvo .lvb{background:#fe2c55;font-size:10px;font-weight:800;padding:1px 6px;border-radius:5px;letter-spacing:.04em}",
+    ".lvo .cnt{display:flex;align-items:center;gap:5px;background:rgba(0,0,0,.4);padding:6px 10px;border-radius:18px;font-size:13px;font-weight:700}",
+    ".lvo .seatgrid{position:absolute;left:0;right:0;top:70px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px 10px;padding:24px 22px;justify-items:center;z-index:1}",
+    ".lvo .seat{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;font-size:12px;background:none;border:0;padding:0}",
+    ".lvo .seat .c{width:min(22vw,88px);height:min(22vw,88px);border-radius:50%;background:rgba(255,255,255,.09);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.35);position:relative}",
+    ".lvo .seat.full .c{background:linear-gradient(135deg,#8b5cf6,#4f46e5);color:#fff;font-weight:800;font-size:26px}.lvo .seat.me .c{outline:3px solid #25f4a0}",
+    ".lvo .seat .sn{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.9}",
+    ".lvo .cm{position:absolute;left:12px;right:90px;bottom:calc(env(safe-area-inset-bottom,0px) + 78px);max-height:34%;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;gap:5px;z-index:2;pointer-events:none}",
+    ".lvo .cm div{background:rgba(0,0,0,.42);padding:5px 10px;border-radius:14px;font-size:14px;width:fit-content;max-width:100%;word-break:break-word}.lvo .cm b{opacity:.75;margin-right:6px}",
+    ".lvo .bt{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:8px;padding:10px 12px calc(env(safe-area-inset-bottom,0px) + 10px);z-index:4;background:linear-gradient(#0000,#000a)}",
+    ".lvo .bt input{flex:1;min-width:0;height:42px;border-radius:21px;border:0;background:rgba(255,255,255,.16);color:#fff;padding:0 16px;font:inherit;font-size:15px;outline:0}.lvo .bt input::placeholder{color:rgba(255,255,255,.65)}",
+    ".lvo .hearts{position:absolute;right:10px;bottom:90px;width:60px;height:260px;pointer-events:none;z-index:3;overflow:hidden}",
+    ".lvo .hearts i{position:absolute;bottom:0;color:#fe2c55;animation:lvh 1.8s ease-out forwards}@keyframes lvh{0%{transform:translateY(0) scale(.6);opacity:1}100%{transform:translateY(-230px) scale(1.3);opacity:0}}",
+    ".lvo .req{position:absolute;left:12px;right:12px;top:64px;z-index:5;display:flex;flex-direction:column;gap:6px}",
+    ".lvo .req div{background:rgba(30,30,40,.92);border-radius:14px;padding:8px 10px;display:flex;align-items:center;gap:8px;font-size:14px}.lvo .req span{flex:1}",
+    ".lvo .req button{border:0;border-radius:10px;padding:6px 12px;font-weight:700}.lvo .req .ok{background:#25f4a0;color:#000}.lvo .req .no{background:rgba(255,255,255,.18)}",
+    ".lvg .box{position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 62px);z-index:4;background:rgba(20,20,28,.78);border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:8px;backdrop-filter:blur(8px)}",
+    ".lvg .box input{height:42px;border-radius:12px;border:0;background:rgba(255,255,255,.1);color:#fff;padding:0 12px;font:inherit;outline:0}.lvg .box input::placeholder{color:rgba(255,255,255,.55)}",
+    ".lvg .go{height:50px;border-radius:14px;border:0;background:#fe2c55;font-weight:800;font-size:17px}.lvg .go[disabled]{opacity:.6}",
+    ".lvg .modes{position:absolute;left:0;right:0;bottom:0;z-index:4;display:flex;justify-content:center;gap:22px;padding:10px 0 calc(env(safe-area-inset-bottom,0px) + 12px);font-size:13px;background:#000}",
+    ".lvg .modes button{background:none;border:0;opacity:.55;padding:6px 2px;font-weight:700}.lvg .modes button.on{opacity:1;border-bottom:2px solid #fff}",
+    ".lvg .tools{position:absolute;right:12px;top:70px;z-index:4;display:flex;flex-direction:column;gap:10px}.lvg .note{position:absolute;left:24px;right:24px;top:30%;text-align:center;opacity:.85;line-height:1.5;z-index:2}",
+    ".fm .lv{position:relative}.fm .lv.live::after{content:'';position:absolute;top:7px;right:7px;width:10px;height:10px;border-radius:50%;background:#fe2c55;border:2px solid var(--cd,#16161c)}",
+    ".fm .lv{cursor:pointer!important}#golive.show{pointer-events:auto;cursor:pointer}#tabs .tab.dtlive{cursor:pointer!important}"
+  ].join("");
+  document.head.appendChild(css);
+
+  // ---------- Avatar ----------
+  function avatarEl(uid, name) {
+    var d = h("div", "av", (name || "?").slice(0, 1).toUpperCase());
+    try { if (typeof avatar === "function") { var a = avatar(uid, (name || "?").slice(0, 1).toUpperCase(), "md", uid); if (a && a.nodeType === 1) { a.style.width = a.style.height = "100%"; d.textContent = ""; d.appendChild(a); } } } catch (e) {}
+    return d;
+  }
+  var sd = function (d) { return {type: d.type, sdp: d.sdp}; }, cj = function (c) { return c && c.toJSON ? c.toJSON() : c; };
+  var iceCfg = function () { return typeof ICE !== "undefined" ? ICE : {iceServers: [{urls: "stun:stun.l.google.com:19302"}]}; };
+
+  // ---------- Mixer (Voice chat): host + mga nasa upuan; may "mix-minus" para hindi marinig ng guest ang sarili niya ----------
+  function Mixer(micStream) {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)(), all = ctx.createMediaStreamDestination(), mic = ctx.createMediaStreamSource(micStream), srcs = {}, outs = {};
+    mic.connect(all);
+    return {
+      all: all, ctx: ctx,
+      addGuest: function (gid, stream) {
+        var keep = new Audio(); keep.srcObject = stream; keep.muted = true; keep.play().catch(function () {});   // kailangan ng Chrome para gumana ang remote stream sa WebAudio
+        var src = ctx.createMediaStreamSource(stream), dest = ctx.createMediaStreamDestination();
+        src.connect(all);
+        Object.keys(outs).forEach(function (k) { src.connect(outs[k]); });
+        mic.connect(dest); Object.keys(srcs).forEach(function (k) { srcs[k].src.connect(dest); });
+        srcs[gid] = {src: src, el: keep}; outs[gid] = dest;
+        return dest.stream.getAudioTracks()[0];
+      },
+      removeGuest: function (gid) {
+        if (srcs[gid]) { try { srcs[gid].src.disconnect(); } catch (e) {} try { srcs[gid].el.srcObject = null; } catch (e) {} }
+        delete srcs[gid]; delete outs[gid];
+      },
+      close: function () { try { ctx.close(); } catch (e) {} }
+    };
+  }
+
+  // ---------- HOST ----------
+  function Host(live, local, cb) {
+    var ch, peers = {}, pubs = {}, seats = [], reqs = [], mixer = null, closed = false, hb = null, cap = CAP[live.mode], micTrack = local.getAudioTracks()[0] || null;
+    if (live.mode === "voice") mixer = new Mixer(local);
+    var send = function (ev, p) { try { ch.send({type: "broadcast", event: ev, payload: p}); } catch (e) {} };
+    var count = function () { var n = 0; Object.keys(peers).forEach(function (k) { var s = peers[k].pc.connectionState; if (s === "connected" || s === "connecting" || s === "new") n++; }); cb.count && cb.count(n); };
+    var seatList = function () { return seats.map(function (s) { return {vid: s.vid, uid: s.uid, name: s.name}; }); };
+    var pushSeats = function () { send("seats", {list: seatList()}); cb.seats && cb.seats(seatList()); };
+    var pushReqs = function () { cb.reqs && cb.reqs(reqs.slice()); };
+    var flushQ = function (rec) { rec.rd = true; rec.q.splice(0).forEach(function (c) { rec.pc.addIceCandidate(c).catch(function () {}); }); };
+    function dropPeer(vid) {
+      var rec = peers[vid]; if (rec) { try { rec.pc.close(); } catch (e) {} delete peers[vid]; }
+      dropSeat(vid); reqs = reqs.filter(function (r) { return r.vid !== vid; }); pushReqs(); count();
+    }
+    function dropSeat(vid) {
+      if (pubs[vid]) { try { pubs[vid].pc.close(); } catch (e) {} delete pubs[vid]; }
+      if (mixer) mixer.removeGuest(vid);
+      var n = seats.length; seats = seats.filter(function (s) { return s.vid !== vid; }); if (n !== seats.length) pushSeats();
+    }
+    function addPeer(p) {
+      var cur = peers[p.vid];
+      if (!cur && Object.keys(peers).length >= cap) { send("full", {to: p.vid}); return; }
+      if (cur) { try { cur.pc.close(); } catch (e) {} }
+      var pc = new RTCPeerConnection(iceCfg()), rec = {pc: pc, q: [], rd: false, uid: p.uid, name: p.name};
+      peers[p.vid] = rec;
+      if (mixer) pc.addTrack(mixer.all.stream.getAudioTracks()[0], mixer.all.stream);
+      else local.getTracks().forEach(function (t) { pc.addTrack(t, local); });
+      pc.onicecandidate = function (e) { if (e.candidate) send("ice", {to: p.vid, c: cj(e.candidate)}); };
+      pc.onconnectionstatechange = function () { var s = pc.connectionState; if (s === "failed" || s === "closed") { if (peers[p.vid] === rec) dropPeer(p.vid); } else count(); };
+      pc.createOffer().then(function (o) { return pc.setLocalDescription(o); }).then(function () { send("offer", {to: p.vid, sdp: sd(pc.localDescription)}); count(); }).catch(function () {});
+    }
+    function limitBitrate(rec) {
+      try { rec.pc.getSenders().forEach(function (s) { if (s.track && s.track.kind === "video") { var pr = s.getParameters(); pr.encodings = pr.encodings && pr.encodings.length ? pr.encodings : [{}]; pr.encodings[0].maxBitrate = live.mode === "game" ? 2500000 : 1500000; s.setParameters(pr).catch(function () {}); } }); } catch (e) {}
+    }
+    ch = sb.channel("live-" + live.id, {config: {broadcast: {self: false}, presence: {key: "host"}}});
+    ch.on("broadcast", {event: "join"}, function (m) { var p = m.payload || {}; if (p.vid) addPeer(p); })
+      .on("broadcast", {event: "answer"}, function (m) { var p = m.payload || {}, rec = peers[p.from]; if (rec) rec.pc.setRemoteDescription(p.sdp).then(function () { flushQ(rec); limitBitrate(rec); }).catch(function () {}); })
+      .on("broadcast", {event: "ice"}, function (m) { var p = m.payload || {}, rec = peers[p.from]; if (!rec || !p.c) return; if (rec.rd) rec.pc.addIceCandidate(p.c).catch(function () {}); else rec.q.push(p.c); })
+      .on("broadcast", {event: "leave"}, function (m) { var p = m.payload || {}; if (p.vid) dropPeer(p.vid); })
+      .on("broadcast", {event: "chat"}, function (m) { cb.chat && cb.chat(m.payload || {}); })
+      .on("broadcast", {event: "heart"}, function () { cb.heart && cb.heart(); })
+      .on("broadcast", {event: "seat-req"}, function (m) {
+        var p = m.payload || {}; if (!mixer || !peers[p.vid]) return;
+        if (seats.length >= SEATS) return send("seat-no", {to: p.vid, why: "full"});
+        if (!reqs.some(function (r) { return r.vid === p.vid; }) && !seats.some(function (s) { return s.vid === p.vid; })) { reqs.push({vid: p.vid, uid: p.uid, name: p.name}); pushReqs(); }
+      })
+      .on("broadcast", {event: "pub-offer"}, function (m) {
+        var p = m.payload || {}, gid = p.from, rec = peers[gid]; if (!mixer || !rec || !rec.granted) return;
+        if (pubs[gid]) { try { pubs[gid].pc.close(); } catch (e) {} }
+        var pc = new RTCPeerConnection(iceCfg()), pr = {pc: pc, q: [], rd: false}; pubs[gid] = pr;
+        pc.onicecandidate = function (e) { if (e.candidate) send("pub-ice", {to: gid, c: cj(e.candidate)}); };
+        pc.ontrack = function (e) {
+          if (seats.some(function (s) { return s.vid === gid; })) return;
+          var tr = mixer.addGuest(gid, e.streams[0] || new MediaStream([e.track]));
+          var snd = rec.pc.getSenders().filter(function (s) { return s.track && s.track.kind === "audio"; })[0]; if (snd) snd.replaceTrack(tr).catch(function () {});
+          seats.push({vid: gid, uid: rec.uid, name: rec.name}); pushSeats();
+        };
+        pc.setRemoteDescription(p.sdp).then(function () { return pc.createAnswer(); }).then(function (a) { return pc.setLocalDescription(a); })
+          .then(function () { send("pub-answer", {to: gid, sdp: sd(pc.localDescription)}); pr.rd = true; pr.q.splice(0).forEach(function (c) { pc.addIceCandidate(c).catch(function () {}); }); }).catch(function () {});
+      })
+      .on("broadcast", {event: "pub-ice"}, function (m) { var p = m.payload || {}, pr = pubs[p.from]; if (!pr || !p.c) return; if (pr.rd) pr.pc.addIceCandidate(p.c).catch(function () {}); else pr.q.push(p.c); })
+      .on("broadcast", {event: "seat-leave"}, function (m) { var p = m.payload || {}; if (peers[p.vid]) peers[p.vid].granted = false; dropSeat(p.vid); });
+    ch.subscribe(function (s) { if (s === "SUBSCRIBED") ch.track({host: true}); });
+    hb = setInterval(function () { sb.rpc("live_heartbeat", {lid: live.id}).then(function () {}, function () {}); }, 15000);
+    return {
+      send: send,
+      accept: function (vid) { reqs = reqs.filter(function (r) { return r.vid !== vid; }); pushReqs(); if (peers[vid]) { peers[vid].granted = true; send("seat-ok", {to: vid}); } },
+      decline: function (vid) { reqs = reqs.filter(function (r) { return r.vid !== vid; }); pushReqs(); send("seat-no", {to: vid, why: "no"}); },
+      kick: function (vid) { if (peers[vid]) peers[vid].granted = false; send("seat-kick", {to: vid}); dropSeat(vid); },
+      mute: function (on) { if (micTrack) micTrack.enabled = !on; },
+      end: function () {
+        if (closed) return; closed = true; clearInterval(hb);
+        send("end", {});
+        try { sb.rpc("end_live", {lid: live.id}).then(function () {}, function () {}); } catch (e) {}
+        Object.keys(peers).forEach(function (k) { try { peers[k].pc.close(); } catch (e) {} });
+        Object.keys(pubs).forEach(function (k) { try { pubs[k].pc.close(); } catch (e) {} });
+        if (mixer) mixer.close();
+        local.getTracks().forEach(function (t) { t.stop(); });
+        setTimeout(function () { try { sb.removeChannel(ch); } catch (e) {} }, 400);
+      },
+      get peers() { return peers; }, get seats() { return seats; }
+    };
+  }
+
+  // ---------- VIEWER ----------
+  function Viewer(live, cb) {
+    var vid = rid(), ch, pc = null, pubPc = null, pubStream = null, q = [], rd = false, qp = [], rdp = false, closed = false, gotOffer = false, tries = 0, retry = null, seated = false;
+    var send = function (ev, p) { try { ch.send({type: "broadcast", event: ev, payload: p}); } catch (e) {} };
+    function onOffer(p) {
+      if (pc) { try { pc.close(); } catch (e) {} }
+      gotOffer = true; rd = false; q = [];
+      pc = new RTCPeerConnection(iceCfg());
+      pc.onicecandidate = function (e) { if (e.candidate) send("ice", {from: vid, c: cj(e.candidate)}); };
+      pc.ontrack = function (e) { cb.stream && cb.stream(e.streams[0] || new MediaStream([e.track]), e.track.kind); };
+      pc.onconnectionstatechange = function () { cb.state && cb.state(pc.connectionState); };
+      pc.setRemoteDescription(p.sdp).then(function () { return pc.createAnswer(); }).then(function (a) { return pc.setLocalDescription(a); })
+        .then(function () { send("answer", {from: vid, sdp: sd(pc.localDescription)}); rd = true; q.splice(0).forEach(function (c) { pc.addIceCandidate(c).catch(function () {}); }); }).catch(function () { cb.fail && cb.fail("Couldn't connect"); });
+    }
+    function stopPub() {
+      if (pubPc) { try { pubPc.close(); } catch (e) {} pubPc = null; }
+      if (pubStream) { pubStream.getTracks().forEach(function (t) { t.stop(); }); pubStream = null; }
+      if (seated) { seated = false; cb.seated && cb.seated(false); }
+    }
+    async function startPub() {
+      try { pubStream = await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: true, noiseSuppression: true}}); } catch (e) { cb.say && cb.say("Allow microphone access to join the mic"); send("seat-leave", {vid: vid}); return; }
+      pubPc = new RTCPeerConnection(iceCfg()); rdp = false; qp = [];
+      pubStream.getTracks().forEach(function (t) { pubPc.addTrack(t, pubStream); });
+      pubPc.onicecandidate = function (e) { if (e.candidate) send("pub-ice", {from: vid, c: cj(e.candidate)}); };
+      var o = await pubPc.createOffer(); await pubPc.setLocalDescription(o);
+      send("pub-offer", {from: vid, sdp: sd(pubPc.localDescription)});
+      seated = true; cb.seated && cb.seated(true);
+    }
+    function sendJoin() { send("join", {vid: vid, uid: me.id, name: myName()}); }
+    ch = sb.channel("live-" + live.id, {config: {broadcast: {self: false}, presence: {key: vid}}});
+    ch.on("broadcast", {event: "offer"}, function (m) { var p = m.payload || {}; if (p.to === vid) onOffer(p); })
+      .on("broadcast", {event: "ice"}, function (m) { var p = m.payload || {}; if (p.to !== vid || !p.c || !pc) return; if (rd) pc.addIceCandidate(p.c).catch(function () {}); else q.push(p.c); })
+      .on("broadcast", {event: "full"}, function (m) { if ((m.payload || {}).to === vid) cb.fail && cb.fail("This LIVE is full"); })
+      .on("broadcast", {event: "end"}, function () { cb.ended && cb.ended(); })
+      .on("broadcast", {event: "chat"}, function (m) { cb.chat && cb.chat(m.payload || {}); })
+      .on("broadcast", {event: "heart"}, function () { cb.heart && cb.heart(); })
+      .on("broadcast", {event: "seats"}, function (m) { cb.seatsList && cb.seatsList(((m.payload || {}).list) || [], vid); })
+      .on("broadcast", {event: "seat-ok"}, function (m) { if ((m.payload || {}).to === vid) startPub(); })
+      .on("broadcast", {event: "seat-no"}, function (m) { var p = m.payload || {}; if (p.to === vid) { cb.say && cb.say(p.why === "full" ? "All seats are taken" : "The host declined your request"); cb.reqState && cb.reqState(false); } })
+      .on("broadcast", {event: "seat-kick"}, function (m) { if ((m.payload || {}).to === vid) { stopPub(); cb.say && cb.say("You left the mic"); } })
+      .on("broadcast", {event: "pub-answer"}, function (m) { var p = m.payload || {}; if (p.to === vid && pubPc) pubPc.setRemoteDescription(p.sdp).then(function () { rdp = true; qp.splice(0).forEach(function (c) { pubPc.addIceCandidate(c).catch(function () {}); }); }).catch(function () {}); })
+      .on("broadcast", {event: "pub-ice"}, function (m) { var p = m.payload || {}; if (p.to !== vid || !p.c || !pubPc) return; if (rdp) pubPc.addIceCandidate(p.c).catch(function () {}); else qp.push(p.c); })
+      .on("presence", {event: "sync"}, function () { var st = ch.presenceState(), n = 0; Object.keys(st).forEach(function (k) { if (k !== "host") n++; }); cb.count && cb.count(n); });
+    ch.subscribe(function (s) {
+      if (s === "SUBSCRIBED") {
+        ch.track({uid: me.id}); sendJoin();
+        retry = setInterval(function () { if (gotOffer || closed) return clearInterval(retry); if (++tries > 4) { clearInterval(retry); cb.fail && cb.fail("The LIVE isn't available right now"); } else sendJoin(); }, 4000);
+      }
+    });
+    return {
+      vid: vid, send: send,
+      chat: function (t) { send("chat", {n: myName(), u: me.id, t: t}); },
+      heart: function () { send("heart", {}); },
+      reqSeat: function () { send("seat-req", {vid: vid, uid: me.id, name: myName()}); },
+      leaveSeat: function () { send("seat-leave", {vid: vid}); stopPub(); },
+      close: function () {
+        if (closed) return; closed = true; clearInterval(retry); send("leave", {vid: vid}); stopPub();
+        if (pc) { try { pc.close(); } catch (e) {} }
+        setTimeout(function () { try { sb.removeChannel(ch); } catch (e) {} }, 300);
+      }
+    };
+  }
+
+  // ---------- Common screen parts ----------
+  function seatGrid(root) {
+    var grid = h("div", "seatgrid"); root.appendChild(grid);
+    return function (host, seats, meVid, onTap) {
+      grid.textContent = "";
+      var slots = [{kind: "host", name: host.name, uid: host.uid}].concat(seats.map(function (s) { return {kind: "guest", name: s.name, uid: s.uid, vid: s.vid}; }));
+      for (var i = 0; i < SEATS + 1; i++) {
+        var s = slots[i], b = h("button", "seat" + (s ? " full" : "") + (s && s.vid && s.vid === meVid ? " me" : "")), c = h("div", "c"), n = h("div", "sn", s ? (s.name || "User") : "");
+        b.type = "button";
+        if (s) c.textContent = (s.name || "?").slice(0, 1).toUpperCase(); else c.innerHTML = ic("user", 34);
+        b.append(c, n); if (s && onTap) b.onclick = function (x) { return function () { onTap(x); }; }(s);
+        grid.appendChild(b);
+      }
+    };
+  }
+  function addChat(list, who, text) {
+    var d = h("div"), b = h("b", "", who + ":"); d.append(b, document.createTextNode(" " + text)); list.appendChild(d);
+    while (list.children.length > MAXCM) list.removeChild(list.firstChild);
+  }
+  function floatHeart(layer) { var i = h("i"); i.innerHTML = ic("heart", 26); i.style.left = Math.round(Math.random() * 28) + "px"; i.firstChild.setAttribute("fill", "currentColor"); layer.appendChild(i); setTimeout(function () { i.remove(); }, 1900); }
+
+  // ---------- WATCH (viewer) ----------
+  var watch = null;
+  function openWatch(lives, idx) {
+    if (watch) closeWatch();
+    var live = lives[idx]; if (!live) return;
+    var root = h("div", "lvo lvv"), stage = h("div", "stage"), video = h("video"), msg = h("div", "msg", "Connecting…"), grid = null, setSeats = null;
+    video.autoplay = true; video.playsInline = true; video.setAttribute("playsinline", "");
+    stage.append(video, msg); root.appendChild(stage);
+    var top = h("div", "top"), host = h("div", "host"), hn = h("div", "hn", live.host_name || "LIVE"), lvb = h("span", "lvb", "LIVE"), cnt = h("div", "cnt"), cx = h("button", "ib"); cx.type = "button"; cx.setAttribute("aria-label", "Close"); cx.innerHTML = ic("x");
+    host.append(avatarEl(live.host_id, live.host_name), hn, lvb); cnt.innerHTML = ic("eye", 16) + "<span>0</span>"; top.append(host, h("span", "sp"), cnt, cx); root.appendChild(top);
+    var hearts = h("div", "hearts"), cm = h("div", "cm"), bt = h("div", "bt"), inp = h("input"), hb = h("button", "ib"), sb2 = h("button", "ib");
+    inp.placeholder = "Type…"; inp.maxLength = 120; hb.type = sb2.type = "button"; hb.innerHTML = ic("heart"); hb.setAttribute("aria-label", "Like"); sb2.innerHTML = ic("send"); sb2.setAttribute("aria-label", "Send");
+    bt.append(inp, hb, sb2);
+    var seatBtn = null;
+    if (live.mode === "voice") {
+      setSeats = seatGrid(stage); grid = true; setSeats({name: live.host_name, uid: live.host_id}, [], null);
+      seatBtn = h("button", "ib"); seatBtn.type = "button"; seatBtn.innerHTML = ic("mic"); seatBtn.setAttribute("aria-label", "Join mic"); bt.insertBefore(seatBtn, hb); video.style.display = "none";
+    }
+    root.append(hearts, cm, bt); document.body.appendChild(root);
+    var audio = null, unm = null, seated = false, requested = false, lastHeart = 0, lastCm = 0;
+    var v = Viewer(live, {
+      stream: function (stream, kind) {
+        msg.style.display = "none";
+        if (live.mode === "voice") { if (!audio) { audio = new Audio(); audio.autoplay = true; document.body.appendChild(audio); audio.style.display = "none"; } audio.srcObject = stream; audio.play().catch(function () { msg.style.display = ""; msg.textContent = "Tap anywhere to hear the LIVE"; root.onclick = function () { audio.play(); msg.style.display = "none"; root.onclick = null; }; }); return; }
+        video.srcObject = stream; if (live.mode === "game") video.classList.add("contain");
+        video.play().catch(function () { video.muted = true; video.play().catch(function () {}); say("Tap the video to unmute"); video.onclick = function () { video.muted = false; video.onclick = null; }; });
+      },
+      state: function (s) { if (s === "failed") { msg.style.display = ""; msg.textContent = "Connection lost"; } },
+      fail: function (t) { msg.style.display = ""; msg.textContent = t; },
+      ended: function () { msg.style.display = ""; msg.textContent = "This LIVE has ended"; setTimeout(closeWatch, 2500); },
+      count: function (n) { cnt.lastChild.textContent = n; },
+      chat: function (p) { if (p && p.t) addChat(cm, String(p.n || "User").slice(0, 24), String(p.t).slice(0, 120)); },
+      heart: function () { floatHeart(hearts); },
+      seatsList: function (list, mv) { if (setSeats) setSeats({name: live.host_name, uid: live.host_id}, list, mv); },
+      seated: function (on) { seated = on; requested = false; if (seatBtn) { seatBtn.classList.toggle("on", on); seatBtn.innerHTML = ic(on ? "mic" : "mic"); seatBtn.setAttribute("aria-label", on ? "Leave mic" : "Join mic"); } },
+      reqState: function (on) { requested = on; },
+      say: say
+    });
+    function sendCm() { var t = inp.value.trim(); if (!t) return; var now = Date.now(); if (now - lastCm < 900) return; lastCm = now; inp.value = ""; addChat(cm, myName(), t); v.chat(t); }
+    sb2.onclick = sendCm; inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); sendCm(); } };
+    hb.onclick = function () { var now = Date.now(); if (now - lastHeart < 250) return; lastHeart = now; floatHeart(hearts); v.heart(); };
+    if (seatBtn) seatBtn.onclick = function () { if (seated) { v.leaveSeat(); return; } if (requested) return say("Waiting for the host…"); requested = true; v.reqSeat(); say("Request sent. The host will let you in."); };
+    cx.onclick = closeWatch;
+    // i-swipe pataas/pababa para lumipat ng live
+    var y0 = null;
+    root.addEventListener("touchstart", function (e) { if (e.target.closest && e.target.closest(".bt")) return; y0 = e.touches[0].clientY; }, {passive: true});
+    root.addEventListener("touchend", function (e) { if (y0 == null) return; var dy = e.changedTouches[0].clientY - y0; y0 = null; if (Math.abs(dy) < 70) return; var n = idx + (dy < 0 ? 1 : -1); if (lives[n]) { openWatch(lives, n); } }, {passive: true});
+    watch = {root: root, v: v, audio: audio};
+    watch.cleanup = function () { try { v.close(); } catch (e) {} if (audio) { try { audio.srcObject = null; audio.remove(); } catch (e) {} } try { root.remove(); } catch (e) {} };
+    watch.getAudio = function () { return audio; };
+    if (live.mode === "voice") { var n = nat(); }
+  }
+  function closeWatch() { if (!watch) return; var w = watch; watch = null; w.cleanup(); }
+
+  // ---------- DISCOVER LIVE ----------
+  var disc = null, discT = null, liveCache = [];
+  async function fetchLives() {
+    var r = await sb.rpc("active_lives");
+    if (r.error) throw r.error;
+    liveCache = (r.data || []).filter(function (l) { return l.host_id !== (me && me.id) || true; });
+    return liveCache;
+  }
+  async function renderDisc() {
+    if (!disc) return;
+    var lives; try { lives = await fetchLives(); } catch (e) { disc.grid.textContent = ""; disc.grid.appendChild(h("div", "empty", /does not exist|schema cache|could not find/i.test(e.message || "") ? "LIVE isn't set up yet. Run live.sql in Supabase." : "Couldn't load LIVE right now.")); return; }
+    disc.strip.textContent = ""; disc.grid.textContent = "";
+    var go = h("button", "tile"), gr = h("div", "ring go"), gi = h("div", "in"); go.type = "button"; gi.innerHTML = ic("cam", 26); gr.appendChild(gi); go.append(gr, h("div", "nm", "Go LIVE")); go.onclick = function () { openGoLive(); }; disc.strip.appendChild(go);
+    lives.forEach(function (l, i) {
+      var t = h("button", "tile"), r = h("div", "ring"), inn = h("div", "in"), bd = h("span", "bd", "LIVE"); t.type = "button";
+      inn.appendChild(avatarEl(l.host_id, l.host_name)); r.append(inn, bd); t.append(r, h("div", "nm", l.host_name || "LIVE")); t.onclick = function () { openWatch(lives, i); }; disc.strip.appendChild(t);
+      var c = h("button", "card " + l.mode), tag = h("div", "tag"); c.type = "button"; tag.innerHTML = "<b>LIVE</b><span>" + ic(l.mode === "game" ? "game" : l.mode === "voice" ? "voice" : "cam", 14) + "</span>";
+      c.append(tag, h("div", "ct", l.title || (l.mode === "game" && l.game ? l.game : modeName(l.mode))), h("div", "ch", l.host_name || "")); c.onclick = function () { openWatch(lives, i); }; disc.grid.appendChild(c);
+    });
+    if (!lives.length) disc.grid.appendChild(h("div", "empty", "No one is LIVE right now.\nBe the first to go LIVE!"));
+    disc.grid.querySelectorAll(".empty").forEach(function (e) { e.style.whiteSpace = "pre-line"; });
+    setBadge(lives.length > 0);
+  }
+  window.openLive = function () {
+    if (disc || typeof me === "undefined" || !me) return;
+    var root = h("div", "lvo lvd"), bar = h("div", "bar"), cx = h("button", "ib"), strip = h("div", "strip"), grid = h("div", "grid"), cta = h("button", "cta", "Go LIVE");
+    cx.type = "button"; cx.innerHTML = ic("x"); cx.setAttribute("aria-label", "Close"); cta.type = "button";
+    bar.append(h("span", "ib"), h("div", "ttl", "Discover LIVE"), cx); bar.firstChild.style.visibility = "hidden";
+    root.append(bar, strip, grid, cta); document.body.appendChild(root);
+    disc = {root: root, strip: strip, grid: grid};
+    cx.onclick = closeDisc; cta.onclick = function () { openGoLive(); };
+    renderDisc(); discT = setInterval(renderDisc, 8000);
+  };
+  function closeDisc() { if (!disc) return; clearInterval(discT); disc.root.remove(); disc = null; }
+
+  // ---------- GO LIVE ----------
+  var goScr = null, hostScr = null;
+  window.openGoLive = function () {
+    if (goScr || hostScr || typeof me === "undefined" || !me) return;
+    if (typeof call !== "undefined" && call) return say("Finish your call first");
+    closeDisc(); closeWatch();
+    var root = h("div", "lvo lvg"), stage = h("div", "stage"), video = h("video"), note = h("div", "note"), mode = "camera", stream = null, facing = "user", mutedOn = false, starting = false;
+    video.autoplay = true; video.playsInline = true; video.muted = true; video.setAttribute("playsinline", "");
+    stage.append(video, note); root.appendChild(stage);
+    var top = h("div", "top"), cx = h("button", "ib"); cx.type = "button"; cx.innerHTML = ic("x"); cx.setAttribute("aria-label", "Close"); top.append(cx, h("span", "sp")); root.appendChild(top);
+    var tools = h("div", "tools"), flip = h("button", "ib"), mu = h("button", "ib"); flip.type = mu.type = "button"; flip.innerHTML = ic("flip"); flip.setAttribute("aria-label", "Flip camera"); mu.innerHTML = ic("mic"); mu.setAttribute("aria-label", "Mute"); tools.append(flip, mu); root.appendChild(tools);
+    var box = h("div", "box"), title = h("input"), game = h("input"), go = h("button", "go", "Go LIVE"); title.placeholder = "Add a title"; title.maxLength = 80; game.placeholder = "Game (e.g. Mobile Legends: Bang Bang)"; game.maxLength = 60; go.type = "button"; box.append(title, game, go); root.appendChild(box);
+    var modes = h("div", "modes"); MODES.forEach(function (m) { var b = h("button", m[0] === mode ? "on" : "", m[1]); b.type = "button"; b.dataset.m = m[0]; modes.appendChild(b); }); root.appendChild(modes);
+    var setSeats = seatGrid(stage); setSeats({name: myName(), uid: me.id}, [], null);
+    document.body.appendChild(root); goScr = root;
+    function stopPrev() { if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; } video.srcObject = null; }
+    async function preview() {
+      stopPrev(); note.textContent = "";
+      var seatsEl = root.querySelector(".seatgrid"); seatsEl.style.display = mode === "voice" ? "" : "none";
+      game.style.display = mode === "game" ? "" : "none"; flip.style.display = mode === "camera" ? "" : "none"; video.style.display = mode === "camera" ? "" : "none";
+      if (mode === "camera") {
+        try { stream = await navigator.mediaDevices.getUserMedia({video: {facingMode: {ideal: facing}, width: {ideal: 1280}, height: {ideal: 720}}, audio: false}); video.srcObject = stream; video.style.transform = facing === "user" ? "scaleX(-1)" : "none"; }
+        catch (e) { note.textContent = "Allow camera access to go LIVE with your device camera."; }
+      } else if (mode === "game") {
+        note.innerHTML = "Your screen will be shared with your viewers.<br>Open your game, then tap Go LIVE.";
+      }
+    }
+    modes.onclick = function (e) { var b = e.target.closest("button"); if (!b || starting) return; mode = b.dataset.m; modes.querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x === b); }); preview(); };
+    flip.onclick = function () { facing = facing === "user" ? "environment" : "user"; preview(); };
+    mu.onclick = function () { mutedOn = !mutedOn; mu.classList.toggle("on", mutedOn); mu.innerHTML = ic(mutedOn ? "micoff" : "mic"); };
+    function closeGo() { stopPrev(); root.remove(); goScr = null; }
+    cx.onclick = closeGo;
+    go.onclick = async function () {
+      if (starting) return; starting = true; go.disabled = true; go.textContent = "Starting…";
+      var media = null;
+      try {
+        if (mode === "voice") {
+          media = await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: true, noiseSuppression: true}, video: false});
+        } else if (mode === "camera") {
+          media = await navigator.mediaDevices.getUserMedia({video: {facingMode: {ideal: facing}, width: {ideal: 1280}, height: {ideal: 720}}, audio: {echoCancellation: true, noiseSuppression: true}});
+        } else {
+          if (!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia)) throw new Error("screen");
+          var scr = await navigator.mediaDevices.getDisplayMedia({video: {frameRate: 30}, audio: true}), mic = null;
+          try { mic = await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: true, noiseSuppression: true}}); } catch (e) {}
+          media = new MediaStream(scr.getVideoTracks());
+          var ac = scr.getAudioTracks()[0], mt = mic && mic.getAudioTracks()[0];
+          if (ac && mt) { var ctx = new (window.AudioContext || window.webkitAudioContext)(), dst = ctx.createMediaStreamDestination(); ctx.createMediaStreamSource(new MediaStream([ac])).connect(dst); ctx.createMediaStreamSource(new MediaStream([mt])).connect(dst); media.addTrack(dst.stream.getAudioTracks()[0]); }
+          else if (ac || mt) media.addTrack(ac || mt);
+        }
+      } catch (e) {
+        starting = false; go.disabled = false; go.textContent = "Go LIVE";
+        if (e && e.message === "screen") return alert("Mobile gaming LIVE needs screen capture, which isn't available in this app version yet. It works in a desktop browser.");
+        return say(mode === "voice" ? "Allow microphone access to go LIVE" : "Allow camera and microphone access to go LIVE");
+      }
+      var r = await sb.rpc("start_live", {t: title.value.trim(), m: mode, g: mode === "game" ? game.value.trim() : null});
+      if (r.error) { media.getTracks().forEach(function (t) { t.stop(); }); starting = false; go.disabled = false; go.textContent = "Go LIVE"; return alert(/does not exist|schema cache|could not find/i.test(r.error.message || "") ? "LIVE isn't set up yet. Run live.sql in Supabase." : r.error.message); }
+      var live = {id: r.data, host_id: me.id, host_name: myName(), title: title.value.trim(), mode: mode, game: game.value.trim()};
+      if (mutedOn) media.getAudioTracks().forEach(function (t) { t.enabled = false; });
+      closeGo(); openHost(live, media, mutedOn);
+    };
+    preview();
+  };
+
+  // ---------- HOST screen ----------
+  function openHost(live, media, muted0) {
+    var root = h("div", "lvo lvv"), stage = h("div", "stage"), video = h("video"), setSeats = null;
+    video.autoplay = true; video.playsInline = true; video.muted = true; video.setAttribute("playsinline", "");
+    if (live.mode !== "voice") { video.srcObject = new MediaStream(media.getVideoTracks()); if (live.mode === "game") video.classList.add("contain"); if (live.mode === "camera" && media.getVideoTracks()[0] && /user/.test((media.getVideoTracks()[0].getSettings() || {}).facingMode || "")) video.style.transform = "scaleX(-1)"; } else video.style.display = "none";
+    stage.appendChild(video); root.appendChild(stage);
+    var top = h("div", "top"), hostc = h("div", "host"), cnt = h("div", "cnt"), end = h("button", "ib"); end.type = "button"; end.innerHTML = ic("x"); end.setAttribute("aria-label", "End LIVE");
+    hostc.append(avatarEl(me.id, myName()), h("div", "hn", live.title || myName()), h("span", "lvb", "LIVE")); cnt.innerHTML = ic("eye", 16) + "<span>0</span>"; top.append(hostc, h("span", "sp"), cnt, end); root.appendChild(top);
+    var hearts = h("div", "hearts"), cm = h("div", "cm"), bt = h("div", "bt"), inp = h("input"), mu = h("button", "ib"), sendb = h("button", "ib"), reqEl = h("div", "req");
+    inp.placeholder = "Say something…"; inp.maxLength = 120; mu.type = sendb.type = "button"; mu.innerHTML = ic(muted0 ? "micoff" : "mic"); mu.classList.toggle("on", !!muted0); mu.setAttribute("aria-label", "Mute"); sendb.innerHTML = ic("send");
+    bt.append(inp, mu, sendb);
+    if (live.mode === "voice") { setSeats = seatGrid(stage); setSeats({name: myName(), uid: me.id}, [], null, null); }
+    root.append(hearts, cm, reqEl, bt); document.body.appendChild(root);
+    var muted = !!muted0, lastCm = 0;
+    var n = nat(); if (n && n.callStarted) { try { n.callStarted(); } catch (e) {} }   // panatilihing bukas ang mikropono kahit na-lock ang phone
+    var host = Host(live, media, {
+      count: function (c) { cnt.lastChild.textContent = c; },
+      chat: function (p) { if (p && p.t) addChat(cm, String(p.n || "User").slice(0, 24), String(p.t).slice(0, 120)); },
+      heart: function () { floatHeart(hearts); },
+      reqs: function (list) {
+        reqEl.textContent = "";
+        list.forEach(function (r) { var d = h("div"), s = h("span", "", (r.name || "Someone") + " wants to speak"), ok = h("button", "ok", "Accept"), no = h("button", "no", "Decline"); ok.type = no.type = "button"; ok.onclick = function () { host.accept(r.vid); }; no.onclick = function () { host.decline(r.vid); }; d.append(s, ok, no); reqEl.appendChild(d); });
+      },
+      seats: function (list) { if (setSeats) setSeats({name: myName(), uid: me.id}, list, null, function (s) { if (s.vid && confirm("Remove " + (s.name || "this person") + " from the mic?")) host.kick(s.vid); }); }
+    });
+    if (muted) host.mute(true);
+    mu.onclick = function () { muted = !muted; host.mute(muted); mu.classList.toggle("on", muted); mu.innerHTML = ic(muted ? "micoff" : "mic"); };
+    function sendCm() { var t = inp.value.trim(); if (!t) return; var now = Date.now(); if (now - lastCm < 900) return; lastCm = now; inp.value = ""; addChat(cm, myName(), t); host.send("chat", {n: myName(), u: me.id, t: t}); }
+    sendb.onclick = sendCm; inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); sendCm(); } };
+    function finish() { if (!hostScr) return; hostScr = null; try { host.end(); } catch (e) {} var nn = nat(); if (nn && nn.callEnded) { try { nn.callEnded(); } catch (e) {} } root.remove(); setTimeout(function () { renderDiscSoon(); }, 300); }
+    end.onclick = function () { if (confirm("End your LIVE?")) finish(); };
+    // kung natapos ang screen share sa mismong browser
+    media.getVideoTracks().forEach(function (t) { t.onended = function () { if (hostScr) { say("Screen sharing stopped"); finish(); } }; });
+    hostScr = {root: root, host: host, finish: finish};
+    window.addEventListener("pagehide", function () { try { host.end(); } catch (e) {} }, {once: true});
+  }
+  function renderDiscSoon() { refreshBadge(); }
+
+  // ---------- Red dot sa Live icon ----------
+  function setBadge(on) { document.querySelectorAll(".fm .lv").forEach(function (b) { b.classList.toggle("live", !!on); }); }
+  async function refreshBadge() {
+    if (typeof me === "undefined" || !me || document.hidden) return;
+    try { var l = await fetchLives(); setBadge(l.length > 0); } catch (e) {}
+  }
+  setInterval(refreshBadge, 30000); setTimeout(refreshBadge, 5000);
+
+  // ---------- Wiring ----------
+  document.addEventListener("click", function (e) {
+    var t = e.target; if (!t || !t.closest) return;
+    if (t.closest(".fm .lv")) { e.stopPropagation(); window.openLive(); return; }
+    if (t.closest("#golive.show")) { window.openGoLive(); return; }
+    if (t.closest("#tabs .dtlive")) { window.openGoLive(); }
+  }, true);
+  window.__lv = {openWatch: openWatch, closeWatch: closeWatch, Host: Host, Viewer: Viewer, get host() { return hostScr; }, get watching() { return watch; }};
 })();
 </script>
 </body></html>
